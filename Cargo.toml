@@ -23,7 +23,7 @@ simple_logger = "4"
 tokio = { version = "1.25.0", optional = true, features = ["full"] }
 tower = { version = "0.4.13", optional = true }
 tower-http = { version = "0.4", features = ["fs"], optional = true }
-wasm-bindgen = "=0.2.86"
+wasm-bindgen = "=0.2.87"
 thiserror = "1.0.38"
 tracing = { version = "0.1.37", optional = true }
 http = "0.2.8"
@@ -34,6 +34,7 @@ sqlx = { version = "0.7", features = [
   "runtime-tokio-rustls",
   "mysql",
   "chrono",
+  "uuid",
 ], optional = true }
 axum_session_auth = { version = "0.7", features = [
   "mysql-rustls",
@@ -50,7 +51,13 @@ rand = "0.8.5"
 serde_json = "1.0.107"
 uuid = { version = "1.4.1", features = ["v4", "serde"] }
 chrono = { version = "0.4.31", features = ["serde"] }
-
+leptos_icons = { version = "0.1", features = [
+  "RiSunWeatherFill",
+  "RiAddSystemFill",
+  "RiMoonWeatherFill",
+] }
+strum = { version = "0.25.0", features = ["derive"] }
+strum_macros = "0.25.3"
 
 [features]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
@@ -90,6 +97,7 @@ style-file = "style/output.css"
 # Assets source dir. All files found here will be copied and synchronized to site-root.
 # The assets-dir cannot have a sub directory with the same name/path as site-pkg-dir.
 #
+tailwind-input-file = "input.css"
 # Optional. Env: LEPTOS_ASSETS_DIR.
 assets-dir = "public"
 

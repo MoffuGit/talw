@@ -1,4 +1,4 @@
-use crate::user::User;
+use crate::entities::user::User;
 use leptos::*;
 
 use cfg_if::cfg_if;
@@ -6,7 +6,7 @@ use cfg_if::cfg_if;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use bcrypt::verify;
-        use crate::user::AuthSession;
+        use crate::entities::user::AuthSession;
         use sqlx::MySqlPool;
 
         pub fn pool() -> Result<MySqlPool, ServerFnError> {
@@ -16,6 +16,10 @@ cfg_if! {
         pub fn auth() -> Result<AuthSession, ServerFnError> {
             use_context::<AuthSession>()
                 .ok_or_else(|| ServerFnError::ServerError("Auth session missing.".into()))
+        }
+
+        pub fn auth_user() -> Result<User, ServerFnError> {
+            auth()?.current_user.ok_or_else(|| ServerFnError::ServerError("cant auth user".to_string()))
         }
     }
 }

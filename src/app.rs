@@ -12,11 +12,13 @@ use routes::home::Home;
 use routes::login::Login;
 use routes::server::Server;
 use routes::signup::Signup;
+use server::provide_server_context;
 use theme::{provide_theme_context, Theme};
 
 #[component]
 pub fn App() -> impl IntoView {
     provide_meta_context();
+    provide_server_context();
     provide_theme_context();
     provide_auth_context();
 
@@ -31,7 +33,7 @@ pub fn App() -> impl IntoView {
             <Routes>
                 <Route path="" view=|| view!{<Home/>}/>
                 <Route path="servers" view=|| view!{<Server/>}>
-                    <Route path=":id" view=|| view! {<div>"servers stuff"</div>} />
+                    <Route path=":id" view=|| view! {<div class="text-[160px] font-black">"servers stuff"</div>} />
                     <Route path="me" view=|| view! {<div>"user stuff"</div>}/>
                 </Route>
                 <Route path="login" view=move || view!{ <Login />}/>

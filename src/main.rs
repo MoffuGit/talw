@@ -6,9 +6,9 @@ async fn main() {
     use leptos::logging::log;
     use leptos::*;
     use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
+    use start_axum::entities::user::AuthSession;
+    use start_axum::entities::user::User;
     use start_axum::state::AppState;
-    use start_axum::user::AuthSession;
-    use start_axum::user::User;
     use start_axum::ws::ws_handler;
     use start_axum::ws::WsChannels;
 

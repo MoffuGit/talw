@@ -1,3 +1,4 @@
+use crate::entities::server::Server;
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -8,7 +9,7 @@ cfg_if! {
         use axum_session::SessionMySqlPool;
         use axum_session_auth::Authentication;
         use bcrypt::{hash, DEFAULT_COST};
-        use sqlx::{FromRow, MySqlPool, Type};
+        use sqlx::{FromRow, MySqlPool};
         pub type AuthSession = axum_session_auth::AuthSession<User, Uuid, SessionMySqlPool, MySqlPool>;
     }
 }
@@ -19,30 +20,6 @@ pub struct User {
     pub id: Uuid,
     pub username: String,
     pub password: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug)]
-#[cfg_attr(feature = "ssr", derive(FromRow))]
-pub struct Server {
-    pub id: Uuid,
-    pub name: String,
-    pub invite_code: String,
-}
-
-#[derive(Serialize, Deserialize)]
-#[cfg_attr(feature = "ssr", derive(Type))]
-pub enum Role {
-    ADMIN,
-    GUEST,
-}
-
-#[derive(Serialize, Deserialize)]
-#[cfg_attr(feature = "ssr", derive(FromRow))]
-pub struct Member {
-    pub id: Uuid,
-    pub role: Role,
-    pub user_id: u64,
-    pub server_id: Uuid,
 }
 
 #[cfg(feature = "ssr")]
@@ -85,37 +62,6 @@ impl User {
             .fetch_all(pool)
             .await.ok()?;
         Some(servers)
-    }
-}
-
-#[cfg(feature = "ssr")]
-impl Member {
-    pub async fn create(role: Role, user: Uuid, server: Uuid, pool: &MySqlPool) -> Option<Uuid> {
-        let id = Uuid::new_v4();
-        sqlx::query("INSERT INTO members (id, role, user_id, server_id) VALUES (?, ?, ?,?)")
-            .bind(id)
-            .bind(role)
-            .bind(user)
-            .bind(server)
-            .execute(pool)
-            .await
-            .ok()?;
-        Some(id)
-    }
-}
-
-#[cfg(feature = "ssr")]
-impl Server {
-    pub async fn create(name: String, pool: &MySqlPool) -> Option<Uuid> {
-        let id = Uuid::new_v4();
-        sqlx::query("INSERT INTO servers (id, name, invite_code) VALUES (?, ?, ?)")
-            .bind(id)
-            .bind(name)
-            .bind(Uuid::new_v4())
-            .execute(pool)
-            .await
-            .ok()?;
-        Some(id)
     }
 }
 

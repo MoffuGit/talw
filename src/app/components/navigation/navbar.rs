@@ -1,6 +1,5 @@
 use crate::app::auth::{current_user, use_auth};
-use crate::app::theme::prefers_theme;
-use crate::app::theme::use_theme;
+use crate::app::components::theme::Toggle_Theme;
 use leptos::*;
 use leptos_router::*;
 
@@ -16,8 +15,6 @@ pub fn Logout() -> impl IntoView {
 
 #[component]
 pub fn Navbar() -> impl IntoView {
-    let (toggle_theme_action, _) = use_theme();
-
     view! {
         <Transition fallback=move || ()>
             <div class="navbar w-auto">
@@ -31,18 +28,7 @@ pub fn Navbar() -> impl IntoView {
                     }
                     <div class="divider divider-horizontal m-0 self-center h-6"/>
 
-                    <ActionForm action=toggle_theme_action class="btn btn-sm btn-square btn-accent">
-                        <input
-                            type="hidden"
-                            name="theme"
-                            value=move || (!prefers_theme().get()).to_string()
-                        />
-                        <input
-                            type="submit"
-                            class="w-full h-full"
-                            value=""
-                        />
-                    </ActionForm>
+                    <Toggle_Theme class="btn btn-sm btn-square btn-accent" />
                 </div>
             </div>
         </Transition>

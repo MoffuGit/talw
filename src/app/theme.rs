@@ -40,34 +40,41 @@ fn initial_theme() -> bool {
         .unwrap_or(false)
 }
 
-pub type ThemeContext = (Action<ToggleTheme, Result<bool, ServerFnError>>, bool);
+#[derive(Clone)]
+pub struct ThemeContext {
+    pub initial: bool,
+    pub toggle_theme: Action<ToggleTheme, Result<bool, ServerFnError>>,
+    pub prefers_theme: Signal<bool>,
+}
 
 pub fn provide_theme_context() {
     let initial = initial_theme();
-    let toggle_theme_action = create_server_action::<ToggleTheme>();
-
-    provide_context((toggle_theme_action, initial));
-}
-
-pub fn use_theme() -> (Action<ToggleTheme, Result<bool, ServerFnError>>, bool) {
-    use_context::<ThemeContext>().expect("theme context")
-}
-
-pub fn prefers_theme() -> Signal<bool> {
-    let (toggle_theme_action, initial) = use_theme();
-    let input = toggle_theme_action.input();
-    let value = toggle_theme_action.value();
-    Signal::derive(move || match (input.get(), value.get()) {
+    let toggle_theme = create_server_action::<ToggleTheme>();
+    let input = toggle_theme.input();
+    let value = toggle_theme.value();
+    let prefers_theme = Signal::derive(move || match (input.get(), value.get()) {
         (Some(submission), _) => submission.theme,
         (_, Some(Ok(value))) => value,
         _ => initial,
-    })
+    });
+
+    provide_context(ThemeContext {
+        initial,
+        toggle_theme,
+        prefers_theme,
+    });
+}
+
+pub fn use_theme() -> ThemeContext {
+    use_context::<ThemeContext>().expect("theme context")
 }
 
 #[component]
 pub fn Theme() -> impl IntoView {
+    let theme_context = use_theme();
+    let prefers_theme = theme_context.prefers_theme;
     let theme = move || {
-        if prefers_theme().get() {
+        if prefers_theme.get() {
             "dark".to_string()
         } else {
             "light".to_string()
@@ -75,7 +82,7 @@ pub fn Theme() -> impl IntoView {
     };
 
     view! {
-        <Body class={move || format!("w-full h-screen {}", theme())}/>
+        <Body class={move || format!("w-full h-screen font-satoshi {}", theme())}/>
         <Html attr:data-theme={move || theme()} />
     }
 }

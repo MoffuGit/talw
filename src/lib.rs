@@ -1,9 +1,9 @@
 use cfg_if::cfg_if;
 pub mod app;
+pub mod entities;
 pub mod error_template;
 pub mod fileserv;
 pub mod state;
-pub mod user;
 pub mod ws;
 
 cfg_if! { if #[cfg(feature = "hydrate")] {

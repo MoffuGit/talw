@@ -1,19 +1,71 @@
-use crate::app::{components::navigation::item::Item, server::get_user_servers};
+use crate::app::components::modals::create_server::Create_server_modal;
+use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
+use crate::app::server::user_servers;
 use leptos::*;
+use leptos_icons::RiIcon::*;
+use leptos_icons::*;
+use leptos_router::{use_router, A};
+use uuid::Uuid;
 
 #[component]
 pub fn SideBar() -> impl IntoView {
-    // let create_server = create_server_action();
-    let get_servers = create_resource(move || (), move |_| get_user_servers());
+    let servers = user_servers();
     view! {
-            <div class="w-full h-full flex flex-col items-center bg-base-200">
-                <Transition fallback=move || ()>
-                    {move || get_servers.and_then(|servers| servers.iter().map(|server| view! {
-                        <div class="mb-4" >
-                            <Item id=server.id name=server.name.clone()/>
-                        </div>
-                    }).collect_view())}
-                </Transition>
+        <div class="w-full h-full flex flex-col items-center bg-base-200">
+            <Transition fallback=move || ()>
+                {move || servers.and_then(|servers| servers.iter().map(|server| view! {
+                    <Navigation_server id=server.id name=server.name.clone()/>
+                }).collect_view())}
+
+                <Navigation_action tip="Add a server">
+                    <div class="flex items-center justify-center mx-3 transition-all h-[48px] w-[48px] bg-base-100 rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] overflow-hidden" onclick="create_server.showModal()">
+                        <Icon icon=Icon::from(RiAddSystemFill) class="fill-primary w-7 h-7 group-hover:fill-base-100"/>
+                    </div>
+                </Navigation_action>
+                <Create_server_modal/>
+
+                <Navigation_action tip="Toggle theme">
+                    <Toggle_Theme
+                        class="relative mx-3 h-[48px] transition-all bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px] overflow-hidden"
+                        icons=ThemeIcons{dark: Icon::from(RiSunWeatherFill), light: Icon::from(RiMoonWeatherFill), class: "fill-primary w-7 h-7 group-hover:fill-base-100"}
+                    />
+                </Navigation_action>
+            </Transition>
+        </div>
+    }
+}
+
+#[component]
+pub fn Navigation_action(tip: &'static str, children: Children) -> impl IntoView {
+    view! {
+        <div class="group relative flex items-center mb-1" /*font-medium before:bg-white*/ >
+            <div class="absolute left-0 bg-primary rounded-r-full transition-all w-[4px] group-hover:h-[20px] h-[8px]"/>
+            <div class="tooltip tooltip-right font-medium" /*font-medium before:bg-white*/ data-tip=tip>
+                {children()}
             </div>
+        </div>
+    }
+}
+
+#[component]
+pub fn Navigation_server(id: Uuid, name: String) -> impl IntoView {
+    let current_server = move || {
+        use_router().pathname().with(|path| {
+            Uuid::parse_str(path.split('/').nth(2).unwrap_or_default()).unwrap_or_default()
+        })
+    };
+    view! {
+            <A href=id.simple().to_string() class="group relative flex items-center mb-1">
+                <div class=move || format!("absolute left-0 bg-primary rounded-r-full transition-all w-[4px] {}", {
+                    match current_server() == id {
+                        false => "group-hover:h-[20px] h-[8px]",
+                        true =>"h-[36px]",
+                    }
+                })
+                />
+                <div class="tooltip tooltip-right"  data-tip=name>
+                    <div class="relative mx-3 h-[48px] transition-all bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px] overflow-hidden"/>
+                </div>
+            </A>
     }
 }

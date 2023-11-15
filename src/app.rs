@@ -28,18 +28,18 @@ pub fn App() -> impl IntoView {
         <Title text="Welcome to Leptos"/>
 
         <Theme/>
-        <Router>
-            <main class="w-full h-full">
-            <Routes>
-                <Route path="" view=|| view!{<Home/>}/>
-                <Route path="servers" view=|| view!{<Server/>}>
-                    <Route path=":id" view=|| view! {<div class="text-[160px] font-black">"servers stuff"</div>} />
-                    <Route path="me" view=|| view! {<div>"user stuff"</div>}/>
-                </Route>
-                <Route path="login" view=move || view!{ <Login />}/>
-                <Route path="signup" view=move || view!{ <Signup />}/>
-            </Routes>
-            </main>
-        </Router>
+        <main id="app" class="w-full h-full">
+            <Router>
+                <Routes>
+                    <Route path="" view=|| view!{<Home/>}/>
+                    <Route path="servers" view=|| view!{<Server/>}>
+                        <Route path=":id" view=|| view! {<div class="text-[160px] font-black">"servers stuff"</div>} />
+                        <Route path="me" view=|| view! {<div>"user stuff"</div>}/>
+                    </Route>
+                    <Route path="login" view=move || view!{ <Login />}/>
+                    <Route path="signup" view=move || view!{ <Signup />}/>
+                </Routes>
+            </Router>
+        </main>
     }
 }

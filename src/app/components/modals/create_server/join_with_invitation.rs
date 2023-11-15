@@ -20,7 +20,7 @@ pub fn Join_with_invitation() -> impl IntoView {
                 <div class="mb-4">
                     <div>
                         <h2 class="mb-2 text-[12px] leading-[16px] font-bold">INVITE LINK</h2>
-                        <input type="text" name="invitation" id="valide_invitation" class="input rounded input-secondary bg-secondary h-[40px] text-[14px] w-full" placeholder="https://discord.gg/hTKzmak"/>
+                        <input type="text" name="invitation" class="input rounded input-secondary bg-secondary h-[40px] text-[14px] w-full" placeholder="https://discord.gg/hTKzmak"/>
                     </div>
                 </div>
                 <div class="mb-4">

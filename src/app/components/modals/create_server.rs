@@ -1,9 +1,13 @@
 pub mod join_with_invitation;
 pub mod select_name;
 
+use crate::app::components::modals::slide_modal::*;
+use crate::app::components::modals::*;
 use crate::app::server::ServerTemplate;
 use join_with_invitation::Join_with_invitation;
 use leptos::*;
+use leptos_icons::RiIcon::*;
+use leptos_icons::*;
 use select_name::Select_Name;
 use strum::IntoEnumIterator;
 
@@ -56,47 +60,66 @@ pub fn Select_Template(template: ServerTemplate, children: Children) -> impl Int
 pub fn Create_server_modal() -> impl IntoView {
     let slides = create_rw_signal::<Vec<u8>>(vec![0]);
     let template = create_rw_signal::<ServerTemplate>(ServerTemplate::Default);
-    // let selected_server_options = create_rw_signal::<ServerOptions>();
-    // Server Option {type: Default | other options, name: string, for: friends | other}
-    //
     provide_context(slides);
     provide_context(template);
     view! {
-        <dialog id="create_server" class="modal">
-            <div class="modal-box w-[440px] max-h-[720px] rounded p-0 bg-none min-h-[200px] h-auto overflow-hidden">
-                <div class=move || format!("transition-height duration-400 ease-out overflow-hidden {}", match slides.get().last() {
-                    Some(0) => "h-[558px]",
-                    Some(1) => "h-[436px]",
-                    _ => "h-[404px]"
-                })>
-                    <Modal_Slide slide=0>
-                        <div class="pt-6 px-4">
-                            <h1 class="leading-[30px] font-bold text-[24px] text-center">Create a server</h1>
-                            <p class="text-center leading-[20px] mt-2 text-[16px] text-base-content">Your server is where you and your friends hang out. Make yours and start talking.</p>
-                            <form method="dialog">
+        <ModalProvider>
+            <ModalTrigger class="flex items-center justify-center mx-3 transition-all h-[48px] w-[48px] bg-base-100 rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] overflow-hidden">
+                <Icon icon=Icon::from(RiAddSystemFill) class="fill-primary w-7 h-7 group-hover:fill-base-100"/>
+            </ModalTrigger>
+            <ModalPortal>
+                <ModalContent class="w-[440px] max-h-[720px] rounded p-0 bg-none min-h-[200px] h-auto overflow-hidden" >
+                    <SlideProvider initial_value=0>
+                        <SlideViewport class="transition-height duration-400 ease-out overflow-hidden">
+                            <SlideContent value=0>
+                                <div class="pt-6 px-4">
+                                    <h1 class="leading-[30px] font-bold text-[24px] text-center">Create a server</h1>
+                                    <p class="text-center leading-[20px] mt-2 text-[16px] text-base-content">Your server is where you and your friends hang out. Make yours and start talking.</p>
+                                    <ModalClose class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                                        "x"
+                                    </ModalClose>
+                                </div>
+                                <div class="overflow-x-hidden overflow-y-scroll mt-6 h-[330px] px-4 pb-2 relative">
+                                    {ServerTemplate::iter().map(|template| view!{<Select_Template template=template>{template.to_string()}</Select_Template>}).collect_view()}
+                                </div>
+                                <div class="relative p-4 overflow-x-auto flex-col items-start bg-base-200">
+                                    <h2 class="mb-2 leading-[24px] text-[20px] font-bold text-center">Have an invite already?</h2>
+                                    <SlideForward value=1 class="bg-accent hover:bg-accent-focus text-accent-content leading-[16px] font-medium no-animation w-full rounded-[3px] h-[38px] text-[14px]">
+                                        Join a Server
+                                    </SlideForward>
+                                </div>
+                            </SlideContent>
+                        </SlideViewport>
+                    </SlideProvider>
+                    <div class=move || format!("transition-height duration-400 ease-out overflow-hidden {}", match slides.get().last() {
+                        Some(0) => "h-[558px]",
+                        Some(1) => "h-[436px]",
+                        _ => "h-[404px]"
+                    })>
+                        <Modal_Slide slide=0>
+                            <div class="pt-6 px-4">
+                                <h1 class="leading-[30px] font-bold text-[24px] text-center">Create a server</h1>
+                                <p class="text-center leading-[20px] mt-2 text-[16px] text-base-content">Your server is where you and your friends hang out. Make yours and start talking.</p>
                                 <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">"✕"</button>
-                            </form>
-                        </div>
-                        <div class="overflow-x-hidden overflow-y-scroll mt-6 h-[330px] px-4 pb-2 relative">
-                            {ServerTemplate::iter().map(|template| view!{<Select_Template template=template>{template.to_string()}</Select_Template>}).collect_view()}
-                        </div>
-                        <div class="relative p-4 overflow-x-auto flex-col items-start bg-base-200">
-                            <h2 class="mb-2 leading-[24px] text-[20px] font-bold text-center">Have an invite already?</h2>
-                            <button on:click=move |_| slides.update(move |slides| slides.push(1))  class="bg-accent hover:bg-accent-focus text-accent-content leading-[16px] font-medium no-animation w-full rounded-[3px] h-[38px] text-[14px]">Join a Server</button>
-                        </div>
-                    </Modal_Slide>
+                            </div>
+                            <div class="overflow-x-hidden overflow-y-scroll mt-6 h-[330px] px-4 pb-2 relative">
+                                {ServerTemplate::iter().map(|template| view!{<Select_Template template=template>{template.to_string()}</Select_Template>}).collect_view()}
+                            </div>
+                            <div class="relative p-4 overflow-x-auto flex-col items-start bg-base-200">
+                                <h2 class="mb-2 leading-[24px] text-[20px] font-bold text-center">Have an invite already?</h2>
+                                <button on:click=move |_| slides.update(move |slides| slides.push(1))  class="bg-accent hover:bg-accent-focus text-accent-content leading-[16px] font-medium no-animation w-full rounded-[3px] h-[38px] text-[14px]">Join a Server</button>
+                            </div>
+                        </Modal_Slide>
 
-                    <Modal_Slide slide=1>
-                        <Join_with_invitation/>
-                    </Modal_Slide>
-                    <Modal_Slide slide=2>
-                        <Select_Name/>
-                    </Modal_Slide>
-                </div>
-            </div>
-            <form method="dialog" class="modal-backdrop">
-                <button/>
-            </form>
-        </dialog>
+                        <Modal_Slide slide=1>
+                            <Join_with_invitation/>
+                        </Modal_Slide>
+                        <Modal_Slide slide=2>
+                            <Select_Name/>
+                        </Modal_Slide>
+                    </div>
+                </ModalContent>
+            </ModalPortal>
+        </ModalProvider>
     }
 }

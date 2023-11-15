@@ -1,3 +1,4 @@
+use cfg_if::cfg_if;
 use leptos::*;
 use leptos_meta::{Body, Html};
 
@@ -18,7 +19,9 @@ pub async fn toggle_theme(theme: bool) -> Result<bool, ServerFnError> {
     Ok(theme)
 }
 
-#[cfg(not(feature = "ssr"))]
+cfg_if! {
+    if  #[cfg(not(feature = "ssr"))] {
+
 fn initial_theme() -> bool {
     use wasm_bindgen::JsCast;
 
@@ -26,8 +29,8 @@ fn initial_theme() -> bool {
     let cookie = doc.cookie().unwrap_or_default();
     cookie.contains("theme=true")
 }
+    } else {
 
-#[cfg(feature = "ssr")]
 fn initial_theme() -> bool {
     use tower_cookies::Cookies;
 
@@ -39,6 +42,10 @@ fn initial_theme() -> bool {
         })
         .unwrap_or(false)
 }
+    }
+}
+
+// #[cfg(feature = "ssr")]
 
 #[derive(Clone)]
 pub struct ThemeContext {

@@ -13,7 +13,7 @@ cfg_if! {
 pub struct Server {
     pub id: Uuid,
     pub name: String,
-    pub invite_code: String,
+    pub invite_code: Uuid,
 }
 
 #[cfg(feature = "ssr")]
@@ -36,6 +36,15 @@ impl Server {
             .fetch_one(pool)
             .await
             .ok()?;
+        Some(id.0)
+    }
+
+    pub async fn check_member_from_invitation(
+        user_id: Uuid,
+        invitation: Uuid,
+        pool: &MySqlPool,
+    ) -> Option<Uuid> {
+        let id = sqlx::query_as::<_, (Uuid,)>("SELECT id FROM servers LEFT JOIN members ON servers.id = memebers.server_id WHERE members.user_id = ? AND servers.invite_code = ?").bind(user_id).bind(invitation).fetch_one(pool).await.ok()?;
         Some(id.0)
     }
 }

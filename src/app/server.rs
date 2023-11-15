@@ -1,9 +1,10 @@
-use crate::entities::server::Server;
+use crate::entities::{member::Member, server::Server};
 use cfg_if::cfg_if;
 use leptos::*;
 use strum_macros::{Display, EnumIter};
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use leptos_axum::redirect;
         use http::uri::Scheme;
         use http::Uri;
         use uuid::Uuid;
@@ -35,8 +36,9 @@ cfg_if! {
 
 #[derive(Clone, Copy)]
 pub struct ServerContext {
-    pub servers: Resource<usize, Result<Vec<Server>, ServerFnError>>,
+    pub servers: Resource<(usize, usize), Result<Vec<Server>, ServerFnError>>,
     pub join_with_invitation: Action<JoinServerWithInvitation, Result<(), ServerFnError>>,
+    pub create_server: Action<CreateServer, Result<String, ServerFnError>>,
 }
 
 #[derive(Clone, Copy, EnumIter, Display)]
@@ -49,13 +51,20 @@ pub enum ServerTemplate {
 
 pub fn provide_server_context() {
     let join_with_invitation = create_server_action::<JoinServerWithInvitation>();
+    let create_server = create_server_action::<CreateServer>();
     let servers = create_resource(
-        move || (join_with_invitation.version().get()),
+        move || {
+            (
+                join_with_invitation.version().get(),
+                create_server.version().get(),
+            )
+        },
         move |_| get_user_servers(),
     );
     provide_context(ServerContext {
         servers,
         join_with_invitation,
+        create_server,
     })
 }
 
@@ -63,7 +72,7 @@ pub fn use_server() -> ServerContext {
     use_context::<ServerContext>().expect("have server context")
 }
 
-pub fn user_servers() -> Resource<usize, Result<Vec<Server>, ServerFnError>> {
+pub fn user_servers() -> Resource<(usize, usize), Result<Vec<Server>, ServerFnError>> {
     use_server().servers
 }
 
@@ -80,22 +89,34 @@ pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
 #[server(JoinServerWithInvitation, "/api")]
 pub async fn join_server_with_invitation(invitation: String) -> Result<(), ServerFnError> {
     let pool = pool()?;
-    // let user = auth_user()?;
+    let user = auth_user()?;
     let invitation = validate_invitation(invitation)?;
-    let server_id = Server::get_from_invitation(invitation, &pool)
-        .await
-        .ok_or_else(|| {
-            ServerFnError::ServerError("probablemente no este bien la invitacion".into())
-        })?;
-    //NOTE: hay que revisar si el usuario no esta unido ya a este server
+    let existing_member = Server::check_member_from_invitation(user.id, invitation, &pool).await;
+    match existing_member {
+        Some(uuid) => redirect(&format!("/servers/{}", uuid)),
+        None => {
+            let server = Member::create_member_from_invitation(user.id, invitation, &pool)
+                .await
+                .ok_or_else(|| {
+                    ServerFnError::ServerError("your invitation is incorrect".to_string())
+                })?;
+            redirect(&format!("/servers/{}", server))
+        }
+    };
     Ok(())
 }
 
-// #[server(CreateServer, "api")]
-// pub async fn create_server(name: String) -> Result<(), ServerFnError> {
-//     let pool = pool()?;
-//     let auth = auth()?;
-//
-//     let server = Server::create(name, &pool);
-//     return match auth.current_user {};
-// }
+#[server(CreateServer, "/api")]
+pub async fn create_server(name: String) -> Result<String, ServerFnError> {
+    let pool = pool()?;
+    let auth = auth_user()?;
+
+    let server = Server::create(name, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::ServerError("Cant create server".to_string()))?;
+    Member::create(crate::entities::member::Role::ADMIN, auth.id, server, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::ServerError("Error".to_string()))?;
+    redirect(&format!("/servers/{}", server));
+    Ok(server.to_string())
+}

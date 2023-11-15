@@ -58,10 +58,12 @@ leptos_icons = { version = "0.1", features = [
 ] }
 strum = { version = "0.25.0", features = ["derive"] }
 strum_macros = "0.25.3"
+leptos-use = "0.8.2"
 
 [features]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
 ssr = [
+  "leptos-use/ssr",
   "dep:axum",
   "dep:async-trait",
   "dep:tokio",

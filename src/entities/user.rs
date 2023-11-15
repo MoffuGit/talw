@@ -60,8 +60,9 @@ impl User {
         let servers = sqlx::query_as::<_, Server>("SELECT * FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ?")
             .bind(self.id)
             .fetch_all(pool)
-            .await.ok()?;
-        Some(servers)
+            .await;
+        log::info!("{:?}", servers);
+        Some(servers.ok()?)
     }
 }
 

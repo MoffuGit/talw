@@ -70,7 +70,7 @@ pub async fn get_user() -> Result<Option<User>, ServerFnError> {
     Ok(auth.current_user)
 }
 
-#[server(Login "/api")]
+#[server(Login, "/api")]
 pub async fn login(
     username: String,
     password: String,

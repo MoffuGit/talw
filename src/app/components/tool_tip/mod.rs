@@ -1,23 +1,8 @@
-use leptos::{html::Button, leptos_dom::helpers::TimeoutHandle, *};
+use leptos::{leptos_dom::helpers::TimeoutHandle, *};
 use std::time::Duration;
 use web_sys::PointerEvent;
 
-#[component]
-pub fn TooltipPortal(children: ChildrenFn) -> impl IntoView {
-    let (show, set_show) = create_signal(false);
-    create_effect(move |_| set_show(true));
-
-    let children = store_value(children);
-    view! {
-        <Show when=move || show.get()>
-            <Portal mount=document().get_element_by_id("app").unwrap()>
-                {children.with_value(|children| children())}
-            </Portal>
-        </Show>
-    }
-}
-
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub enum TooltipState {
     Open,
     DelayedOpen,
@@ -33,6 +18,7 @@ pub struct TooltipProviderContext {
     on_trigger_enter: Signal<()>,
     on_open: Signal<()>,
     on_close: Signal<()>,
+    trigger_ref: NodeRef<html::Div>,
 }
 
 #[component]
@@ -43,6 +29,7 @@ pub fn TooltipProvider(
     let was_open_delayed_ref = create_rw_signal(false);
     let is_open = create_rw_signal(false);
     let open_timer_ref: RwSignal<Option<TimeoutHandle>> = create_rw_signal(None);
+    let trigger_ref = create_node_ref::<html::Div>();
 
     let state_attribute =
         create_memo(
@@ -122,23 +109,24 @@ pub fn TooltipProvider(
         on_trigger_enter,
         on_open,
         on_close,
+        trigger_ref,
     });
 
     create_effect(move |_| {
-        log::info!("{}", is_open.get());
+        log::info!("provider is_open: {}", is_open.get());
     });
-    view! {
-        {children()}
-    }
+    children()
 }
 
 #[component]
 pub fn TooltipTrigger(children: Children, #[prop(optional)] class: &'static str) -> impl IntoView {
     let provider_context = use_context::<TooltipProviderContext>().expect("have this context");
     let is_hover = create_rw_signal(false);
+    let trigger_ref = provider_context.trigger_ref;
 
     view! {
         <div class=class
+            _ref=trigger_ref
             on:pointermove=move |evt: PointerEvent| {
                 if evt.pointer_type() == "touch" {
                     return;
@@ -155,11 +143,56 @@ pub fn TooltipTrigger(children: Children, #[prop(optional)] class: &'static str)
             on:click=move |_| {
                 provider_context.on_close.get_untracked();
             }
+            on:wheel=move |_| {
+                provider_context.on_close.get_untracked();
+            }
             on:focus=move |_| {
                 provider_context.on_open.get_untracked();
             }
         >
         {children()}
         </div>
+    }
+}
+
+pub fn get_tooltip_position(
+    trigger: HtmlElement<html::Div>,
+    content: HtmlElement<html::Div>,
+) -> (String, String) {
+    let trigger_values = trigger.get_bounding_client_rect();
+    let content_height = content.offset_height();
+    log::info!("{}", content_height);
+    let (y, height) = (trigger_values.y(), trigger.offset_height());
+    let (x, width) = (trigger_values.x(), trigger.offset_width());
+    let y = y + (f64::from(height) / 2.0) - 12.0;
+    let x = x + f64::from(width) + 2.0;
+    (x.to_string(), y.to_string())
+}
+
+#[component]
+pub fn TooltipContent(tip: String) -> impl IntoView {
+    let context = use_context::<TooltipProviderContext>().expect("is open context");
+    let trigger_ref = context.trigger_ref;
+    let content_ref = create_node_ref::<html::Div>();
+    let is_open = context.is_open;
+    let (show, set_show) = create_signal(false);
+    create_effect(move |_| {
+        set_show(true);
+    });
+    let position = move || {
+        if let (Some(trigger), Some(content)) = (trigger_ref.get(), content_ref.get()) {
+            get_tooltip_position(trigger, content)
+        } else {
+            ("".into(), "".into())
+        }
+    };
+    view! {
+        <Show when=move || show.get() /* && is_open.get() */>
+            <Portal mount=document().get_element_by_id("app").unwrap() clone:tip>
+                <div _ref=content_ref style=move || format!("translate: {}px {}px", position().0, position().1) class="absolute w-12 h-6 bg-red-500 left-0 top-0 animate-tooltip-open" >
+                    {tip.clone()}
+                </div>
+            </Portal>
+        </Show>
     }
 }

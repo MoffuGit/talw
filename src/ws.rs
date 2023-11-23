@@ -39,7 +39,7 @@ async fn handle_socket(socket: WebSocket, state: AppState, channel: usize) {
             Some(s) => s.clone(),
             None => {
                 let (tx, _) = broadcast::channel(1000);
-                channels.insert(channel.clone(), tx.clone());
+                channels.insert(channel, tx.clone());
                 tx
             }
         }

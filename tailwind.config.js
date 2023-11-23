@@ -18,6 +18,19 @@ module.exports = {
         height:
           "height, color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter",
       },
+      keyframes: {
+        "tooltip-open": {
+          from: {
+            opacity: "0",
+          },
+          to: {
+            opacity: " 100%",
+          },
+        },
+      },
+      animation: {
+        "tooltip-open": "tooltip-open 1s linear 1",
+      },
     },
   },
   daisyui: {

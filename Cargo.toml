@@ -55,6 +55,7 @@ leptos_icons = { version = "0.1", features = [
   "RiSunWeatherFill",
   "RiAddSystemFill",
   "RiMoonWeatherFill",
+  "RiCloseSystemLine",
 ] }
 strum = { version = "0.25.0", features = ["derive"] }
 strum_macros = "0.25.3"

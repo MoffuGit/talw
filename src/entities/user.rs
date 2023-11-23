@@ -62,7 +62,7 @@ impl User {
             .fetch_all(pool)
             .await;
         log::info!("{:?}", servers);
-        Some(servers.ok()?)
+        servers.ok()
     }
 }
 

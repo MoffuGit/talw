@@ -29,7 +29,7 @@ module.exports = {
         },
       },
       animation: {
-        "tooltip-open": "tooltip-open 1s linear 1",
+        "tooltip-open": "tooltip-open 0.1s linear 1",
       },
     },
   },

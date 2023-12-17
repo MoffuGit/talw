@@ -112,9 +112,6 @@ pub fn TooltipProvider(
         trigger_ref,
     });
 
-    create_effect(move |_| {
-        log::info!("provider is_open: {}", is_open.get());
-    });
     children()
 }
 
@@ -161,35 +158,51 @@ pub fn get_tooltip_position(
 ) -> (String, String) {
     let trigger_values = trigger.get_bounding_client_rect();
     let content_height = content.offset_height();
-    log::info!("{}", content_height);
     let (y, height) = (trigger_values.y(), trigger.offset_height());
     let (x, width) = (trigger_values.x(), trigger.offset_width());
-    let y = y + (f64::from(height) / 2.0) - 12.0;
+    let y = y + (f64::from(height) / 2.0) - (f64::from(content_height) / 2.0);
     let x = x + f64::from(width) + 2.0;
     (x.to_string(), y.to_string())
 }
 
 #[component]
-pub fn TooltipContent(tip: String) -> impl IntoView {
+pub fn TooltipContent(tip: String, #[prop(optional)] class: &'static str) -> impl IntoView {
     let context = use_context::<TooltipProviderContext>().expect("is open context");
-    let trigger_ref = context.trigger_ref;
-    let content_ref = create_node_ref::<html::Div>();
+
     let is_open = context.is_open;
-    let (show, set_show) = create_signal(false);
-    create_effect(move |_| {
-        set_show(true);
-    });
-    let position = move || {
-        if let (Some(trigger), Some(content)) = (trigger_ref.get(), content_ref.get()) {
-            get_tooltip_position(trigger, content)
+    let trigger_ref = context.trigger_ref;
+
+    let content_ref = create_node_ref::<html::Div>();
+
+    let visibility = move || {
+        if !is_open.get() {
+            "visibility: hidden"
         } else {
-            ("".into(), "".into())
+            ""
         }
     };
+
+    let show = create_rw_signal(false);
+
+    let position = move || {
+        if let (Some(trigger), Some(content), true) =
+            (trigger_ref.get(), content_ref.get(), is_open.get())
+        {
+            get_tooltip_position(trigger, content)
+        } else {
+            ("".to_string(), "".to_string())
+        }
+    };
+
+    create_effect(move |_| show.update(|value| *value = true));
+
     view! {
-        <Show when=move || show.get() /* && is_open.get() */>
-            <Portal mount=document().get_element_by_id("app").unwrap() clone:tip>
-                <div _ref=content_ref style=move || format!("translate: {}px {}px", position().0, position().1) class="absolute w-12 h-6 bg-red-500 left-0 top-0 animate-tooltip-open" >
+        <Show when=move || show.get()>
+            <Portal mount=document().get_element_by_id("tooltip_layer").unwrap() clone:tip>
+                //NOTE: agregar el estilo del tooltip y la flecha, solo son cosas visuales, ya no
+                //hacer cambios en el sistema del tooltip, namas hacer que se vea bonito de mientras, ya
+                //luego regreso a mejorarlo si se me ocurre alguna manera
+                <div _ref=content_ref style=move || format!("translate: {}px {}px; {}", position().0, position().1, visibility()) class="absolute z-50 w-12 h-6 bg-red-500 left-0 top-0 animate-tooltip-open" >
                     {tip.clone()}
                 </div>
             </Portal>

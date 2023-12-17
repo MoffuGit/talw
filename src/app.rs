@@ -10,7 +10,8 @@ use leptos_meta::*;
 use leptos_router::*;
 use routes::home::Home;
 use routes::login::Login;
-use routes::server::Server;
+use routes::servers::server::Server;
+use routes::servers::Servers;
 use routes::signup::Signup;
 use server::provide_server_context;
 use theme::{provide_theme_context, Theme};
@@ -32,8 +33,8 @@ pub fn App() -> impl IntoView {
             <Router>
                 <Routes>
                     <Route path="" view=|| view!{<Home/>}/>
-                    <Route path="servers" view=|| view!{<Server/>}>
-                        <Route path=":id" view=|| view! {<div class="text-[160px] font-black">"servers stuff"</div>} />
+                    <Route path="servers" view=|| view!{<Servers/>}>
+                        <Route path=":id" view=|| view! {<Server/>} />
                         <Route path="me" view=|| view! {<div>"user stuff"</div>}/>
                     </Route>
                     <Route path="login" view=move || view!{ <Login />}/>

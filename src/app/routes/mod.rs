@@ -1,4 +1,4 @@
 pub mod home;
 pub mod login;
-pub mod server;
+pub mod servers;
 pub mod signup;

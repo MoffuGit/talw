@@ -10,6 +10,7 @@ use leptos::*;
 use leptos_icons::RiIcon::*;
 use leptos_icons::*;
 use select_name::Select_Name;
+use std::time::Duration;
 use strum::IntoEnumIterator;
 
 pub type TemplateContext = RwSignal<ServerTemplate>;
@@ -45,18 +46,15 @@ pub fn Create_server_modal() -> impl IntoView {
             slides.clear();
             slides.push(inital_value);
         }))>
-
-
-
-            <ModalTrigger class="group relative flex items-center mb-1 ">
-                <TooltipProvider>
-                    <TooltipTrigger class="flex items-center justify-center mx-3 transition-all h-[48px] w-[48px] bg-base-100 rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] overflow-hidden">
-                        <div class="absolute left-0 bg-primary rounded-r-full transition-all w-[4px] group-hover:h-[20px] h-[8px]"/>
-                        <Icon icon=Icon::from(RiAddSystemFill) class="fill-primary w-7 h-7 group-hover:fill-base-100"/>
-                    </TooltipTrigger>
-                    <TooltipContent tip="create a server".into()/>
-                </TooltipProvider>
-            </ModalTrigger>
+            <TooltipProvider delay_duration=Duration::new(0,500)>
+            <TooltipTrigger class="group relative flex items-center mb-1 " >
+                <ModalTrigger class="flex items-center justify-center mx-3 transition-all h-[48px] w-[48px] bg-base-100 rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] overflow-hidden">
+                            <div class="absolute left-0 bg-primary rounded-r-full transition-all w-[4px] group-hover:h-[20px] h-[8px]"/>
+                            <Icon icon=Icon::from(RiAddSystemFill) class="fill-primary w-7 h-7 group-hover:fill-base-100"/>
+                        <TooltipContent tip="create a server".into()/>
+                </ModalTrigger>
+            </TooltipTrigger>
+            </TooltipProvider>
 
 
 

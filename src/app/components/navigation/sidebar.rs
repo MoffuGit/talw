@@ -1,5 +1,6 @@
+use std::time::Duration;
+
 use crate::app::components::modals::create_server::Create_server_modal;
-// use crate::app::components::portal::*;
 use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
 use crate::app::components::tool_tip::*;
 use crate::app::server::user_servers;
@@ -14,18 +15,6 @@ pub fn SideBar() -> impl IntoView {
     let servers = user_servers();
     view! {
         <div class="w-full h-full flex flex-col items-center pt-3 bg-base-200 scrollbar-none overflow-y-scroll overflow-x-hidden">
-            // <ProvidePortalContext name="blue">
-            //     <PortalTrigger/>
-            //     <PortalContent class="absolute w-20 h-20 bg-blue-500 left-1/2 top-1/2 translate-y-1/2 translate-x-1/2">
-            //         <ClosePortal/>
-            //     </PortalContent>
-            // </ProvidePortalContext>
-            // <ProvidePortalContext name="purple">
-            //     <PortalTrigger/>
-            //     <PortalContent class="absolute w-20 h-20 bg-purple-500 left-1/4 top-1/2 translate-y-1/2 translate-x-1/4">
-            //         <ClosePortal/>
-            //     </PortalContent>
-            // </ProvidePortalContext>
             <Transition fallback=move || ()>
                 {move || servers.and_then(|servers| servers.iter().map(|server| {
                     let server = server.clone();
@@ -50,7 +39,7 @@ pub fn SideBar() -> impl IntoView {
 #[component]
 pub fn Navigation_action(tip: String, children: Children) -> impl IntoView {
     view! {
-        <TooltipProvider>
+        <TooltipProvider delay_duration=Duration::new(0,0)>
             <TooltipTrigger class="group relative flex items-center mb-1">
                 <div class="absolute left-0 bg-primary rounded-r-full transition-all w-[4px] group-hover:h-[20px] h-[8px]"/>
                 {children()}
@@ -68,7 +57,7 @@ pub fn Navigation_server(id: Uuid, name: String) -> impl IntoView {
         })
     };
     view! {
-        <TooltipProvider>
+        <TooltipProvider delay_duration=Duration::new(0,0)>
             <TooltipTrigger class="relative mb-1">
                 <A href=id.simple().to_string() class="group flex relative items-center">
                     <div class=move || format!("absolute left-0 bg-primary rounded-r-full transition-all w-[4px] {}", {

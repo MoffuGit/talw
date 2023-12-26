@@ -1,13 +1,13 @@
-use crate::entities::{member::Member, server::Server};
+use crate::entities::{channel::Channel, member::Member, server::Server};
 use cfg_if::cfg_if;
 use leptos::*;
 use strum_macros::{Display, EnumIter};
+use uuid::Uuid;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use leptos_axum::redirect;
         use http::uri::Scheme;
         use http::Uri;
-        use uuid::Uuid;
         use super::auth::auth_user;
         use super::auth::pool;
 
@@ -117,6 +117,31 @@ pub async fn create_server(name: String) -> Result<String, ServerFnError> {
     Member::create(crate::entities::member::Role::ADMIN, auth.id, server, &pool)
         .await
         .ok_or_else(|| ServerFnError::ServerError("Error".to_string()))?;
+    //NOTE:
+    //aqui crear dos canales por defecto
     redirect(&format!("/servers/{}", server));
     Ok(server.to_string())
+}
+
+#[server(CheckMember, "/api")]
+pub async fn check_memeber(server_id: Uuid) -> Result<Server, ServerFnError> {
+    let pool = pool()?;
+    let auth = auth_user()?;
+
+    let server = Server::check_member(server_id, auth.id, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::ServerError("you cant acces here".to_string()))?;
+    Ok(server)
+}
+
+#[server(GetChannels, "/api")]
+pub async fn get_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
+    let _ = auth_user()?;
+    let pool = pool()?;
+
+    let channels = Server::get_channels(server_id, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::ServerError("cant get channels server, sorry".to_string()))?;
+
+    Ok(channels)
 }

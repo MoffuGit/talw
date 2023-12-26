@@ -1,3 +1,4 @@
+pub mod menu;
 pub mod modals;
 pub mod navigation;
 pub mod portal;

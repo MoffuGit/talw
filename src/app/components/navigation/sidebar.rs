@@ -14,7 +14,7 @@ use uuid::Uuid;
 pub fn SideBar() -> impl IntoView {
     let servers = user_servers();
     view! {
-        <div class="w-full h-full flex flex-col items-center pt-3 bg-base-200 scrollbar-none overflow-y-scroll overflow-x-hidden">
+        <div class="w-full h-full flex flex-col items-center pt-3 bg-base-300 scrollbar-none overflow-y-scroll overflow-x-hidden">
             <Transition fallback=move || ()>
                 {move || servers.and_then(|servers| servers.iter().map(|server| {
                     let server = server.clone();

@@ -32,7 +32,7 @@ impl sqlx::Type<sqlx::MySql> for Role {
 pub struct Member {
     pub id: Uuid,
     pub role: Role,
-    pub user_id: u64,
+    pub user_id: Uuid,
     pub server_id: Uuid,
 }
 
@@ -58,13 +58,15 @@ impl Member {
         invitation: Uuid,
         pool: &MySqlPool,
     ) -> Option<Uuid> {
-        let id = Server::get_from_invitation(invitation, pool).await?;
-        sqlx::query("INSERT INTO members (user_id, server_id) VALUES(?, ?)")
-            .bind(user_id)
+        let id = Uuid::new_v4();
+        let server_id = Server::get_from_invitation(invitation, pool).await?;
+        sqlx::query("INSERT INTO members (id, user_id, server_id) VALUES(?, ?, ?)")
             .bind(id)
+            .bind(user_id)
+            .bind(server_id)
             .execute(pool)
             .await
             .ok()?;
-        Some(id)
+        Some(server_id)
     }
 }

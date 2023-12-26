@@ -2,18 +2,10 @@ use leptos::{leptos_dom::helpers::TimeoutHandle, *};
 use std::time::Duration;
 use web_sys::PointerEvent;
 
-#[derive(PartialEq, Debug)]
-pub enum TooltipState {
-    Open,
-    DelayedOpen,
-    Closed,
-}
-
 #[derive(Clone)]
 pub struct TooltipProviderContext {
     // content_id: String,
     is_open: RwSignal<bool>,
-    state_attribute: Memo<TooltipState>,
     on_trigger_leave: Signal<()>,
     on_trigger_enter: Signal<()>,
     on_open: Signal<()>,
@@ -30,15 +22,6 @@ pub fn TooltipProvider(
     let is_open = create_rw_signal(false);
     let open_timer_ref: RwSignal<Option<TimeoutHandle>> = create_rw_signal(None);
     let trigger_ref = create_node_ref::<html::Div>();
-
-    let state_attribute =
-        create_memo(
-            move |_| match (is_open.get(), was_open_delayed_ref.get_untracked()) {
-                (true, false) => TooltipState::Open,
-                (true, true) => TooltipState::DelayedOpen,
-                _ => TooltipState::Closed,
-            },
-        );
 
     let handle_open = move || match open_timer_ref.get_untracked() {
         None => {
@@ -104,7 +87,6 @@ pub fn TooltipProvider(
     let on_close = Signal::derive(handle_close);
     provide_context(TooltipProviderContext {
         is_open,
-        state_attribute,
         on_trigger_leave,
         on_trigger_enter,
         on_open,
@@ -198,11 +180,11 @@ pub fn TooltipContent(tip: String, #[prop(optional)] class: &'static str) -> imp
 
     view! {
         <Show when=move || show.get()>
-            <Portal mount=document().get_element_by_id("tooltip_layer").unwrap() clone:tip>
+            <Portal mount=document().get_element_by_id("float_container").unwrap() clone:tip>
                 //NOTE: agregar el estilo del tooltip y la flecha, solo son cosas visuales, ya no
                 //hacer cambios en el sistema del tooltip, namas hacer que se vea bonito de mientras, ya
                 //luego regreso a mejorarlo si se me ocurre alguna manera
-                <div _ref=content_ref style=move || format!("translate: {}px {}px; {}", position().0, position().1, visibility()) class="absolute z-50 w-12 h-6 bg-red-500 left-0 top-0 animate-tooltip-open" >
+                <div _ref=content_ref style=move || format!("translate: {}px {}px; {}", position().0, position().1, visibility()) class=format!("absolute z-50 w-12 h-6 bg-red-500 left-0 top-0 animate-tooltip-open {}", class)>
                     {tip.clone()}
                 </div>
             </Portal>

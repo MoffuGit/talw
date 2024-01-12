@@ -1,4 +1,4 @@
-use crate::app::components::navigation::server_sidebar::ServerSideBar;
+use crate::app::components::navigation::server::sidebar::ServerSideBar;
 use crate::app::server::check_memeber;
 use leptos::*;
 use leptos_router::use_params_map;

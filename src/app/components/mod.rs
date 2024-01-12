@@ -1,3 +1,4 @@
+pub mod collapsible;
 pub mod menu;
 pub mod modals;
 pub mod navigation;

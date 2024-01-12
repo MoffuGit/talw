@@ -1,4 +1,4 @@
-use crate::entities::{channel::Channel, member::Member, server::Server};
+use crate::entities::{category::Category, channel::Channel, member::Member, server::Server};
 use cfg_if::cfg_if;
 use leptos::*;
 use strum_macros::{Display, EnumIter};
@@ -117,8 +117,16 @@ pub async fn create_server(name: String) -> Result<String, ServerFnError> {
     Member::create(crate::entities::member::Role::ADMIN, auth.id, server, &pool)
         .await
         .ok_or_else(|| ServerFnError::ServerError("Error".to_string()))?;
-    //NOTE:
-    //aqui crear dos canales por defecto
+    Channel::create(
+        "general".to_string(),
+        crate::entities::channel::ChannelType::TEXT,
+        server,
+        &pool,
+    )
+    .await
+    .ok_or_else(|| {
+        ServerFnError::ServerError("cant create the channel for this server".to_string())
+    })?;
     redirect(&format!("/servers/{}", server));
     Ok(server.to_string())
 }
@@ -135,13 +143,25 @@ pub async fn check_memeber(server_id: Uuid) -> Result<Server, ServerFnError> {
 }
 
 #[server(GetChannels, "/api")]
-pub async fn get_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
+pub async fn get_general_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
     let _ = auth_user()?;
     let pool = pool()?;
 
-    let channels = Server::get_channels(server_id, &pool)
+    let channels = Server::get_general_channels(server_id, &pool)
         .await
         .ok_or_else(|| ServerFnError::ServerError("cant get channels server, sorry".to_string()))?;
 
     Ok(channels)
+}
+
+#[server(GetCategories, "/api")]
+pub async fn get_categories(server_id: Uuid) -> Result<Vec<Category>, ServerFnError> {
+    let _ = auth_user()?;
+    let pool = pool()?;
+
+    let categories = Server::get_categories(server_id, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::ServerError("cant get the categories".to_string()))?;
+
+    Ok(categories)
 }

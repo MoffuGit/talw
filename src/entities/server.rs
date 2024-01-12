@@ -2,7 +2,7 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use super::channel::Channel;
+use super::{category::Category, channel::Channel};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -53,6 +53,26 @@ impl Server {
     pub async fn check_member(server_id: Uuid, user_id: Uuid, pool: &MySqlPool) -> Option<Server> {
         let server = sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ? AND servers.id = ?").bind(user_id).bind(server_id).fetch_one(pool).await.ok()?;
         Some(server)
+    }
+
+    pub async fn get_general_channels(server_id: Uuid, pool: &MySqlPool) -> Option<Vec<Channel>> {
+        sqlx::query_as::<_, Channel>(
+            "SELECT * FROM channels WHERE server_id = ? AND category_id IS NULL",
+        )
+        .bind(server_id)
+        .fetch_all(pool)
+        .await
+        .ok()
+    }
+
+    pub async fn get_categories(server_id: Uuid, pool: &MySqlPool) -> Option<Vec<Category>> {
+        let categories =
+            sqlx::query_as::<_, Category>("SELECT * FROM categories WHERE server_id = ?")
+                .bind(server_id)
+                .fetch_all(pool)
+                .await;
+        println!("categories db result: {:?}", categories);
+        categories.ok()
     }
 
     pub async fn get_channels(server_id: Uuid, pool: &MySqlPool) -> Option<Vec<Channel>> {

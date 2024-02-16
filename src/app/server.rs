@@ -127,6 +127,20 @@ pub async fn create_server(name: String) -> Result<String, ServerFnError> {
     .ok_or_else(|| {
         ServerFnError::ServerError("cant create the channel for this server".to_string())
     })?;
+    let category = Category::create("text".to_string(), server, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::ServerError("cant create the category".to_string()))?;
+    Channel::create_with_category(
+        "text".to_string(),
+        crate::entities::channel::ChannelType::TEXT,
+        server,
+        category,
+        &pool,
+    )
+    .await
+    .ok_or_else(|| {
+        ServerFnError::ServerError("cant create the channel with category".to_string())
+    })?;
     redirect(&format!("/servers/{}", server));
     Ok(server.to_string())
 }
@@ -142,7 +156,7 @@ pub async fn check_memeber(server_id: Uuid) -> Result<Server, ServerFnError> {
     Ok(server)
 }
 
-#[server(GetChannels, "/api")]
+#[server(GetGeneralChannels, "/api")]
 pub async fn get_general_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
     let _ = auth_user()?;
     let pool = pool()?;
@@ -150,6 +164,23 @@ pub async fn get_general_channels(server_id: Uuid) -> Result<Vec<Channel>, Serve
     let channels = Server::get_general_channels(server_id, &pool)
         .await
         .ok_or_else(|| ServerFnError::ServerError("cant get channels server, sorry".to_string()))?;
+
+    Ok(channels)
+}
+
+#[server(GetChannelsWithCategory, "/api")]
+pub async fn get_channels_with_category(
+    server_id: Uuid,
+    category_id: Uuid,
+) -> Result<Vec<Channel>, ServerFnError> {
+    let _ = auth_user()?;
+    let pool = pool()?;
+
+    let channels = Server::get_channels_with_category(server_id, category_id, &pool)
+        .await
+        .ok_or_else(|| {
+            ServerFnError::ServerError("cant get this channels with category".to_string())
+        })?;
 
     Ok(channels)
 }

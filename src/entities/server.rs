@@ -65,6 +65,21 @@ impl Server {
         .ok()
     }
 
+    pub async fn get_channels_with_category(
+        server_id: Uuid,
+        category_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Option<Vec<Channel>> {
+        sqlx::query_as::<_, Channel>(
+            "SELECT * FROM channels WHERE server_id = ? AND category_id = ?",
+        )
+        .bind(server_id)
+        .bind(category_id)
+        .fetch_all(pool)
+        .await
+        .ok()
+    }
+
     pub async fn get_categories(server_id: Uuid, pool: &MySqlPool) -> Option<Vec<Category>> {
         let categories =
             sqlx::query_as::<_, Category>("SELECT * FROM categories WHERE server_id = ?")

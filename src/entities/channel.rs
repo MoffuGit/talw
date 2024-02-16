@@ -8,7 +8,7 @@ cfg_if! {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(feature = "ssr", derive(Decode, Encode))]
 pub enum ChannelType {
     TEXT,
@@ -26,7 +26,7 @@ impl sqlx::Type<sqlx::MySql> for ChannelType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Channel {
     pub id: Uuid,
@@ -50,6 +50,26 @@ impl Channel {
             .bind(name)
             .bind(channel_type)
             .bind(server)
+            .execute(pool)
+            .await
+            .ok()?;
+        Some(id)
+    }
+
+    pub async fn create_with_category(
+        name: String,
+        channel_type: ChannelType,
+        server: Uuid,
+        category: Uuid,
+        pool: &MySqlPool,
+    ) -> Option<Uuid> {
+        let id = Uuid::new_v4();
+        sqlx::query("INSERT INTO channels (id, name, channel_type, server_id, category_id) VALUES (?, ?, ?, ?, ?)")
+            .bind(id)
+            .bind(name)
+            .bind(channel_type)
+            .bind(server)
+            .bind(category)
             .execute(pool)
             .await
             .ok()?;

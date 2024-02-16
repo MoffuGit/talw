@@ -34,7 +34,10 @@ pub fn App() -> impl IntoView {
                 <Routes>
                     <Route path="" view=|| view!{<Home/>}/>
                     <Route path="servers" view=|| view!{<Servers/>}>
-                        <Route path=":id" view=|| view! {<Server/>} />
+                        <Route path=":id" view=|| view! {<Server/>} >
+                            <Route path=":channel_id" view=|| view!{<div>"this is the channel page"</div>}/>
+                            <Route path="" view=|| view!{<div>"in some point i want to put something here"</div>}/>
+                        </Route>
                         <Route path="me" view=|| view! {<div>"user stuff"</div>}/>
                     </Route>
                     <Route path="login" view=move || view!{ <Login />}/>

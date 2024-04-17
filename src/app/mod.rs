@@ -1,10 +1,10 @@
-mod auth;
+mod api;
 mod components;
 mod routes;
-mod server;
-mod theme;
 
-use auth::provide_auth_context;
+use api::auth::provide_auth_context;
+use api::server::provide_server_context;
+use api::theme::{provide_theme_context, Theme};
 use leptos::*;
 use leptos_meta::*;
 use leptos_router::*;
@@ -13,8 +13,6 @@ use routes::login::Login;
 use routes::servers::server::Server;
 use routes::servers::Servers;
 use routes::signup::Signup;
-use server::provide_server_context;
-use theme::{provide_theme_context, Theme};
 
 #[component]
 pub fn App() -> impl IntoView {

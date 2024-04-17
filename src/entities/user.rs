@@ -1,10 +1,10 @@
-use crate::entities::server::Server;
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use crate::entities::server::Server;
         use async_trait::async_trait;
         use axum_session::SessionMySqlPool;
         use axum_session_auth::Authentication;

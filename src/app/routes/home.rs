@@ -1,6 +1,6 @@
 use leptos::*;
 
-use crate::app::auth::current_user;
+use crate::app::api::auth::current_user;
 use crate::app::components::navigation::navbar::Navbar;
 
 #[component]

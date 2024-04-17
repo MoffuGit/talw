@@ -1,10 +1,10 @@
-use super::server::Server;
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use super::server::Server;
         use sqlx::{FromRow, MySqlPool, Decode, Encode};
     }
 }

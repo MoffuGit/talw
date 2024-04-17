@@ -1,8 +1,8 @@
-use super::slide_modal::SlideBack;
-use super::ModalClose;
-use crate::app::server::JoinServerWithInvitation;
+use crate::app::api::server::JoinServerWithInvitation;
+use crate::app::components::ui::modal::slide_modal::SlideBack;
+use crate::app::components::ui::modal::ModalClose;
+use icondata;
 use leptos::*;
-use leptos_icons::RiIcon::*;
 use leptos_icons::*;
 use leptos_router::ActionForm;
 
@@ -16,7 +16,7 @@ pub fn Join_with_invitation() -> impl IntoView {
                     <h1 class="font-bold mb-2 mt-6 text-[24px] leading-[30px]">Join a Server</h1>
                     <div class="text-[14px] leading-[18px]">Enter an invite below to join an existing server</div>
                     <ModalClose attr:type="reset" class="absolute right-2 top-2 flex items-center group bg-none">
-                        <Icon icon=Icon::from(RiCloseSystemLine) class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"/>
+                        <Icon icon=icondata::RiCloseSystemLine class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"/>
                     </ModalClose>
                 </div>
                 <div class="px-4">

@@ -1,4 +1,4 @@
-use crate::app::auth::use_auth;
+use crate::app::api::auth::use_auth;
 use leptos::*;
 use leptos_router::ActionForm;
 

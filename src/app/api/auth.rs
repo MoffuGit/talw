@@ -1,26 +1,14 @@
 use crate::entities::user::User;
-use leptos::*;
-
 use cfg_if::cfg_if;
+use leptos::*;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use bcrypt::verify;
-        use crate::entities::user::AuthSession;
         use sqlx::MySqlPool;
-
-        pub fn pool() -> Result<MySqlPool, ServerFnError> {
-            use_context::<MySqlPool>().ok_or_else(|| ServerFnError::ServerError("Pool missing.".into()))
-        }
-
-        pub fn auth() -> Result<AuthSession, ServerFnError> {
-            use_context::<AuthSession>()
-                .ok_or_else(|| ServerFnError::ServerError("Auth session missing.".into()))
-        }
-
-        pub fn auth_user() -> Result<User, ServerFnError> {
-            auth()?.current_user.ok_or_else(|| ServerFnError::ServerError("cant auth user".to_string()))
-        }
+        use super::pool;
+        use super::auth;
+        use super::auth_user;
     }
 }
 
@@ -81,7 +69,7 @@ pub async fn login(
 
     let user = User::get_from_username(username, &pool)
         .await
-        .ok_or_else(|| ServerFnError::ServerError("User dont exist".into()))?;
+        .ok_or_else(|| ServerFnError::new("User dont exist".to_string()))?;
 
     match verify(password, &user.password) {
         Ok(true) => {
@@ -90,9 +78,9 @@ pub async fn login(
             leptos_axum::redirect("/");
             Ok(())
         }
-        Ok(false) => Err(ServerFnError::ServerError("Password dont match".into())),
-        _ => Err(ServerFnError::ServerError(
-            "Cannot verify your password".into(),
+        Ok(false) => Err(ServerFnError::new("Password dont match".to_string())),
+        _ => Err(ServerFnError::new(
+            "Cannot verify your password".to_string(),
         )),
     }
 }
@@ -108,15 +96,15 @@ pub async fn signup(
     let auth = auth()?;
 
     if password != confirmation_password {
-        return Err(ServerFnError::ServerError("Password did not match".into()));
+        return Err(ServerFnError::new("Password did not match".to_string()));
     }
 
     User::create(username.clone(), password, &pool)
         .await
-        .ok_or_else(|| ServerFnError::ServerError("Cant create user".into()))?;
+        .ok_or_else(|| ServerFnError::new("Cant create user".to_string()))?;
     let user = User::get_from_username(username, &pool)
         .await
-        .ok_or_else(|| ServerFnError::ServerError("Signup failed".into()))?;
+        .ok_or_else(|| ServerFnError::new("Signup failed".to_string()))?;
 
     auth.login_user(user.id);
     auth.remember_user(remember.is_some());

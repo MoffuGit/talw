@@ -1,9 +1,9 @@
-use crate::app::components::collapsible::*;
 use crate::app::components::navigation::server::channel::Channel;
+use crate::app::components::ui::collapsible::*;
 use leptos::*;
 use uuid::Uuid;
 
-use crate::{app::server::get_channels_with_category, entities::category::Category};
+use crate::{app::api::server::get_channels_with_category, entities::category::Category};
 
 #[component]
 pub fn Category(category: Category, server_id: Uuid) -> impl IntoView {

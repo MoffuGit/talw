@@ -10,7 +10,7 @@ pub async fn toggle_theme(theme: bool) -> Result<bool, ServerFnError> {
     let cookies = use_context::<Cookies>().expect("Have tower_cookies::Cookies provided");
 
     cookies.add(
-        Cookie::build("theme", theme.to_string())
+        Cookie::build(("theme", theme.to_string()))
             .path("/")
             .same_site(SameSite::Strict)
             .finish(),

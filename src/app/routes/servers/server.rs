@@ -1,5 +1,5 @@
+use crate::app::api::server::check_memeber;
 use crate::app::components::navigation::server::sidebar::ServerSideBar;
-use crate::app::server::check_memeber;
 use leptos::*;
 use leptos_router::use_params_map;
 use leptos_router::Outlet;

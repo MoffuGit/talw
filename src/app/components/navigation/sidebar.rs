@@ -1,18 +1,18 @@
 use std::time::Duration;
 
-use crate::app::components::modals::create_server::Create_server_modal;
+use crate::app::api::server::use_server;
+use crate::app::components::create_server::Create_server_modal;
 use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
-use crate::app::components::tool_tip::*;
-use crate::app::server::user_servers;
+use crate::app::components::ui::tool_tip::*;
+use icondata;
 use leptos::*;
-use leptos_icons::RiIcon::*;
 use leptos_icons::*;
 use leptos_router::{use_router, A};
 use uuid::Uuid;
 
 #[component]
 pub fn SideBar() -> impl IntoView {
-    let servers = user_servers();
+    let servers = use_server().servers;
     view! {
         <div class="w-full h-full flex flex-col items-center pt-3 bg-base-300 scrollbar-none overflow-y-scroll overflow-x-hidden">
             <Transition fallback=move || ()>
@@ -28,7 +28,7 @@ pub fn SideBar() -> impl IntoView {
                 <Navigation_action tip="Toggle theme".into()>
                     <Toggle_Theme
                         class="relative mx-3 h-[48px] transition-all bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px] overflow-hidden"
-                        icons=ThemeIcons{dark: Icon::from(RiSunWeatherFill), light: Icon::from(RiMoonWeatherFill), class: "fill-primary w-7 h-7 group-hover:fill-base-100"}
+                        icons=ThemeIcons{dark: icondata::RiSunWeatherFill, light: icondata::RiMoonWeatherFill, class: "fill-primary w-7 h-7 group-hover:fill-base-100"}
                     />
                 </Navigation_action>
             </Transition>

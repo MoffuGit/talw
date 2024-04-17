@@ -35,16 +35,11 @@ async fn main() {
     async fn server_fn_handler(
         State(app_state): State<AppState>,
         auth_session: AuthSession,
-        path: Path<String>,
-        headers: HeaderMap,
-        raw_query: RawQuery,
+        _path: Path<String>,
         cookies: Cookies,
         req: Request<Body>,
     ) -> impl IntoResponse {
         handle_server_fns_with_context(
-            path,
-            headers,
-            raw_query,
             move || {
                 provide_context(app_state.pool.clone());
                 provide_context(cookies.clone());
@@ -56,8 +51,8 @@ async fn main() {
     }
 
     async fn leptos_router_handler(
-        State(app_state): State<AppState>,
         auth_session: AuthSession,
+        State(app_state): State<AppState>,
         cookies: Cookies,
         req: Request<Body>,
     ) -> Response {
@@ -95,7 +90,7 @@ async fn main() {
     let conf = get_configuration(None).await.unwrap();
     let leptos_options = conf.leptos_options;
     let addr = leptos_options.site_addr;
-    let routes = generate_route_list(|| view! {  <App/> });
+    let routes = generate_route_list(App);
 
     let ws_channels = WsChannels::default();
 
@@ -122,8 +117,8 @@ async fn main() {
         .with_state(app_state);
 
     log!("listening on http://{}", &addr);
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+    axum::serve(listener, app.into_make_service())
         .await
         .unwrap();
 }

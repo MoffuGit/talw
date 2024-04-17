@@ -1,6 +1,6 @@
 pub mod server;
 
-use crate::app::auth::current_user;
+use crate::app::api::auth::current_user;
 use crate::app::components::navigation::sidebar::SideBar;
 use leptos::*;
 use leptos_router::Outlet;

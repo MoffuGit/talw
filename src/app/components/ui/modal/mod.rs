@@ -1,9 +1,8 @@
-pub mod create_server;
 pub mod slide_modal;
 
 use leptos::{html::Dialog, logging::warn, *};
 
-type ModalProviderContext = RwSignal<bool>;
+pub type ModalProviderContext = RwSignal<bool>;
 
 #[component]
 pub fn ModalProvider(

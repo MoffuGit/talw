@@ -1,7 +1,7 @@
 use super::category::Category;
 use super::channel::Channel;
 use crate::{
-    app::server::{get_categories, get_general_channels},
+    app::api::server::{get_categories, get_general_channels},
     entities::server::Server,
 };
 use leptos::*;

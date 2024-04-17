@@ -1,4 +1,4 @@
-use crate::app::auth::{current_user, use_auth};
+use crate::app::api::auth::{current_user, use_auth};
 use crate::app::components::theme::Toggle_Theme;
 use leptos::*;
 use leptos_router::*;

@@ -1,13 +1,13 @@
 pub mod join_with_invitation;
 pub mod select_name;
 
-use crate::app::components::modals::slide_modal::*;
-use crate::app::components::modals::*;
-use crate::app::components::tool_tip::*;
-use crate::app::server::ServerTemplate;
+use crate::app::api::server::ServerTemplate;
+use crate::app::components::ui::modal::slide_modal::*;
+use crate::app::components::ui::modal::*;
+use crate::app::components::ui::tool_tip::*;
+use icondata;
 use join_with_invitation::Join_with_invitation;
 use leptos::*;
-use leptos_icons::RiIcon::*;
 use leptos_icons::*;
 use select_name::Select_Name;
 use std::time::Duration;
@@ -50,7 +50,7 @@ pub fn Create_server_modal() -> impl IntoView {
             <TooltipTrigger class="group relative flex items-center mb-1 " >
                 <ModalTrigger class="flex items-center justify-center mx-3 transition-all h-[48px] w-[48px] bg-base-100 rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] overflow-hidden">
                             <div class="absolute left-0 bg-primary rounded-r-full transition-all w-[4px] group-hover:h-[20px] h-[8px]"/>
-                            <Icon icon=Icon::from(RiAddSystemFill) class="fill-primary w-7 h-7 group-hover:fill-base-100"/>
+                            <Icon icon=icondata::RiAddSystemFill class="fill-primary w-7 h-7 group-hover:fill-base-100"/>
                         <TooltipContent tip="create a server".into()/>
                 </ModalTrigger>
             </TooltipTrigger>
@@ -67,7 +67,7 @@ pub fn Create_server_modal() -> impl IntoView {
                                 <h1 class="leading-[30px] font-bold text-[24px] text-center">Create a server</h1>
                                 <p class="text-center leading-[20px] mt-2 text-[16px] text-base-content">Your server is where you and your friends hang out. Make yours and start talking.</p>
                                 <ModalClose attr:type="reset" class="absolute right-2 top-2 flex items-center group bg-none">
-                                    <Icon icon=Icon::from(RiCloseSystemLine) class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"/>
+                                    <Icon icon=icondata::RiCloseSystemLine class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"/>
                                 </ModalClose>
                             </div>
                             <div class="overflow-x-hidden overflow-y-scroll mt-6 h-[330px] px-4 pb-2 relative">

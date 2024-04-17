@@ -8,8 +8,8 @@ cfg_if! {
         use leptos_axum::redirect;
         use http::uri::Scheme;
         use http::Uri;
-        use super::auth::auth_user;
-        use super::auth::pool;
+        use super::auth_user;
+        use super::pool;
 
         pub fn validate_invitation(invitation: String) -> Result<Uuid, ServerFnError> {
             match Uuid::parse_str(&invitation) {
@@ -20,11 +20,11 @@ cfg_if! {
                         && uri.scheme().is_some_and(|scheme| scheme == &Scheme::HTTPS)
                     {
                         Uuid::parse_str(uri.path().split('/').last().ok_or_else(|| {
-                            ServerFnError::ServerError("Error with invitation".to_string())
+                            ServerFnError::new("Error with invitation".to_string())
                         })?)
-                        .map_err(|_| ServerFnError::ServerError("Error with the invitation".to_string()))
+                        .map_err(|_| ServerFnError::new("Error with the invitation".to_string()))
                     } else {
-                        Err(ServerFnError::ServerError(
+                        Err(ServerFnError::new(
                             "Error with the invitation".to_string(),
                         ))
                     }
@@ -72,10 +72,6 @@ pub fn use_server() -> ServerContext {
     use_context::<ServerContext>().expect("have server context")
 }
 
-pub fn user_servers() -> Resource<(usize, usize), Result<Vec<Server>, ServerFnError>> {
-    use_server().servers
-}
-
 #[server(GetUserServers, "/api")]
 pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     let pool = pool()?;
@@ -83,7 +79,7 @@ pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
 
     user.get_servers(&pool)
         .await
-        .ok_or_else(|| ServerFnError::ServerError("cant get servers".to_string()))
+        .ok_or_else(|| ServerFnError::new("cant get servers".to_string()))
 }
 
 #[server(JoinServerWithInvitation, "/api")]
@@ -97,9 +93,7 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
         None => {
             let server = Member::create_member_from_invitation(user.id, invitation, &pool)
                 .await
-                .ok_or_else(|| {
-                    ServerFnError::ServerError("your invitation is incorrect".to_string())
-                })?;
+                .ok_or_else(|| ServerFnError::new("your invitation is incorrect".to_string()))?;
             redirect(&format!("/servers/{}", server))
         }
     };
@@ -113,10 +107,10 @@ pub async fn create_server(name: String) -> Result<String, ServerFnError> {
 
     let server = Server::create(name, &pool)
         .await
-        .ok_or_else(|| ServerFnError::ServerError("Cant create server".to_string()))?;
+        .ok_or_else(|| ServerFnError::new("Cant create server".to_string()))?;
     Member::create(crate::entities::member::Role::ADMIN, auth.id, server, &pool)
         .await
-        .ok_or_else(|| ServerFnError::ServerError("Error".to_string()))?;
+        .ok_or_else(|| ServerFnError::new("Error".to_string()))?;
     Channel::create(
         "general".to_string(),
         crate::entities::channel::ChannelType::TEXT,
@@ -124,12 +118,10 @@ pub async fn create_server(name: String) -> Result<String, ServerFnError> {
         &pool,
     )
     .await
-    .ok_or_else(|| {
-        ServerFnError::ServerError("cant create the channel for this server".to_string())
-    })?;
+    .ok_or_else(|| ServerFnError::new("cant create the channel for this server".to_string()))?;
     let category = Category::create("text".to_string(), server, &pool)
         .await
-        .ok_or_else(|| ServerFnError::ServerError("cant create the category".to_string()))?;
+        .ok_or_else(|| ServerFnError::new("cant create the category".to_string()))?;
     Channel::create_with_category(
         "text".to_string(),
         crate::entities::channel::ChannelType::TEXT,
@@ -138,9 +130,7 @@ pub async fn create_server(name: String) -> Result<String, ServerFnError> {
         &pool,
     )
     .await
-    .ok_or_else(|| {
-        ServerFnError::ServerError("cant create the channel with category".to_string())
-    })?;
+    .ok_or_else(|| ServerFnError::new("cant create the channel with category".to_string()))?;
     redirect(&format!("/servers/{}", server));
     Ok(server.to_string())
 }
@@ -152,7 +142,7 @@ pub async fn check_memeber(server_id: Uuid) -> Result<Server, ServerFnError> {
 
     let server = Server::check_member(server_id, auth.id, &pool)
         .await
-        .ok_or_else(|| ServerFnError::ServerError("you cant acces here".to_string()))?;
+        .ok_or_else(|| ServerFnError::new("you cant acces here".to_string()))?;
     Ok(server)
 }
 
@@ -163,7 +153,7 @@ pub async fn get_general_channels(server_id: Uuid) -> Result<Vec<Channel>, Serve
 
     let channels = Server::get_general_channels(server_id, &pool)
         .await
-        .ok_or_else(|| ServerFnError::ServerError("cant get channels server, sorry".to_string()))?;
+        .ok_or_else(|| ServerFnError::new("cant get channels server, sorry".to_string()))?;
 
     Ok(channels)
 }
@@ -178,9 +168,7 @@ pub async fn get_channels_with_category(
 
     let channels = Server::get_channels_with_category(server_id, category_id, &pool)
         .await
-        .ok_or_else(|| {
-            ServerFnError::ServerError("cant get this channels with category".to_string())
-        })?;
+        .ok_or_else(|| ServerFnError::new("cant get this channels with category".to_string()))?;
 
     Ok(channels)
 }
@@ -192,7 +180,7 @@ pub async fn get_categories(server_id: Uuid) -> Result<Vec<Category>, ServerFnEr
 
     let categories = Server::get_categories(server_id, &pool)
         .await
-        .ok_or_else(|| ServerFnError::ServerError("cant get the categories".to_string()))?;
+        .ok_or_else(|| ServerFnError::new("cant get the categories".to_string()))?;
 
     Ok(categories)
 }

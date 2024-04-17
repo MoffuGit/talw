@@ -1,9 +1,9 @@
-use super::slide_modal::SlideBack;
-use super::ModalClose;
-use crate::app::components::modals::ModalProviderContext;
-use crate::app::{auth::current_user, server::use_server};
+use crate::app::api::{auth::current_user, server::use_server};
+use crate::app::components::ui::modal::slide_modal::SlideBack;
+use crate::app::components::ui::modal::ModalClose;
+use crate::app::components::ui::modal::ModalProviderContext;
+use icondata;
 use leptos::{logging::warn, *};
-use leptos_icons::RiIcon::*;
 use leptos_icons::*;
 use leptos_router::ActionForm;
 
@@ -40,7 +40,7 @@ pub fn Select_Name() -> impl IntoView {
                     <div class="text-center font-bold text-2xl leading-[30px]">Customize your server</div>
                     <div class="mt-2 text-center text-base leading-5 font-normal">Give your new server a personality with a name and an icon. You can always change it later.</div>
                     <ModalClose attr:type="reset" class="absolute right-2 top-2 flex items-center group bg-none">
-                        <Icon icon=Icon::from(RiCloseSystemLine) class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"/>
+                        <Icon icon=icondata::RiCloseSystemLine class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"/>
                     </ModalClose>
                 </div>
                 <div class="px-2 my-4">

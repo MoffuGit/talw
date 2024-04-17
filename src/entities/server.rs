@@ -2,10 +2,9 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use super::{category::Category, channel::Channel};
-
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use super::{category::Category, channel::Channel};
         use sqlx::{FromRow, MySqlPool};
     }
 }

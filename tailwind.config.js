@@ -46,9 +46,9 @@ module.exports = {
           "base-300": "#e0e6e6",
         },
         dark: {
-          primary: "#aab5b5",
+          primary: "#9797cd",
           secondary: "#1f1f1f",
-          accent: "#83a0a0",
+          accent: "#a4b0f0",
           neutral: "#222a2a",
           "base-100": "#151515",
           "base-200": "#0e0e0e",

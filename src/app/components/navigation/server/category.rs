@@ -29,7 +29,7 @@ pub fn Category(category: Category, server_id: Uuid) -> impl IntoView {
         //NOTE: tambien ya voy a poder trabajar en el chat, esos van a ser web sockets y cosas de
         //db
         <CollapsibleProvider>
-            <CollapsibleTrigger class="relative pt-4 mb-0.5">
+            <CollapsibleTrigger class="relative mt-4 mb-0.5">
                 <div class="cursor-pointer box-border pr-2 pl-4 flex items-center justify-between">
                     <div class="flex-auto overflow-hidden">
                         <div class="w-3 h-3"/>

@@ -479,23 +479,24 @@ html {
   --b1: 180 10% 96%;
   --b2: 180 12% 95%;
   --b3: 180 11% 89%;
+  base-400: #d5dddd;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --p: 180 7% 69%;
-    --pf: 180 7% 62%;
+    --p: 240 35% 70%;
+    --pf: 240 35% 63%;
     --sf: 0 0% 5%;
-    --af: 180 13% 50%;
+    --af: 231 72% 72%;
     --nf: 180 11% 8%;
     --in: 198 93% 60%;
     --su: 158 64% 52%;
     --wa: 43 96% 56%;
     --er: 0 91% 71%;
-    --bc: 145 0% 79%;
-    --pc: 180 2% 14%;
+    --bc: 145 0% 80%;
+    --pc: 242 11% 14%;
     --sc: 145 0% 80%;
-    --ac: 180 7% 12%;
+    --ac: 232 14% 16%;
     --nc: 179 2% 81%;
     --inc: 198 100% 12%;
     --suc: 158 100% 10%;
@@ -512,11 +513,12 @@ html {
     --tab-border: 1px;
     --tab-radius: 0.5rem;
     --s: 0 0% 12%;
-    --a: 180 13% 57%;
+    --a: 231 72% 79%;
     --n: 180 11% 15%;
-    --b1: 0 0% 8%;
-    --b2: 0 0% 5%;
-    --b3: 0 0% 3%;
+    --b1: 0 0% 10%;
+    --b2: 0 0% 8%;
+    --b3: 0 0% 5%;
+    base-400: #080808;
   }
 }
 
@@ -555,22 +557,23 @@ html {
   --b1: 180 10% 96%;
   --b2: 180 12% 95%;
   --b3: 180 11% 89%;
+  base-400: #d5dddd;
 }
 
 [data-theme=dark] {
-  --p: 180 7% 69%;
-  --pf: 180 7% 62%;
+  --p: 240 35% 70%;
+  --pf: 240 35% 63%;
   --sf: 0 0% 5%;
-  --af: 180 13% 50%;
+  --af: 231 72% 72%;
   --nf: 180 11% 8%;
   --in: 198 93% 60%;
   --su: 158 64% 52%;
   --wa: 43 96% 56%;
   --er: 0 91% 71%;
-  --bc: 145 0% 79%;
-  --pc: 180 2% 14%;
+  --bc: 145 0% 80%;
+  --pc: 242 11% 14%;
   --sc: 145 0% 80%;
-  --ac: 180 7% 12%;
+  --ac: 232 14% 16%;
   --nc: 179 2% 81%;
   --inc: 198 100% 12%;
   --suc: 158 100% 10%;
@@ -587,11 +590,12 @@ html {
   --tab-border: 1px;
   --tab-radius: 0.5rem;
   --s: 0 0% 12%;
-  --a: 180 13% 57%;
+  --a: 231 72% 79%;
   --n: 180 11% 15%;
-  --b1: 0 0% 8%;
-  --b2: 0 0% 5%;
-  --b3: 0 0% 3%;
+  --b1: 0 0% 10%;
+  --b2: 0 0% 8%;
+  --b3: 0 0% 5%;
+  base-400: #080808;
 }
 
 * {
@@ -2779,6 +2783,10 @@ html {
   padding: 0px;
 }
 
+.p-1 {
+  padding: 0.25rem;
+}
+
 .p-3 {
   padding: 0.75rem;
 }
@@ -3110,6 +3118,42 @@ html {
    url('../fonts/Satoshi-Light.ttf') format('truetype');
 
   /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+}
+
+.after\:absolute::after {
+  content: var(--tw-content);
+  position: absolute;
+}
+
+.after\:right-\[100\%\]::after {
+  content: var(--tw-content);
+  right: 100%;
+}
+
+.after\:top-\[50\%\]::after {
+  content: var(--tw-content);
+  top: 50%;
+}
+
+.after\:mt-\[-5px\]::after {
+  content: var(--tw-content);
+  margin-top: -5px;
+}
+
+.after\:border-\[5px\]::after {
+  content: var(--tw-content);
+  border-width: 5px;
+}
+
+.after\:border-solid::after {
+  content: var(--tw-content);
+  border-style: solid;
+}
+
+.after\:border-base-300::after {
+  content: var(--tw-content);
+  --tw-border-opacity: 1;
+  border-color: hsl(var(--b3) / var(--tw-border-opacity));
 }
 
 .group:hover .group-hover\:h-\[20px\] {

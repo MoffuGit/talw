@@ -44,7 +44,7 @@ pub fn Navigation_action(tip: String, children: Children) -> impl IntoView {
                 <div class="absolute left-0 bg-primary rounded-r-full transition-all w-[4px] group-hover:h-[20px] h-[8px]"/>
                 {children()}
             </TooltipTrigger>
-            <TooltipContent tip=tip/>
+            <TooltipContent tip=tip class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#c6d2d2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#c6d2d2] dark:after:border-r-[#0d0d0d]"/>
         </TooltipProvider>
     }
 }
@@ -70,7 +70,7 @@ pub fn Navigation_server(id: Uuid, name: String) -> impl IntoView {
                     <div class=" mx-3 h-[48px] transition-all bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px]"/>
                 </A>
             </TooltipTrigger>
-            <TooltipContent tip=name/>
+            <TooltipContent tip=name class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#c6d2d2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#c6d2d2] dark:after:border-r-[#0d0d0d]"/>
         </TooltipProvider>
     }
 }

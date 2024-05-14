@@ -48,10 +48,6 @@ pub fn ServerSideBar(server: Server) -> impl IntoView {
                     </div>
                 </Transition>
             </div>
-            //NOTE:
-            //escribir un prueba del portal como segun yo si logras hacer funcionar el componente
-            //y que no se confunda con los contextos tomando el de la copia mas nueva en vez del
-            //suyo
         </div>
     }
 }

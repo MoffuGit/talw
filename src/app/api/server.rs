@@ -1,3 +1,4 @@
+use crate::entities::channel::ChannelType;
 use crate::entities::{category::Category, channel::Channel, member::Member, server::Server};
 use cfg_if::cfg_if;
 use leptos::*;
@@ -119,14 +120,42 @@ pub async fn create_server(name: String) -> Result<String, ServerFnError> {
     )
     .await
     .ok_or_else(|| ServerFnError::new("cant create the channel for this server".to_string()))?;
-    let category = Category::create("text".to_string(), server, &pool)
+    Channel::create(
+        "announcement".to_string(),
+        crate::entities::channel::ChannelType::ANNOUNCEMENTS,
+        server,
+        &pool,
+    )
+    .await
+    .ok_or_else(|| ServerFnError::new("cant create the channel for this server".to_string()))?;
+    Channel::create(
+        "rules".to_string(),
+        crate::entities::channel::ChannelType::RULES,
+        server,
+        &pool,
+    )
+    .await
+    .ok_or_else(|| ServerFnError::new("cant create the channel for this server".to_string()))?;
+    let text_category = Category::create("text".to_string(), server, &pool)
         .await
         .ok_or_else(|| ServerFnError::new("cant create the category".to_string()))?;
     Channel::create_with_category(
         "text".to_string(),
         crate::entities::channel::ChannelType::TEXT,
         server,
-        category,
+        text_category,
+        &pool,
+    )
+    .await
+    .ok_or_else(|| ServerFnError::new("cant create the channel with category".to_string()))?;
+    let voice_category = Category::create("voice".to_string(), server, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::new("cant create the category".to_string()))?;
+    Channel::create_with_category(
+        "voice".to_string(),
+        crate::entities::channel::ChannelType::VOICE,
+        server,
+        voice_category,
         &pool,
     )
     .await

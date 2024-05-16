@@ -10,11 +10,7 @@ pub fn ModalProvider(
     #[prop(optional, into)] on_close: Option<Signal<()>>,
     #[prop(optional)] open: Option<RwSignal<bool>>,
 ) -> impl IntoView {
-    let is_open = if let Some(signal) = open {
-        signal
-    } else {
-        create_rw_signal(false)
-    };
+    let is_open = open.unwrap_or(create_rw_signal(false));
 
     provide_context(on_close);
     provide_context(is_open);
@@ -45,11 +41,11 @@ pub fn ModalClose(
         <button
             {..attrs}
             on:click=move |_| {
-            if let Some(on_click) = on_click {
-                    on_click.get();
+                on_click.map(|on_click| on_click.get());
+                is_open.update(|value| *value = false);
             }
-            is_open.update(|value| *value = false);
-        } class=class>
+            class=class
+        >
             {children.map(|children| children())}
         </button>
     }
@@ -78,9 +74,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
 
     view! {
         <dialog class="modal" _ref=dialog_ref on:close=move |_| {
-            if let Some(on_close) = on_close {
-                on_close.get()
-            }
+            on_close.map(|on_close| on_close.get());
         }>
             <div class=format!("modal-box {}", class)>
                 {children}

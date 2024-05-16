@@ -6,8 +6,11 @@ pub struct CollapsibleProviderContext {
 }
 
 #[component]
-pub fn CollapsibleProvider(children: Children) -> impl IntoView {
-    let is_open = create_rw_signal(false);
+pub fn CollapsibleProvider(
+    children: Children,
+    #[prop(optional)] open: Option<RwSignal<bool>>,
+) -> impl IntoView {
+    let is_open = open.unwrap_or(create_rw_signal(false));
 
     provide_context(CollapsibleProviderContext { is_open });
 

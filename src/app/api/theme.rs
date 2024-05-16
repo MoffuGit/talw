@@ -49,7 +49,6 @@ fn initial_theme() -> bool {
 
 #[derive(Clone)]
 pub struct ThemeContext {
-    pub initial: bool,
     pub toggle_theme: Action<ToggleTheme, Result<bool, ServerFnError>>,
     pub prefers_theme: Signal<bool>,
 }
@@ -66,7 +65,6 @@ pub fn provide_theme_context() {
     });
 
     provide_context(ThemeContext {
-        initial,
         toggle_theme,
         prefers_theme,
     });

@@ -12,7 +12,9 @@ cfg_if! {
 #[cfg_attr(feature = "ssr", derive(Decode, Encode))]
 pub enum ChannelType {
     TEXT,
-    GUEST,
+    VOICE,
+    ANNOUNCEMENTS,
+    RULES,
 }
 
 #[cfg(feature = "ssr")]

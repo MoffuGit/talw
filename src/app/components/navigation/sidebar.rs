@@ -53,7 +53,9 @@ pub fn Navigation_action(tip: String, children: Children) -> impl IntoView {
 pub fn Navigation_server(id: Uuid, name: String) -> impl IntoView {
     let current_server = move || {
         use_router().pathname().with(|path| {
-            Uuid::parse_str(path.split('/').nth(2).unwrap_or_default()).unwrap_or_default()
+            path.split('/')
+                .nth(2)
+                .and_then(|path| Uuid::parse_str(path).ok())
         })
     };
     view! {
@@ -61,7 +63,7 @@ pub fn Navigation_server(id: Uuid, name: String) -> impl IntoView {
             <TooltipTrigger class="relative mb-1">
                 <A href=id.simple().to_string() class="group flex relative items-center">
                     <div class=move || format!("absolute left-0 bg-primary rounded-r-full transition-all w-[4px] {}", {
-                        match current_server() == id {
+                        match current_server().is_some_and(|current| current == id) {
                             false => "group-hover:h-[20px] h-[8px]",
                             true =>"h-[36px]",
                         }

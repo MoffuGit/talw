@@ -39,13 +39,20 @@ pub fn Create_server_modal() -> impl IntoView {
     let template = create_rw_signal::<ServerTemplate>(ServerTemplate::Default);
     let inital_value = 0;
     let slides = create_rw_signal::<Vec<u8>>(vec![]);
-
+    let on_close = move || {
+        set_timeout(
+            move || {
+                slides.update(|slides| {
+                    slides.clear();
+                    slides.push(inital_value);
+                })
+            },
+            Duration::from_millis(250),
+        );
+    };
     provide_context(template);
     view! {
-        <ModalProvider on_close=Signal::derive(move || slides.update(move |slides| {
-            slides.clear();
-            slides.push(inital_value);
-        }))>
+        <ModalProvider on_close=Signal::derive(on_close)>
             <TooltipProvider delay_duration=Duration::new(0,500)>
             <TooltipTrigger class="group relative flex items-center mb-1 " >
                 <ModalTrigger class="flex items-center justify-center mx-3 transition-all h-[48px] w-[48px] bg-base-100 rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] overflow-hidden">
@@ -59,7 +66,7 @@ pub fn Create_server_modal() -> impl IntoView {
 
 
 
-            <ModalContent class="w-[440px] max-h-[720px] rounded p-0 bg-none min-h-[200px] h-auto overflow-hidden" >
+            <ModalContent class="w-[440px] max-h-[720px] rounded p-0 bg-none min-h-[200px] h-auto overflow-hidden flex items-center" >
                 <SlideProvider initial_value=inital_value slides=slides>
                     <SlideViewport class="transition-height duration-400 ease-out overflow-hidden">
                         <SlideContent value=0 class="absolute flex-col items-center h-auto duration-400 ease-in transition w-[440px] inset-0 ">

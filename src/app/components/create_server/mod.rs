@@ -87,10 +87,10 @@ pub fn Create_server_modal() -> impl IntoView {
                                 </SlideForward>
                             </div>
                         </SlideContent>
-                        <SlideContent value=1 class="absolute flex-col items-center h-[436px] duration-400 ease-in transition w-[440px] inset-0 ">
+                        <SlideContent value=1 class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 ">
                             <Join_with_invitation/>
                         </SlideContent>
-                        <SlideContent value=2 class="absolute flex-col items-center h-[404px] duration-400 ease-in transition w-[440px] inset-0 ">
+                        <SlideContent value=2 class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 ">
                             <Select_Name/>
                         </SlideContent>
                     </SlideViewport>

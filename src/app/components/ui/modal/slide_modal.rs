@@ -101,6 +101,11 @@ pub fn SlideContent(
         }
     });
 
+    create_effect(move |_| {
+        let content_ref = content_ref.get().unwrap();
+        log::info!("height: {}", content_ref.scroll_height())
+    });
+
     let content_width = move || {
         if let Some(content) = content_ref.get() {
             content.scroll_width()

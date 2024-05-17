@@ -57,6 +57,7 @@ leptos_icons = { version = "0.3" }
 icondata = "0.3.0"
 strum = { version = "0.25.0", features = ["derive"] }
 strum_macros = "0.25.3"
+leptos-use = "0.10"
 
 [features]
 hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]
@@ -73,6 +74,7 @@ ssr = [
   "leptos/ssr",
   "leptos_meta/ssr",
   "leptos_router/ssr",
+  "leptos-use/ssr",
   "dep:tracing",
   "dep:bcrypt",
 ]

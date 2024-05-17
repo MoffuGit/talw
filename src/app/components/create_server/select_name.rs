@@ -21,16 +21,15 @@ pub fn Select_Name() -> impl IntoView {
 
     create_effect(move |_| {
         if !is_open.get() {
-            if let Some(form) = form_ref.get() {
-                form.reset();
-            }
+            form_ref.get().map(|form| form.reset());
+            create_server.value().set(None);
         }
     });
 
     create_effect(move |_| {
         create_server
             .version()
-            .with(|_| is_open.update(|value| *value = false))
+            .with(|_| is_open.update(|value| *value = false));
     });
 
     view! {
@@ -48,6 +47,16 @@ pub fn Select_Name() -> impl IntoView {
                         <div class="w-20 h-20"/>
                     </div>
                     <div class="mt-6">
+                        <Transition fallback=move || ()>
+                            {
+                                move || {
+                                    create_server.value().get().map(|res| match res {
+                                        Err(ServerFnError::ServerError(err)) => view! { <p class="text-error w-full text-center">{err}</p>},
+                                        _ => view! { <p class="text-error w-full text-center"/>},
+                                    })
+                                }
+                            }
+                        </Transition>
                         <label class="mb-2 text-xs leading-4 font-bold">SERVER NAME</label>
                         <div class="flex flex-col">
                             <input name="name" type="text" class="input input-secondary font-medium p-[10px] h-10 text-base w-full rounded-[3px]" type="text" placeholder=user />

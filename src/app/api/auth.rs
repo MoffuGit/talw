@@ -95,6 +95,18 @@ pub async fn signup(
     let pool = pool()?;
     let auth = auth()?;
 
+    if username.len() < 4 || password.len() > 20 {
+        return Err(ServerFnError::new(
+            "Must be between 4 and 20 in length".to_string(),
+        ));
+    }
+
+    if password.len() < 8 || password.len() > 20 {
+        return Err(ServerFnError::new(
+            "Must be between 8 and 20 in length".to_string(),
+        ));
+    }
+
     if password != confirmation_password {
         return Err(ServerFnError::new("Password did not match".to_string()));
     }

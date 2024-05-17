@@ -106,6 +106,10 @@ pub async fn create_server(name: String) -> Result<String, ServerFnError> {
     let pool = pool()?;
     let auth = auth_user()?;
 
+    if name.len() < 2 || name.len() > 100 {
+        return Err(ServerFnError::new("Must be between 2 and 100 in length"));
+    }
+
     let server = Server::create(name, &pool)
         .await
         .ok_or_else(|| ServerFnError::new("Cant create server".to_string()))?;

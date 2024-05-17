@@ -1,12 +1,14 @@
 use crate::app::api::auth::use_auth;
 use leptos::*;
-use leptos_router::ActionForm;
+use leptos_router::{ActionForm, A};
 
 #[component]
 pub fn Signup() -> impl IntoView {
     let signup = use_auth().signup;
+    leptos::on_cleanup(move || signup.value().set(None));
     view! {
         <ActionForm action=signup class="w-full h-full flex flex-col items-center">
+            <A href="/" class="btn btn-ghost btn-sm m-1">"go back"</A>
             <h1 class="w-auto text-center font-bold text-5xl mt-[24vh] mb-2">"Sign Up"</h1>
             <div class="form-control w-full max-w-xs mb-2">
                 <label class="label">

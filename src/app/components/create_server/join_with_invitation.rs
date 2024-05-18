@@ -1,4 +1,4 @@
-use crate::app::api::server::JoinServerWithInvitation;
+use crate::app::api::server::{use_server, JoinServerWithInvitation};
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;
 use icondata;
@@ -8,10 +8,10 @@ use leptos_router::ActionForm;
 
 #[component]
 pub fn Join_with_invitation() -> impl IntoView {
-    let join_with_invitation = create_server_action::<JoinServerWithInvitation>();
+    let use_server = use_server();
     view! {
         <Transition fallback=move || ()>
-            <ActionForm action=join_with_invitation>
+            <ActionForm action=use_server.join_with_invitation>
                 <div class="text-center p-[16px]">
                     <h1 class="font-bold mb-2 mt-6 text-[24px] leading-[30px]">Join a Server</h1>
                     <div class="text-[14px] leading-[18px]">Enter an invite below to join an existing server</div>
@@ -23,11 +23,15 @@ pub fn Join_with_invitation() -> impl IntoView {
                     <div class="mb-4">
                         <div>
                                 {move || {
-                                    join_with_invitation.value().get().map(|res| match res {
+                                    use_server.join_with_invitation.value().get().map(|res| {
+                    log::info!("{res:?}");
+                    match res {
                                         Err(ServerFnError::ServerError(err)) => view! { <p class="text-error w-full text-center">{err}</p>},
                                         _ => view! { <p class="text-error w-full text-center"/>},
-                                    })
-                                }}
+                                    }
+                })
+                                        }
+                                }
                             <h2 class="mb-2 text-[12px] leading-[16px] font-bold">INVITE LINK</h2>
                             <input type="text" name="invitation" class="input rounded input-secondary bg-secondary h-[40px] text-[14px] w-full" placeholder="https://discord.gg/hTKzmak"/>
                         </div>

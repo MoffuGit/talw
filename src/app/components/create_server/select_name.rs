@@ -17,7 +17,9 @@ pub fn Select_Name() -> impl IntoView {
         })
     };
     let form_ref = create_node_ref::<html::Form>();
-    let is_open = use_context::<ModalProviderContext>().expect("hae condafskl");
+    let is_open = use_context::<ModalProviderContext>()
+        .expect("hae condafskl")
+        .open;
 
     create_effect(move |_| {
         if !is_open.get() {

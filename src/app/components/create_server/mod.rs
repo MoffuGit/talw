@@ -1,6 +1,7 @@
 pub mod join_with_invitation;
 pub mod select_name;
 
+use crate::app::api::server::use_server;
 use crate::app::api::server::ServerTemplate;
 use crate::app::components::ui::modal::slide_modal::*;
 use crate::app::components::ui::modal::*;
@@ -36,6 +37,7 @@ pub fn Select_Template(template: ServerTemplate, children: Children) -> impl Int
 
 #[component]
 pub fn Create_server_modal() -> impl IntoView {
+    let use_server = use_server();
     let template = create_rw_signal::<ServerTemplate>(ServerTemplate::Default);
     let inital_value = 0;
     let slides = create_rw_signal::<Vec<u8>>(vec![]);
@@ -49,6 +51,13 @@ pub fn Create_server_modal() -> impl IntoView {
             },
             Duration::from_millis(250),
         );
+    };
+    let on_slide = move || {
+        use_server.join_with_invitation.value().set(None);
+        // log::info!(
+        //     "value of :{:?}",
+        //     use_server.join_with_invitation.value().get()
+        // )
     };
     provide_context(template);
     view! {
@@ -67,9 +76,9 @@ pub fn Create_server_modal() -> impl IntoView {
 
 
             <ModalContent class="w-[440px] max-h-[720px] rounded p-0 bg-none min-h-[200px] h-auto overflow-hidden flex items-center" >
-                <SlideProvider initial_value=inital_value slides=slides>
+                <SlideProvider initial_value=inital_value slides=slides on_slide=Signal::derive(on_slide)>
                     <SlideViewport class="transition-height duration-400 ease-out overflow-hidden">
-                        <SlideContent value=0 class="absolute flex-col items-center h-auto duration-400 ease-in transition w-[440px] inset-0 ">
+                        <SlideContent value=0 class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 ">
                             <div class="pt-6 px-4">
                                 <h1 class="leading-[30px] font-bold text-[24px] text-center">Create a server</h1>
                                 <p class="text-center leading-[20px] mt-2 text-[16px] text-base-content">Your server is where you and your friends hang out. Make yours and start talking.</p>

@@ -1,4 +1,5 @@
 use crate::app::api::{auth::current_user, server::use_server};
+use crate::app::components::create_server::use_create_server;
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;
 use crate::app::components::ui::modal::ModalProviderContext;
@@ -10,33 +11,17 @@ use leptos_router::ActionForm;
 #[component]
 pub fn Select_Name() -> impl IntoView {
     let create_server = use_server().create_server;
+    let select_name_ref = use_create_server().select_name_ref;
     let user = move || {
         current_user().get().map(|user| match user {
             Ok(Some(user)) => format!("{}'s server", user.username),
             _ => "User".to_string(),
         })
     };
-    let form_ref = create_node_ref::<html::Form>();
-    let is_open = use_context::<ModalProviderContext>()
-        .expect("hae condafskl")
-        .open;
-
-    create_effect(move |_| {
-        if !is_open.get() {
-            form_ref.get().map(|form| form.reset());
-            create_server.value().set(None);
-        }
-    });
-
-    create_effect(move |_| {
-        create_server
-            .version()
-            .with(|_| is_open.update(|value| *value = false));
-    });
 
     view! {
         <Transition fallback=move || ()>
-            <ActionForm action=create_server node_ref=form_ref>
+            <ActionForm action=create_server node_ref=select_name_ref>
                 <div class="px-6 pt-6 relative flex flex-col justify-start items-center ">
                     <div class="text-center font-bold text-2xl leading-[30px]">Customize your server</div>
                     <div class="mt-2 text-center text-base leading-5 font-normal">Give your new server a personality with a name and an icon. You can always change it later.</div>
@@ -49,16 +34,14 @@ pub fn Select_Name() -> impl IntoView {
                         <div class="w-20 h-20"/>
                     </div>
                     <div class="mt-6">
-                        <Transition fallback=move || ()>
-                            {
-                                move || {
-                                    create_server.value().get().map(|res| match res {
-                                        Err(ServerFnError::ServerError(err)) => view! { <p class="text-error w-full text-center">{err}</p>},
-                                        _ => view! { <p class="text-error w-full text-center"/>},
-                                    })
-                                }
+                        {
+                            move || {
+                                create_server.value().get().map(|res| match res {
+                                    Err(ServerFnError::ServerError(err)) => view! { <p class="text-error w-full text-center">{err}</p>},
+                                    _ => view! { <p class="text-error w-full text-center"/>},
+                                })
                             }
-                        </Transition>
+                        }
                         <label class="mb-2 text-xs leading-4 font-bold">SERVER NAME</label>
                         <div class="flex flex-col">
                             <input name="name" type="text" class="input input-secondary font-medium p-[10px] h-10 text-base w-full rounded-[3px]" type="text" placeholder=user />

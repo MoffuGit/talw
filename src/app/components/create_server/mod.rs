@@ -8,15 +8,11 @@ use crate::app::api::server::ServerTemplate;
 use crate::app::components::create_server::select_template::SelectTemplate;
 use crate::app::components::ui::modal::slide_modal::*;
 use crate::app::components::ui::modal::*;
-use crate::app::components::ui::tool_tip::*;
 use create_server_trigger::CreateServerTrigger;
-use icondata;
 use join_with_invitation::Join_with_invitation;
 use leptos::*;
-use leptos_icons::*;
 use select_name::Select_Name;
 use std::time::Duration;
-use strum::IntoEnumIterator;
 
 #[derive(Clone)]
 pub struct CreateServerContext {
@@ -43,8 +39,12 @@ pub fn Create_server_modal() -> impl IntoView {
     let slides = create_rw_signal::<Vec<u8>>(vec![]);
 
     let on_close = move || {
-        join_with_invitation_ref.get().map(|form| form.reset());
-        select_name_ref.get().map(|form| form.reset());
+        if let Some(form) = join_with_invitation_ref.get() {
+            form.reset()
+        }
+        if let Some(form) = select_name_ref.get() {
+            form.reset()
+        }
         use_server.create_server.value().set(None);
         set_timeout(
             move || {
@@ -62,7 +62,7 @@ pub fn Create_server_modal() -> impl IntoView {
     };
 
     create_effect(move |_| {
-        use_server.create_server.version().with(|value| {
+        use_server.create_server.version().with(|_| {
             if let Some(Ok(_)) = use_server.create_server.value().get() {
                 is_open.update(|value| *value = false);
             }

@@ -5,10 +5,8 @@ use leptos::*;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use bcrypt::verify;
-        use sqlx::MySqlPool;
         use super::pool;
         use super::auth;
-        use super::auth_user;
     }
 }
 

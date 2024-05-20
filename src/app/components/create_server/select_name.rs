@@ -2,9 +2,8 @@ use crate::app::api::{auth::current_user, server::use_server};
 use crate::app::components::create_server::use_create_server;
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;
-use crate::app::components::ui::modal::ModalProviderContext;
 use icondata;
-use leptos::{logging::warn, *};
+use leptos::*;
 use leptos_icons::*;
 use leptos_router::ActionForm;
 

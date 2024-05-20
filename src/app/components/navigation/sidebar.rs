@@ -6,7 +6,6 @@ use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
 use crate::app::components::ui::tool_tip::*;
 use icondata;
 use leptos::*;
-use leptos_icons::*;
 use leptos_router::{use_router, A};
 use uuid::Uuid;
 

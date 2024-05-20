@@ -18,8 +18,8 @@ async fn main() {
 
     use axum::{
         body::Body,
-        extract::{Path, RawQuery},
-        http::{HeaderMap, Request},
+        extract::Path,
+        http::Request,
         response::{IntoResponse, Response},
         routing::get,
         Router,

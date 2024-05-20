@@ -7,7 +7,6 @@ use cfg_if::cfg_if;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use leptos::*;
-        use bcrypt::verify;
         use crate::entities::user::AuthSession;
         use crate::entities::user::User;
         use sqlx::MySqlPool;

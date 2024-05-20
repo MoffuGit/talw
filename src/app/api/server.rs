@@ -1,4 +1,3 @@
-use crate::entities::channel::ChannelType;
 use crate::entities::{category::Category, channel::Channel, member::Member, server::Server};
 use cfg_if::cfg_if;
 use leptos::*;

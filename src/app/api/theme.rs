@@ -13,7 +13,7 @@ pub async fn toggle_theme(theme: bool) -> Result<bool, ServerFnError> {
         Cookie::build(("theme", theme.to_string()))
             .path("/")
             .same_site(SameSite::Strict)
-            .finish(),
+            .into(),
     );
 
     Ok(theme)

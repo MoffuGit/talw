@@ -21,11 +21,11 @@ pub fn App() -> impl IntoView {
     provide_theme_context();
     provide_auth_context();
     //NOTE:
+    //[] checar los detalles en el modal, agregar iconos, checar los colores
     //[] agregar los casos, if create_server fail then show a view with the error, if
-    //join_with_invitation fail then show a view wit the error, crear a callback que limpia el
-    //error cuando cierras el modal, agregar un minimo al nombre del server
-    //[] checar los detalles en el moda, agregar iconos, checar los colores
-    //[] agregar el componente menu, dropdown o context
+    //join_with_invitation fail then show a view wit the error, clean when closing the modal or
+    //when sliding the view of the modal    
+    ////[] agregar el componente menu, dropdown o context
     //[] agregar distintos tipos de acciones segun el tipo de miembro
     //  [] trabajar en las invitacion al servidor
     //  [] agregar los setting del server como admin

@@ -48,7 +48,7 @@ pub fn ModalClose(
         <button
             {..attrs}
             on:click=move |_| {
-                on_click.map(|on_click| on_click.get());
+                if let Some(on_click) = on_click { on_click.get() }
                 is_open.update(|value| *value = false);
             }
             class=class
@@ -82,7 +82,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
 
     view! {
         <dialog class="modal" _ref=dialog_ref on:close=move |_| {
-            on_close.map(|on_close| on_close.get());
+            if let Some(on_close) = on_close { on_close.get() }
         }>
             <div class=format!("modal-box {}", class)>
                 {children}

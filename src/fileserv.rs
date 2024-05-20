@@ -2,14 +2,14 @@ use cfg_if::cfg_if;
 
 cfg_if! {
 if #[cfg(feature = "ssr")] {
-use crate::{error_template::ErrorTemplate, app::App};
+use crate::app::App;
 use axum::{
     body::Body,
     extract::State,
     http::{Request, Response, StatusCode, Uri},
     response::{IntoResponse, Response as AxumResponse},
 };
-use leptos::{view, Errors, LeptosOptions};
+use leptos::LeptosOptions;
 use tower::ServiceExt;
 use tower_http::services::ServeDir;
 

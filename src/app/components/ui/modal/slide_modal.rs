@@ -1,5 +1,3 @@
-use std::rc::Rc;
-
 use leptos::html::Div;
 use leptos::*;
 use leptos_use::{use_element_size, UseElementSizeReturn};
@@ -42,7 +40,7 @@ pub fn SlideViewport(children: Children, #[prop(optional)] class: &'static str) 
     let style_format = move || format!("height:{}px; width:{}px;", height.get(), width.get());
 
     view! {
-        <div class=class style=move || style_format()>
+        <div class=class style=style_format>
             {children()}
         </div>
     }
@@ -122,7 +120,7 @@ pub fn SlideContent(
     };
 
     view! {
-        <div _ref=content_ref class=class style= move || position()>
+        <div _ref=content_ref class=class style= position>
             {children()}
         </div>
     }

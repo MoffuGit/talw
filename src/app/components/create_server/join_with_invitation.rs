@@ -1,4 +1,4 @@
-use crate::app::api::server::{use_server, JoinServerWithInvitation};
+use crate::app::api::server::use_server;
 use crate::app::components::create_server::use_create_server;
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;

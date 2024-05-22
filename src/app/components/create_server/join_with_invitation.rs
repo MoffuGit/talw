@@ -5,12 +5,13 @@ use crate::app::components::ui::modal::ModalClose;
 use icondata;
 use leptos::*;
 use leptos_icons::*;
-use leptos_router::ActionForm;
+use leptos_router::{ActionForm, A};
 
 #[component]
 pub fn Join_with_invitation() -> impl IntoView {
     let use_server = use_server();
-    let join_with_invitation_ref = use_create_server().join_with_invitation_ref;
+    let use_create_server = use_create_server();
+    let join_with_invitation_ref = use_create_server.join_with_invitation_ref;
     view! {
         <Transition fallback=move || ()>
             <ActionForm action=use_server.join_with_invitation node_ref=join_with_invitation_ref>
@@ -29,8 +30,8 @@ pub fn Join_with_invitation() -> impl IntoView {
                                 {
                                     use_server.join_with_invitation.value().get().map(|res| {
                                         match res {
-                                            Err(ServerFnError::ServerError(err)) => view! { <p class="text-error w-full text-center">{err}</p>},
-                                            _ => view! { <p class="text-error w-full text-center"/>},
+                                            Err(ServerFnError::ServerError(err)) => view! { <p class="text-error mb-2 text-xs italic">{err}</p>},
+                                            _ => view! { <p/>},
                                         }
                                     })
                                 }
@@ -45,16 +46,18 @@ pub fn Join_with_invitation() -> impl IntoView {
                         <div class="text-[14px] leading-[18px]">"https://discord.gg/hTKzmak"</div>
                         <div class="text-[14px] leading-[18px]">"https://discord.gg/cool-people"</div>
                     </div>
-                    <div class="rounded-lg bg-base-200 mb-4 flex items-center p-3 text-left">
-                        <div class="mr-3 w-[40px] h-[40px]"/>
+                    <A on:click=move |_| use_create_server.is_open.set(false)  href="search_servers" class="rounded-lg bg-base-300/30 hover:bg-base-content/30 mb-4 flex items-center p-3 text-left">
+                        <div class="mr-3 w-[40px] h-[40px] bg-primary rounded-full flex items-center justify-center">
+                            <Icon icon=icondata::RiCompassMapLine class="h-8 w-8"/>
+                        </div>
                         <div>
                             <h2 class="text-[16px] leading-[20px] font-bold">"Don't have an invite?"</h2>
                             <div class="text-[12px] leading-[16px] font-normal">Check out Discoverable communities in Server Discovery.</div>
                         </div>
-                        <div class="ml-auto mr-3">">"</div>
-                    </div>
+                        <Icon icon=icondata::RiArrowRightSArrowsLine class="ml-auto mr-3 h-6 w-6"/>
+                    </A>
                 </div>
-                <div class="relative p-4 overflow-x-auto flex justify-between items-center bg-base-200">
+                <div class="relative p-4 overflow-x-auto flex justify-between items-center bg-base-300/60">
                     <SlideBack attr:type="reset" class="w-auto min-h-min h-[38px] py-0.5 px-1 leading-[16px] hover:underline text-base-content text-[14px]">
                             Back
                     </SlideBack>

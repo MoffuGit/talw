@@ -6,8 +6,8 @@ use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
 use crate::app::components::ui::tool_tip::*;
 use icondata;
 use leptos::*;
+use leptos_icons::*;
 use leptos_router::{use_router, A};
-use uuid::Uuid;
 
 #[component]
 pub fn SideBar() -> impl IntoView {
@@ -15,15 +15,24 @@ pub fn SideBar() -> impl IntoView {
     view! {
         <div class="w-full h-full flex flex-col items-center pt-3 bg-base-300 scrollbar-none overflow-y-scroll overflow-x-hidden">
             <Transition fallback=move || ()>
+                <Navigation_server id="me".to_string() name="Direct messages".to_string()>
+                    <Icon icon=icondata::RiEmotionUserFacesFill class="h-8 w-8 group-hover:fill-base-100 fill-primary"/>
+                </Navigation_server>
+                <div class="divider m-0 mx-[10px]"></div>
                 {move || servers.and_then(|servers| servers.iter().map(|server| {
                     let server = server.clone();
                     view! {
-                        <Navigation_server id=server.id name=server.name/>
+                        <Navigation_server id=server.id.to_string() name=server.name/>
                     }
                 }).collect_view())}
 
                 <Create_server_modal/>
 
+                <Navigation_server id="search_servers".to_string() name="Explore Discoverable Servers".to_string()>
+                    <Icon icon=icondata::RiCompassMapLine class="h-8 w-8 group-hover:fill-base-100 fill-primary"/>
+                </Navigation_server>
+
+                <div class="divider m-0 mx-[10px]"></div>
                 <Navigation_action tip="Toggle theme".into()>
                     <Toggle_Theme
                         class="relative mx-3 h-[48px] transition-all bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px] overflow-hidden"
@@ -49,18 +58,20 @@ pub fn Navigation_action(tip: String, children: Children) -> impl IntoView {
 }
 
 #[component]
-pub fn Navigation_server(id: Uuid, name: String) -> impl IntoView {
+pub fn Navigation_server(
+    id: String,
+    name: String,
+    #[prop(optional)] children: Option<Children>,
+) -> impl IntoView {
     let current_server = move || {
-        use_router().pathname().with(|path| {
-            path.split('/')
-                .nth(2)
-                .and_then(|path| Uuid::parse_str(path).ok())
-        })
+        use_router()
+            .pathname()
+            .with(|path| path.split('/').nth(2).map(|path| path.to_string()))
     };
     view! {
         <TooltipProvider delay_duration=Duration::new(0,0)>
-            <TooltipTrigger class="relative mb-1">
-                <A href=id.simple().to_string() class="group flex relative items-center">
+            <TooltipTrigger class="relative my-0.5 first:mb-0">
+                <A href=id.clone() class="group flex relative items-center">
                     <div class=move || format!("absolute left-0 bg-primary rounded-r-full transition-all w-[4px] {}", {
                         match current_server().is_some_and(|current| current == id) {
                             false => "group-hover:h-[20px] h-[8px]",
@@ -68,7 +79,9 @@ pub fn Navigation_server(id: Uuid, name: String) -> impl IntoView {
                         }
                     })
                     />
-                    <div class=" mx-3 h-[48px] transition-all bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px]"/>
+                    <div class="flex mx-3 h-[48px] transition-all items-center justify-center bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px]">
+                        {children.map(|children| children())}
+                    </div>
                 </A>
             </TooltipTrigger>
             <TooltipContent tip=name class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#c6d2d2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#c6d2d2] dark:after:border-r-[#0d0d0d]"/>

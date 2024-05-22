@@ -41,12 +41,22 @@ pub struct ServerContext {
     pub create_server: Action<CreateServer, Result<String, ServerFnError>>,
 }
 
-#[derive(Clone, Copy, EnumIter, Display)]
+#[derive(Clone, Copy, EnumIter, Display, PartialEq)]
 pub enum ServerTemplate {
     #[strum(serialize = "Create my own")]
     Default,
     #[strum(serialize = "Gaming")]
     Gaming,
+    #[strum(serialize = "School Club")]
+    SchoolClub,
+    #[strum(serialize = "Study Group")]
+    StudyGroup,
+    #[strum(serialize = "Friends")]
+    Friends,
+    #[strum(serialize = "Artist & Creators")]
+    ArtistCreators,
+    #[strum(serialize = "Local Community")]
+    LocalCommunity,
 }
 
 pub fn provide_server_context() {

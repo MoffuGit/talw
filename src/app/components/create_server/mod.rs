@@ -16,6 +16,7 @@ use std::time::Duration;
 
 #[derive(Clone)]
 pub struct CreateServerContext {
+    is_open: RwSignal<bool>,
     selected_template: RwSignal<ServerTemplate>,
     join_with_invitation_ref: NodeRef<html::Form>,
     select_name_ref: NodeRef<html::Form>,
@@ -70,6 +71,7 @@ pub fn Create_server_modal() -> impl IntoView {
     });
 
     provide_context(CreateServerContext {
+        is_open,
         selected_template,
         select_name_ref,
         join_with_invitation_ref,

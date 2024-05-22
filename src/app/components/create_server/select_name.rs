@@ -36,8 +36,8 @@ pub fn Select_Name() -> impl IntoView {
                         {
                             move || {
                                 create_server.value().get().map(|res| match res {
-                                    Err(ServerFnError::ServerError(err)) => view! { <p class="text-error w-full text-center">{err}</p>},
-                                    _ => view! { <p class="text-error w-full text-center"/>},
+                                    Err(ServerFnError::ServerError(err)) => view! { <p class="text-error mb-2 text-xs italic">{err}</p>},
+                                    _ => view! { <p/>},
                                 })
                             }
                         }
@@ -48,7 +48,7 @@ pub fn Select_Name() -> impl IntoView {
                     </div>
                     <div class="mt-2 pb-1 text-xs leading-4 font-normal">"By creating a server, you agree to Discord's Community Guidelines."</div>
                 </div>
-                <div class="relative p-4 overflow-x-auto flex justify-between items-center bg-base-200">
+                <div class="relative p-4 overflow-x-auto flex justify-between items-center bg-base-300/50">
                     <SlideBack attr:type="reset" class="w-auto min-h-min h-[38px] py-0.5 px-1 leading-[16px] hover:underline text-base-content text-[14px]">
                             Back
                     </SlideBack>

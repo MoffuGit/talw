@@ -21,11 +21,9 @@ pub fn App() -> impl IntoView {
     provide_theme_context();
     provide_auth_context();
     //NOTE:
-    //[] checar los detalles en el modal, agregar iconos, checar los colores
-    //[] agregar los casos, if create_server fail then show a view with the error, if
-    //join_with_invitation fail then show a view wit the error, clean when closing the modal or
-    //when sliding the view of the modal    
-    ////[] agregar el componente menu, dropdown o context
+    //[] checar los detalles en el modal, agregar iconos para subir archivos y para los templates
+    //del servidor
+    ////[] agregar el componente menu, dropdown o context[leptos_use para saber donde esta el mouse]
     //[] agregar distintos tipos de acciones segun el tipo de miembro
     //  [] trabajar en las invitacion al servidor
     //  [] agregar los setting del server como admin
@@ -48,6 +46,7 @@ pub fn App() -> impl IntoView {
                             <Route path="" view=|| view!{<div>"in some point i want to put something here"</div>}/>
                         </Route>
                         <Route path="me" view=|| view! {<div>"user stuff"</div>}/>
+                        <Route path="search_servers" view=|| view! {<div>"search servers"</div>}/>
                     </Route>
                     <Route path="login" view=move || view!{ <Login />}/>
                     <Route path="signup" view=move || view!{ <Signup />}/>

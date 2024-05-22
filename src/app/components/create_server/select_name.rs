@@ -30,7 +30,15 @@ pub fn Select_Name() -> impl IntoView {
                 </div>
                 <div class="px-2 my-4">
                     <div class="pt-1 flex justify-center">
-                        <div class="w-20 h-20"/>
+                        <div class="indicator w-20 h-20 flex flex-col justify-center items-center rounded-full border-2 border-base-content border-dashed">
+                            <span class="indicator-item badge badge-primary translate-x-[11%] translate-y-[20%] w-[20px] h-[20px] p-0">
+                                <Icon icon=icondata::RiAddSystemFill class="fill-primary-content w-4 h-4"/>
+                            </span>
+                            <div class="flex flex-col items-center">
+                                <Icon icon=icondata::RiCameraMediaFill class="fill-base-content w-6 h-6 "/>
+                                <p class="uppercase fill-base-content text-xs font-bold">upload</p>
+                            </div>
+                        </div>
                     </div>
                     <div class="mt-6">
                         {

@@ -1,5 +1,6 @@
 use crate::app::api::server::check_memeber;
 use crate::app::components::navigation::server::sidebar::ServerSideBar;
+use crate::app::components::ui::portal::*;
 use leptos::*;
 use leptos_router::use_params_map;
 use leptos_router::Outlet;
@@ -13,6 +14,8 @@ pub fn Server() -> impl IntoView {
         move || params.with(|p| Uuid::parse_str(p.get("id").unwrap()).unwrap_or_default()),
         check_memeber,
     );
+    let show = create_rw_signal(false);
+    create_effect(move |_| show.update(|value| *value = true));
 
     view! {
         <Transition fallback=move || ()>

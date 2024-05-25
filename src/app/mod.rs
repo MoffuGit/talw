@@ -21,8 +21,6 @@ pub fn App() -> impl IntoView {
     provide_theme_context();
     provide_auth_context();
     //NOTE:
-    //[] checar los detalles en el modal, agregar iconos para subir archivos y para los templates
-    //del servidor
     ////[] agregar el componente menu, dropdown o context[leptos_use para saber donde esta el mouse]
     //[] agregar distintos tipos de acciones segun el tipo de miembro
     //  [] trabajar en las invitacion al servidor
@@ -37,6 +35,8 @@ pub fn App() -> impl IntoView {
 
         <Theme/>
         <main id="app" class="w-full h-full">
+            <div id="one" class="w-full h-full absolute"/>
+            <div id="two" class="w-full h-full absolute"/>
             <Router>
                 <Routes>
                     <Route path="" view=|| view!{<Home/>}/>

@@ -180,7 +180,7 @@ pub fn TooltipContent(tip: String, #[prop(optional)] class: &'static str) -> imp
 
     view! {
         <Show when=move || show.get()>
-            <Portal mount=document().get_element_by_id("float_container").unwrap() clone:tip>
+            <Portal mount=document().get_element_by_id("app").unwrap() clone:tip>
                 <div _ref=content_ref style=move || format!("translate: {}px {}px; {}", position().0, position().1, visibility()) class=format!("absolute z-50 left-0 top-0 animate-tooltip-open {}", class)>
                     {tip.clone()}
                 </div>

@@ -22,8 +22,8 @@ pub fn Servers() -> impl IntoView {
                                     <Outlet/>
                                 </div>
                             </div>
-                            <div id="float_container" class="absolute bg-transparent top-0 left-0 right-0 bottom-0">
-                            </div>
+                            // <div id="float_container" class="absolute bg-transparent top-0 left-0 right-0 bottom-0">
+                            // </div>
                         }.into_view()
                     },
                     _ => {

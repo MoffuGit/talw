@@ -34,9 +34,7 @@ pub fn App() -> impl IntoView {
         <Title text="Welcome to Leptos"/>
 
         <Theme/>
-        <main id="app" class="w-full h-full">
-            <div id="one" class="w-full h-full absolute"/>
-            <div id="two" class="w-full h-full absolute"/>
+        <main id="app" class="w-full h-full overflow-hidden">
             <Router>
                 <Routes>
                     <Route path="" view=|| view!{<Home/>}/>

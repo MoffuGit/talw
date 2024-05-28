@@ -59,7 +59,7 @@ pub fn ModalClose(
 }
 
 #[component]
-pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView {
+pub fn ModalContent(children: Children, class: &'static str) -> impl IntoView {
     let modal_context = use_context::<ModalProviderContext>().expect("have context");
     let on_close = modal_context.on_close;
     let is_open = modal_context.open;
@@ -85,7 +85,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
             if let Some(on_close) = on_close { on_close.get() }
         }>
             <div class=format!("modal-box {}", class)>
-                {children}
+                {children()}
             </div>
             <form method="dialog" class="modal-backdrop">
                 <button on:click=move |_| is_open.update(|value| *value = false)/>

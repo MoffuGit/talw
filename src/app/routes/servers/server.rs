@@ -1,6 +1,7 @@
 use crate::app::api::server::check_memeber;
 use crate::app::components::navigation::server::sidebar::ServerSideBar;
-use crate::app::components::ui::portal::*;
+// use crate::app::components::ui::portal::*;
+use crate::app::components::ui::dropdown_menu::*;
 use leptos::*;
 use leptos_router::use_params_map;
 use leptos_router::Outlet;
@@ -14,11 +15,16 @@ pub fn Server() -> impl IntoView {
         move || params.with(|p| Uuid::parse_str(p.get("id").unwrap()).unwrap_or_default()),
         check_memeber,
     );
+    let one = create_rw_signal(0);
+    let two = create_rw_signal(0);
+
+    create_effect(move |_| log::info!("signal one: {}", one.get()));
+    create_effect(move |_| log::info!("signal two: {}", two.get()));
 
     view! {
             <Transition fallback=move || ()>
-                <div class="h-full w-full">
-                    <div class="flex w-[240px] h-full z-30 fixed inset-y-0 bg-base-200">
+                <div class="h-full w-full relative z-40">
+                    <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
                         <Suspense fallback=move || ()>
                         {
                             move || {
@@ -36,7 +42,7 @@ pub fn Server() -> impl IntoView {
                         </Suspense>
                     </div>
 
-                    <div class="h-full relative overflow-hidden md:pl-[240px] z-50">
+                    <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
     //                     <ProvidePortalContext name="one">
     //   <PortalTrigger class="bg-red-500 z-50"/>
     //   <PortalContent class=" ">
@@ -63,7 +69,23 @@ pub fn Server() -> impl IntoView {
     //     <ClosePortal class="absolute w-20 h-8 bg-lime-500 -translate-x-20 left-0 right-0 top-0 bottom-0 m-auto z-50"/>
     //   </PortalContent>
     // </ProvidePortalContext>
+                        <div class="pl-[600px] z-40">
+                            <DropdownProvider>
+                                <DropdownTrigger class="bg-blue-500 w-8 h-4"/>
+                                <DropdownContent class="bg-red-500 w-20 h-10 z-50".to_string()>
+                                    <div class="bg-white w-2 h-2" on:click=move |_| one.update(|value| *value += 1)/>
+                                </DropdownContent>
+                            </DropdownProvider>
 
+                            <DropdownProvider>
+                                <DropdownTrigger class="bg-emerald-500 w-8 h-4"/>
+                                <DropdownContent class="bg-pink-500 w-20 h-10 z-50".to_string()>
+                                    <div class="bg-blue-500 w-2 h-2" on:click=move |_| two.update(|value| *value += 1)>
+                                        "two"
+                                    </div>
+                                </DropdownContent>
+                            </DropdownProvider>
+                        </div>
                         <Outlet/>
                     </div>
                 </div>

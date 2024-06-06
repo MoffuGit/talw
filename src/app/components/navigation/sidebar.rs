@@ -3,7 +3,7 @@ use std::time::Duration;
 use crate::app::api::server::use_server;
 use crate::app::components::create_server::Create_server_modal;
 use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
-use crate::app::components::ui::tool_tip::*;
+use crate::{app::components::ui::tool_tip::*, entities::member::Member};
 use icondata;
 use leptos::*;
 use leptos_icons::*;
@@ -12,6 +12,7 @@ use leptos_router::{use_router, A};
 #[component]
 pub fn SideBar() -> impl IntoView {
     let servers = use_server().servers;
+    let members = use_server().members;
     view! {
         <div class="w-full h-full flex flex-col items-center pt-3 bg-base-300 scrollbar-none overflow-y-scroll overflow-x-hidden">
             <Transition fallback=move || ()>
@@ -21,9 +22,12 @@ pub fn SideBar() -> impl IntoView {
                 <div class="divider m-0 mx-[10px]"></div>
                 {move || servers.and_then(|servers| servers.iter().map(|server| {
                     let server = server.clone();
-                    view! {
-                        <Navigation_server id=server.id.to_string() name=server.name/>
-                    }
+                    members.and_then(|members|members.iter().find(|member| member.server_id == server.id).map(|member| {
+                        let member = member.clone();
+                        view! {
+                            <Navigation_server id=server.id.to_string() name=server.name member=member/>
+                        }
+                    }))
                 }).collect_view())}
 
                 <Create_server_modal/>
@@ -61,6 +65,7 @@ pub fn Navigation_action(tip: String, children: Children) -> impl IntoView {
 pub fn Navigation_server(
     id: String,
     name: String,
+    #[prop(optional)] member: Option<Member>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let current_server = move || {
@@ -68,6 +73,7 @@ pub fn Navigation_server(
             .pathname()
             .with(|path| path.split('/').nth(2).map(|path| path.to_string()))
     };
+    log::info!("{:?}", member);
     view! {
         <TooltipProvider delay_duration=Duration::new(0,0)>
             <TooltipTrigger class="relative my-0.5 first:mb-0">

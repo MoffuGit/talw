@@ -37,6 +37,7 @@ cfg_if! {
 #[derive(Clone, Copy)]
 pub struct ServerContext {
     pub servers: Resource<(usize, usize), Result<Vec<Server>, ServerFnError>>,
+    pub members: Resource<(usize, usize), Result<Vec<Member>, ServerFnError>>,
     pub join_with_invitation: Action<JoinServerWithInvitation, Result<(), ServerFnError>>,
     pub create_server: Action<CreateServer, Result<String, ServerFnError>>,
 }
@@ -62,6 +63,8 @@ pub enum ServerTemplate {
 pub fn provide_server_context() {
     let join_with_invitation = create_server_action::<JoinServerWithInvitation>();
     let create_server = create_server_action::<CreateServer>();
+    //NOTE: agregar mas razones de cambio para los resources, leave_server, server_settings...,
+    //rename_member
     let servers = create_resource(
         move || {
             (
@@ -71,8 +74,18 @@ pub fn provide_server_context() {
         },
         move |_| get_user_servers(),
     );
+    let members = create_resource(
+        move || {
+            (
+                join_with_invitation.version().get(),
+                create_server.version().get(),
+            )
+        },
+        move |_| get_user_members(),
+    );
     provide_context(ServerContext {
         servers,
+        members,
         join_with_invitation,
         create_server,
     })
@@ -90,6 +103,26 @@ pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     user.get_servers(&pool)
         .await
         .ok_or_else(|| ServerFnError::new("cant get servers".to_string()))
+}
+
+#[server(GetUserMembers, "/api")]
+pub async fn get_user_members() -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+
+    user.get_members(&pool)
+        .await
+        .ok_or_else(|| ServerFnError::new("cant get members from user".to_string()))
+}
+
+#[server(GetMember, "/api")]
+pub async fn get_member(server_id: Uuid) -> Result<Member, ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+
+    Server::get_member(server_id, user.id, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::new("cant get member from user".to_string()))
 }
 
 #[server(JoinServerWithInvitation, "/api")]

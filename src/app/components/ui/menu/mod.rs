@@ -7,6 +7,13 @@ struct MenuProviderContext {
     modal: bool,
     trigger_ref: NodeRef<html::Div>,
     content_ref: NodeRef<html::Div>,
+    trigger_key: TriggerKey,
+}
+
+#[derive(Clone, PartialEq, Copy)]
+pub enum TriggerKey {
+    Ltr,
+    Rtl,
 }
 
 #[component]
@@ -16,15 +23,18 @@ pub fn ProvideMenu(
     #[prop(optional)] open: Option<RwSignal<bool>>,
     #[prop(optional)] trigger_ref: Option<NodeRef<html::Div>>,
     #[prop(optional)] content_ref: Option<NodeRef<html::Div>>,
+    trigger_key: TriggerKey,
 ) -> impl IntoView {
     let open = open.unwrap_or(create_rw_signal(false));
     let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
     let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
+    create_effect(move |_| log::info!("open update: {}", open.get()));
     provide_context(MenuProviderContext {
         open,
         modal,
         trigger_ref,
         content_ref,
+        trigger_key,
     });
     children()
 }
@@ -37,10 +47,22 @@ pub fn MenuTrigger(
     let context = use_context::<MenuProviderContext>().expect("acces to menu context");
     let open = context.open;
     let trigger_ref = context.trigger_ref;
-    view! {
-        <div class=class on:click=move |_| open.set(true) node_ref=trigger_ref>
-            {children.map(|children| children())}
-        </div>
+    match context.trigger_key {
+        TriggerKey::Ltr => view! {
+            <div class=class on:click=move |_| {
+                    open.set(true);
+            }  node_ref=trigger_ref>
+                {children.map(|children| children())}
+            </div>
+        },
+        TriggerKey::Rtl => view! {
+            <div class=class  on:contextmenu=move |evt| {
+                    evt.prevent_default();
+                    open.set(true);
+        } node_ref=trigger_ref>
+                {children.map(|children| children())}
+            </div>
+            },
     }
 }
 
@@ -71,10 +93,14 @@ pub fn MenuContent(
             }
         }
     });
-    let _ = on_click_outside(content_ref, move |_| context.open.set(false));
+    let _ = on_click_outside(content_ref, move |_| {
+        if context.open.get() {
+            context.open.set(false)
+        }
+    });
     view! {
         <Provider value=context.clone() clone:children>
-            <Portal mount=document().get_element_by_id("app").unwrap()>
+            <Portal mount=document().get_element_by_id("app").expect("acces to app")>
                 <div style= move || format!("{} {}", visibility(), style.get()) class=&class node_ref=content_ref>
                     {children.clone()}
                 </div>

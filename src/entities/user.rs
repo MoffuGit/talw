@@ -2,6 +2,8 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use super::member::Member;
+
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use crate::entities::server::Server;
@@ -62,6 +64,14 @@ impl User {
             .fetch_all(pool)
             .await;
         servers.ok()
+    }
+
+    pub async fn get_members(self, pool: &MySqlPool) -> Option<Vec<Member>> {
+        let members = sqlx::query_as::<_, Member>("SELECT members.id, members.role, members.user_id, members.server_id FROM members WHERE members.user_id = ?")
+            .bind(self.id)
+            .fetch_all(pool)
+            .await;
+        members.ok()
     }
 }
 

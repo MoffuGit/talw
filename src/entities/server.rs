@@ -2,6 +2,8 @@ use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use super::member::Member;
+
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use super::{category::Category, channel::Channel};
@@ -85,7 +87,6 @@ impl Server {
                 .bind(server_id)
                 .fetch_all(pool)
                 .await;
-        println!("categories db result: {:?}", categories);
         categories.ok()
     }
 
@@ -94,7 +95,17 @@ impl Server {
             .bind(server_id)
             .fetch_all(pool)
             .await;
-        println!("channels db result: {:?}", channels);
         channels.ok()
+    }
+
+    pub async fn get_member(server_id: Uuid, user_id: Uuid, pool: &MySqlPool) -> Option<Member> {
+        let member = sqlx::query_as::<_, Member>(
+            "SELECT * FROM members WHERE server_id = ? AND user_id = ?",
+        )
+        .bind(server_id)
+        .bind(user_id)
+        .fetch_one(pool)
+        .await;
+        member.ok()
     }
 }

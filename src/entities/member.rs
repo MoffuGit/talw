@@ -9,7 +9,7 @@ cfg_if! {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[cfg_attr(feature = "ssr", derive(Decode, Encode))]
 pub enum Role {
     ADMIN,
@@ -27,7 +27,7 @@ impl sqlx::Type<sqlx::MySql> for Role {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Member {
     pub id: Uuid,

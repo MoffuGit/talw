@@ -73,7 +73,6 @@ pub fn Navigation_server(
             .pathname()
             .with(|path| path.split('/').nth(2).map(|path| path.to_string()))
     };
-    log::info!("{:?}", member);
     view! {
         <TooltipProvider delay_duration=Duration::new(0,0)>
             <TooltipTrigger class="relative my-0.5 first:mb-0">

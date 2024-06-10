@@ -210,12 +210,12 @@ pub async fn create_server(name: String) -> Result<String, ServerFnError> {
     Ok(server.to_string())
 }
 
-#[server(CheckMember, "/api")]
-pub async fn check_memeber(server_id: Uuid) -> Result<Server, ServerFnError> {
+#[server(CheckServer, "/api")]
+pub async fn check_server(server_id: Uuid) -> Result<Server, ServerFnError> {
     let pool = pool()?;
     let auth = auth_user()?;
 
-    let server = Server::check_member(server_id, auth.id, &pool)
+    let server = Server::check_server(server_id, auth.id, &pool)
         .await
         .ok_or_else(|| ServerFnError::new("you cant acces here".to_string()))?;
     Ok(server)

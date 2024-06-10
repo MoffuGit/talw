@@ -18,15 +18,16 @@ pub fn DropdownProvider(
     let open = open.unwrap_or(create_rw_signal(false));
     let trigger_ref = create_node_ref::<html::Div>();
     let content_ref = create_node_ref::<html::Div>();
-    provide_context(DropdownProviderContext {
+    view! {
+        <Provider value=DropdownProviderContext {
         open,
         trigger_ref,
         content_ref,
-    });
-    view! {
-        <ProvideMenu open=open modal=modal trigger_ref=trigger_ref content_ref=content_ref trigger_key=TriggerKey::Ltr>
-            {children()}
-        </ProvideMenu>
+        }>
+            <ProvideMenu open=open modal=modal trigger_ref=trigger_ref content_ref=content_ref trigger_key=TriggerKey::Ltr>
+                {children()}
+            </ProvideMenu>
+        </Provider>
     }
 }
 

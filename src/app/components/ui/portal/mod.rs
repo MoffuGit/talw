@@ -39,7 +39,7 @@ pub fn PortalContent(children: ChildrenFn, #[prop(optional)] class: &'static str
     view! {
         <Show when=move || signal.get()>
             <Provider value=context.clone() clone:children>
-            <Portal mount=document().get_element_by_id("app").unwrap() >
+            <Portal mount=document().get_element_by_id("app").expect("acces to the app") >
                 <div class=class>
                      {children.clone()}
                 </div>

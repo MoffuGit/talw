@@ -16,19 +16,32 @@ pub fn ModalProvider(
 ) -> impl IntoView {
     let open = open.unwrap_or(create_rw_signal(false));
 
-    provide_context(ModalProviderContext { open, on_close });
+    // provide_context(ModalProviderContext { open, on_close });
 
-    children()
+    view! {
+        <Provider value=ModalProviderContext{open, on_close}>
+            {children()}
+        </Provider>
+    }
 }
 
 #[component]
-pub fn ModalTrigger(children: Children, #[prop(optional)] class: &'static str) -> impl IntoView {
+pub fn ModalTrigger(
+    children: Children,
+    #[prop(optional)] class: &'static str,
+    #[prop(optional)] on_click: Option<Signal<()>>,
+) -> impl IntoView {
     let is_open = use_context::<ModalProviderContext>()
         .expect("have the context")
         .open;
 
     view! {
-        <div on:click=move |_| is_open.update(|value| *value = !*value) class=class>
+        <div on:click=move |_| {
+            is_open.update(|value| *value = !*value);
+            if let Some(on_click) = on_click {
+                on_click.get();
+            }
+        } class=class>
             {children()}
         </div>
     }
@@ -59,7 +72,7 @@ pub fn ModalClose(
 }
 
 #[component]
-pub fn ModalContent(children: Children, class: &'static str) -> impl IntoView {
+pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView {
     let modal_context = use_context::<ModalProviderContext>().expect("have context");
     let on_close = modal_context.on_close;
     let is_open = modal_context.open;
@@ -80,16 +93,22 @@ pub fn ModalContent(children: Children, class: &'static str) -> impl IntoView {
         }
     });
 
+    let show = create_rw_signal(false);
+    create_effect(move |_| show.update(|value| *value = true));
     view! {
-        <dialog class="modal" _ref=dialog_ref on:close=move |_| {
-            if let Some(on_close) = on_close { on_close.get() }
-        }>
-            <div class=format!("modal-box {}", class)>
-                {children()}
-            </div>
-            <form method="dialog" class="modal-backdrop">
-                <button on:click=move |_| is_open.update(|value| *value = false)/>
-            </form>
-        </dialog>
+        <Show when=move || show.get()>
+            <Portal mount=document().get_element_by_id("app").expect("acces to the app") clone:children>
+                <dialog class="modal" _ref=dialog_ref on:close=move |_| {
+                    if let Some(on_close) = on_close { on_close.get() }
+                }>
+                    <div class=format!("modal-box {}", class)>
+                        {children.clone()}
+                    </div>
+                    <form method="dialog" class="modal-backdrop">
+                        <button on:click=move |_| is_open.update(|value| *value = false)/>
+                    </form>
+                </dialog>
+            </Portal>
+        </Show>
     }
 }

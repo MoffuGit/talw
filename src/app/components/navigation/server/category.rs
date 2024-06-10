@@ -10,6 +10,7 @@ use crate::{app::api::server::get_channels_with_category, entities::category::Ca
 #[component]
 pub fn Category(category: Category, server_id: Uuid) -> impl IntoView {
     let is_open = create_rw_signal(false);
+    //NOTE: agregar subs to resource
     let channels = create_resource(
         || (),
         move |_| get_channels_with_category(server_id, category.id),

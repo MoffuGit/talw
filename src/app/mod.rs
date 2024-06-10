@@ -20,18 +20,6 @@ pub fn App() -> impl IntoView {
     provide_server_context();
     provide_theme_context();
     provide_auth_context();
-    //NOTE:
-    //[] obtener funcion para conocer la ubicacion de los componentes flotantes como el tooltip,
-    //dropdown menu, context menu, etc.
-    //[] agregar el componente menu, dropdown o context[leptos_use para saber donde esta el mouse]
-    //[]investigar algo parecido al componente presence, para poder mostrar u ocultar con show
-    //y ademas poder animar, si solo usas show, cuando el componente entra este no recibe una
-    //animacion, primero hay que cargar el elemento, despues hay que causar la animacion
-    //[] agregar distintos tipos de acciones segun el tipo de miembro
-    //  [] trabajar en las invitacion al servidor
-    //  [] agregar los setting del server como admin
-    //[] agregar funcionalidades al usuario, setting y asi
-    //[] investigar como guardar fotos en sql
 
     view! {
         <Stylesheet id="leptos" href="/pkg/TALW.css"/>

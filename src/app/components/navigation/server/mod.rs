@@ -4,7 +4,6 @@ use uuid::Uuid;
 
 pub mod category;
 pub mod channel;
-pub mod invite_people;
 pub mod server_menu;
 pub mod sidebar;
 

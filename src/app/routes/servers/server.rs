@@ -1,5 +1,6 @@
 use crate::app::api::server::check_server;
 use crate::app::api::server::get_member;
+use crate::app::api::server::use_server;
 use crate::app::components::navigation::server::sidebar::ServerSideBar;
 use leptos::*;
 use leptos_router::use_params_map;
@@ -12,13 +13,24 @@ pub fn Server() -> impl IntoView {
     let params = use_params_map();
     //NOTE: las acciones las vamos a crear en el contexto del server y ya luego subscribimos los
     //resources a esas, server_settings,
+    let leave_server = use_server().leave_server;
     let server = create_resource(
-        move || params.with(|p| Uuid::parse_str(p.get("id").unwrap()).unwrap_or_default()),
-        check_server,
+        move || {
+            (
+                leave_server.version().get(),
+                params.with(|p| Uuid::parse_str(p.get("id").unwrap()).unwrap_or_default()),
+            )
+        },
+        move |(_, server_id)| check_server(server_id),
     );
     let member = create_resource(
-        move || params.with(|p| Uuid::parse_str(p.get("id").unwrap()).unwrap_or_default()),
-        get_member,
+        move || {
+            (
+                leave_server.version().get(),
+                params.with(|p| Uuid::parse_str(p.get("id").unwrap()).unwrap_or_default()),
+            )
+        },
+        move |(_, server_id)| get_member(server_id),
     );
 
     view! {

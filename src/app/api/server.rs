@@ -1,3 +1,5 @@
+use crate::entities::channel::ChannelType;
+use crate::entities::member::Role;
 use crate::entities::{category::Category, channel::Channel, member::Member, server::Server};
 use cfg_if::cfg_if;
 use leptos::*;
@@ -36,10 +38,14 @@ cfg_if! {
 
 #[derive(Clone, Copy)]
 pub struct ServerContext {
-    pub servers: Resource<(usize, usize), Result<Vec<Server>, ServerFnError>>,
-    pub members: Resource<(usize, usize), Result<Vec<Member>, ServerFnError>>,
+    pub servers: Resource<(usize, usize, usize), Result<Vec<Server>, ServerFnError>>,
+    pub members: Resource<(usize, usize, usize), Result<Vec<Member>, ServerFnError>>,
     pub join_with_invitation: Action<JoinServerWithInvitation, Result<(), ServerFnError>>,
     pub create_server: Action<CreateServer, Result<String, ServerFnError>>,
+    pub leave_server: Action<LeaveServer, Result<(), ServerFnError>>,
+    pub create_channel: Action<CreateChannel, Result<Uuid, ServerFnError>>,
+    pub create_category: Action<CreateCategory, Result<Uuid, ServerFnError>>,
+    pub rename_channel: Action<RenameChannel, Result<(), ServerFnError>>,
 }
 
 #[derive(Clone, Copy, EnumIter, Display, PartialEq)]
@@ -63,11 +69,16 @@ pub enum ServerTemplate {
 pub fn provide_server_context() {
     let join_with_invitation = create_server_action::<JoinServerWithInvitation>();
     let create_server = create_server_action::<CreateServer>();
+    let leave_server = create_server_action::<LeaveServer>();
+    let create_channel = create_server_action::<CreateChannel>();
+    let create_category = create_server_action::<CreateCategory>();
+    let rename_channel = create_server_action::<RenameChannel>();
     //NOTE: agregar mas razones de cambio para los resources, leave_server, server_settings...,
     //rename_member
     let servers = create_resource(
         move || {
             (
+                leave_server.version().get(),
                 join_with_invitation.version().get(),
                 create_server.version().get(),
             )
@@ -77,6 +88,7 @@ pub fn provide_server_context() {
     let members = create_resource(
         move || {
             (
+                leave_server.version().get(),
                 join_with_invitation.version().get(),
                 create_server.version().get(),
             )
@@ -84,6 +96,10 @@ pub fn provide_server_context() {
         move |_| get_user_members(),
     );
     provide_context(ServerContext {
+        rename_channel,
+        create_category,
+        create_channel,
+        leave_server,
         servers,
         members,
         join_with_invitation,
@@ -258,4 +274,91 @@ pub async fn get_categories(server_id: Uuid) -> Result<Vec<Category>, ServerFnEr
         .ok_or_else(|| ServerFnError::new("cant get the categories".to_string()))?;
 
     Ok(categories)
+}
+
+#[server(LeaveServer, "/api")]
+pub async fn leave_server(server_id: Uuid) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    let auth = auth_user()?;
+    Member::delete_from_server(auth.id, server_id, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::new("cant delte the member form the server"))?;
+    println!("{server_id:?}");
+    Ok(())
+}
+
+#[server(CreateChannel, "/api")]
+pub async fn create_channel(
+    name: String,
+    channel_type: ChannelType,
+    server_id: Uuid,
+) -> Result<Uuid, ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+
+    if !Server::get_member(server_id, user.id, &pool)
+        .await
+        .is_some_and(|member| member.role == Role::ADMIN)
+    {
+        return Err(ServerFnError::new(
+            "the user is not an admin of this server",
+        ));
+    }
+
+    if name.len() <= 1 {
+        return Err(ServerFnError::new("min len is 1"));
+    }
+
+    Channel::create(name, channel_type, server_id, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::new("cant create the new channel"))
+}
+
+#[server(CreateCategory, "/api")]
+pub async fn create_category(server_id: Uuid, name: String) -> Result<Uuid, ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+
+    if name.len() <= 1 {
+        return Err(ServerFnError::new("min len is 1"));
+    }
+
+    if !Server::get_member(server_id, user.id, &pool)
+        .await
+        .is_some_and(|member| member.role == Role::ADMIN)
+    {
+        return Err(ServerFnError::new(
+            "the user is not an admin of this server",
+        ));
+    }
+
+    Category::create(name, server_id, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::new("cant create the category"))
+}
+
+#[server(RenameChannel)]
+pub async fn rename_channel(
+    server_id: Uuid,
+    channel_id: Uuid,
+    new_name: String,
+) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+
+    if new_name.len() <= 1 {
+        return Err(ServerFnError::new("min len is 1"));
+    }
+
+    if !Server::get_member(server_id, user.id, &pool)
+        .await
+        .is_some_and(|member| member.role == Role::ADMIN)
+    {
+        return Err(ServerFnError::new(
+            "the user is not an admin of this server",
+        ));
+    }
+    Channel::rename(new_name, channel_id, server_id, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::new("cant change the name"))
 }

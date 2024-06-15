@@ -1,4 +1,5 @@
 use cfg_if::cfg_if;
+use leptos::IntoAttribute;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -8,13 +9,28 @@ cfg_if! {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "ssr", derive(Decode, Encode))]
 pub enum ChannelType {
     TEXT,
     VOICE,
     ANNOUNCEMENTS,
     RULES,
+}
+
+impl IntoAttribute for ChannelType {
+    fn into_attribute(self) -> leptos::Attribute {
+        match self {
+            ChannelType::TEXT => leptos::Attribute::String("TEXT".into()),
+            ChannelType::VOICE => leptos::Attribute::String("VOICE".into()),
+            ChannelType::ANNOUNCEMENTS => leptos::Attribute::String("ANNOUNCEMENTS".into()),
+            ChannelType::RULES => leptos::Attribute::String("RULES".into()),
+        }
+    }
+
+    fn into_attribute_boxed(self: Box<Self>) -> leptos::Attribute {
+        self.into_attribute()
+    }
 }
 
 #[cfg(feature = "ssr")]
@@ -76,5 +92,22 @@ impl Channel {
             .await
             .ok()?;
         Some(id)
+    }
+
+    pub async fn rename(
+        new_name: String,
+        channel_id: Uuid,
+        server: Uuid,
+        pool: &MySqlPool,
+    ) -> Option<()> {
+        sqlx::query("UPDATE channels SET channels.name = ? WHERE channels.server_id = ? AND channels.id = ?")
+            .bind(new_name)
+            .bind(
+                server
+            ).bind(channel_id)
+            .execute(pool)
+            .await
+            .ok()?;
+        Some(())
     }
 }

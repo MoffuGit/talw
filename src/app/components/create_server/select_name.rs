@@ -51,7 +51,7 @@ pub fn Select_Name() -> impl IntoView {
                         }
                         <label class="mb-2 text-xs leading-4 font-bold">SERVER NAME</label>
                         <div class="flex flex-col">
-                            <input name="name" type="text" class="input input-secondary font-medium p-[10px] h-10 text-base w-full rounded-[3px]" type="text" placeholder=user />
+                            <input name="name" class="input input-secondary font-medium p-[10px] h-10 text-base w-full rounded-[3px]" type="text" placeholder=user />
                         </div>
                     </div>
                     <div class="mt-2 pb-1 text-xs leading-4 font-normal">"By creating a server, you agree to Discord's Community Guidelines."</div>

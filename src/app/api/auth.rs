@@ -93,7 +93,7 @@ pub async fn signup(
     let pool = pool()?;
     let auth = auth()?;
 
-    if username.len() < 4 || password.len() > 20 {
+    if username.len() < 4 || username.len() > 20 {
         return Err(ServerFnError::new(
             "Must be between 4 and 20 in length".to_string(),
         ));

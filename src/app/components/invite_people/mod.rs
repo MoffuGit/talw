@@ -9,6 +9,7 @@ pub fn InvitePeopleModal(
     invite_code: Uuid,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
+    let invite_ref = create_node_ref::<html::Div>();
     view! {
         <ModalProvider>
             <ModalTrigger class=class on_click=on_click>
@@ -16,16 +17,25 @@ pub fn InvitePeopleModal(
             </ModalTrigger>
             <ModalContent class="w-[440px] max-h-[720px] rounded p-0 h-auto overflow-hidden flex flex-col items-center">
                 <div class="w-full p-4 flex-col shadow-sm shadow-base-300/80">
-                    <div class="font-bold text-[24px] leading-[30px]">"Invite friends to you"</div>
-                    <div class="mt-2 p-1 rounded bg-base-200 w-full h-8"></div>
+                    <div class="font-bold text-[16px] leading-[30px]">"Invite friends to you"</div>
+                    <div class="mt-2 p-1 rounded bg-base-300/50 w-full h-8"></div>
                 </div>
-                <div class="w-full p-4 flex-col">
+                <div class="w-full p-4 flex-col bg-base-200">
                     <div class="font-bold text-[12px] mb-1 leading-[30px] uppercase">"or, send a server invite link to a friend"</div>
-                    <div class="text-base w-full rounded bg-base-300/30 flex items-center justify-center">
-                        <div>
-                            {invite_code.to_string()}
+                    <div class="text-base w-full rounded h-[40px] bg-base-300 flex items-center justify-between">
+                        <div class="p-2" node_ref=invite_ref>
+                            {invite_code.simple().to_string()}
                         </div>
-                        <div class="btn-primary w-[75px] mr-1 ">
+                        <div class="btn-primary text-primary-content w-[75px] h-[32px] rounded m-1"
+                            // on:click=move |_| {
+                            //     invite_ref.get().map(|node| {
+                            //         let text = node.inner_text();
+                            //         let window = use_window();
+                            //         let navigator = window.navigator();
+                            //         navigator.map(|navigator| navigator.clipboard().map(|clip| clip.write_text(text)));
+                            //     });
+                            // }
+                        >
                             "Copy"
                         </div>
                     </div>

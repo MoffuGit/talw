@@ -12,6 +12,12 @@ pub fn Join_with_invitation() -> impl IntoView {
     let use_server = use_server();
     let use_create_server = use_create_server();
     let join_with_invitation_ref = use_create_server.join_with_invitation_ref;
+    create_effect(move |_| {
+        use_server
+            .join_with_invitation
+            .version()
+            .with(|_| use_create_server.is_open.set(false));
+    });
     view! {
         <Transition fallback=move || ()>
             <ActionForm action=use_server.join_with_invitation node_ref=join_with_invitation_ref>

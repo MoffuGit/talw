@@ -9,7 +9,7 @@ cfg_if! {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "ssr", derive(Decode, Encode))]
 pub enum Role {
     ADMIN,
@@ -68,5 +68,19 @@ impl Member {
             .await
             .ok()?;
         Some(server_id)
+    }
+
+    pub async fn delete_from_server(
+        user_id: Uuid,
+        server_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Option<()> {
+        sqlx::query("DELETE FROM members WHERE user_id=? AND server_id=?")
+            .bind(user_id)
+            .bind(server_id)
+            .execute(pool)
+            .await
+            .ok()?;
+        Some(())
     }
 }

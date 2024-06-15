@@ -29,7 +29,13 @@ tracing = { version = "0.1.37", optional = true }
 http = "1"
 tower-cookies = "0.10.0"
 serde = { version = "1.0.164", features = ["derive"] }
-web-sys = { version = "0.3", features = ["HtmlDocument", "Element", "DomRect"] }
+web-sys = { version = "0.3", features = [
+  "HtmlDocument",
+  "Clipboard",
+  "Navigator",
+  "Element",
+  "DomRect",
+] }
 sqlx = { version = "0.7", features = [
   "runtime-tokio-rustls",
   "mysql",

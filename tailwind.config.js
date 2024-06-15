@@ -18,6 +18,9 @@ module.exports = {
         height:
           "height, color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter",
       },
+      boxShadow: {
+        radio: " 0 0 0 4px theme(colors.base-100) inset",
+      },
       keyframes: {
         "tooltip-open": {
           from: {
@@ -39,11 +42,11 @@ module.exports = {
         light: {
           primary: "#b1b1ce",
           secondary: "#dadaec",
-          accent: "#575785",
+          accent: "#ad9497",
           neutral: "#222a2a",
-          "base-100": "#f4f6f6",
-          "base-200": "#f1f4f4",
-          "base-300": "#e0e6e6",
+          "base-100": "#f6f6f8",
+          "base-200": "#eeeef0",
+          "base-300": "#e9e9ec",
         },
         dark: {
           primary: "#9797cd",

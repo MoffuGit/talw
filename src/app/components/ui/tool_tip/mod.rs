@@ -119,7 +119,8 @@ pub fn TooltipTrigger(children: Children, #[prop(optional)] class: &'static str)
                 provider_context.on_trigger_leave.get_untracked();
                 is_hover.update_untracked(|value| *value = false)
             }
-            on:click=move |_| {
+            on:click=move |evt| {
+                evt.stop_propagation();
                 provider_context.on_close.get_untracked();
             }
             on:wheel=move |_| {
@@ -134,21 +135,56 @@ pub fn TooltipTrigger(children: Children, #[prop(optional)] class: &'static str)
     }
 }
 
+#[derive(Clone, Copy)]
+pub enum ToolTipSide {
+    Bottom,
+    Left,
+    Right,
+    Top,
+}
+
 pub fn get_tooltip_position(
     trigger: HtmlElement<html::Div>,
     content: HtmlElement<html::Div>,
+    tooltip_side: ToolTipSide,
+    tooltip_of_side: f64,
 ) -> (String, String) {
     let trigger_values = trigger.get_bounding_client_rect();
     let content_height = content.offset_height();
+    let content_width = content.offset_width();
     let (y, height) = (trigger_values.y(), trigger.offset_height());
     let (x, width) = (trigger_values.x(), trigger.offset_width());
-    let y = y + (f64::from(height) / 2.0) - (f64::from(content_height) / 2.0);
-    let x = x + f64::from(width) + 2.0;
-    (x.to_string(), y.to_string())
+    match tooltip_side {
+        ToolTipSide::Bottom => {
+            let y = y + f64::from(width) + tooltip_of_side;
+            let x = x + (f64::from(width) / 2.0) - (f64::from(content_width) / 2.0);
+            (x.to_string(), y.to_string())
+        }
+        ToolTipSide::Left => {
+            let y = y + (f64::from(height) / 2.0) - (f64::from(content_height) / 2.0);
+            let x = x - f64::from(width) - tooltip_of_side;
+            (x.to_string(), y.to_string())
+        }
+        ToolTipSide::Right => {
+            let y = y + (f64::from(height) / 2.0) - (f64::from(content_height) / 2.0);
+            let x = x + f64::from(width) + tooltip_of_side;
+            (x.to_string(), y.to_string())
+        }
+        ToolTipSide::Top => {
+            let y = y - f64::from(width) - tooltip_of_side;
+            let x = x + (f64::from(width) / 2.0) - (f64::from(content_width) / 2.0);
+            (x.to_string(), y.to_string())
+        }
+    }
 }
 
 #[component]
-pub fn TooltipContent(tip: String, #[prop(optional)] class: &'static str) -> impl IntoView {
+pub fn TooltipContent(
+    tip: String,
+    #[prop(optional)] class: &'static str,
+    #[prop(optional, default = ToolTipSide::Right)] tooltip_side: ToolTipSide,
+    #[prop(optional, default = 2.0)] tooltip_of_side: f64,
+) -> impl IntoView {
     let context = use_context::<TooltipProviderContext>().expect("is open context");
 
     let is_open = context.is_open;
@@ -170,7 +206,7 @@ pub fn TooltipContent(tip: String, #[prop(optional)] class: &'static str) -> imp
         if let (Some(trigger), Some(content), true) =
             (trigger_ref.get(), content_ref.get(), is_open.get())
         {
-            get_tooltip_position(trigger, content)
+            get_tooltip_position(trigger, content, tooltip_side, tooltip_of_side)
         } else {
             ("".to_string(), "".to_string())
         }

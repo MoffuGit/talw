@@ -34,10 +34,9 @@ pub fn Server() -> impl IntoView {
     );
 
     view! {
-        <Transition fallback=move || ()>
             <div class="h-full w-full relative z-40">
                 <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
-                    <Suspense fallback=move || ()>
+                    <Transition fallback=move || ()>
                     {
                         move || {
                             server.get().map(|server| {
@@ -53,13 +52,12 @@ pub fn Server() -> impl IntoView {
                             })
                         }
                     }
-                    </Suspense>
+                    </Transition>
                 </div>
 
                 <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
                     <Outlet/>
                 </div>
             </div>
-        </Transition>
     }
 }

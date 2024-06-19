@@ -10,7 +10,7 @@ use leptos_router::ActionForm;
 pub fn EditChannelModal(
     channel: Channel,
     class: &'static str,
-    on_click: Signal<()>,
+    #[prop(optional)] on_click: Option<Signal<()>>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let open = create_rw_signal(false);
@@ -31,9 +31,21 @@ pub fn EditChannelModal(
     let channel = store_value(channel);
     view! {
         <ModalProvider open=open on_close=Signal::derive(on_close)>
-            <ModalTrigger class=class on_click=on_click>
-                {children.map(|children| children())}
-            </ModalTrigger>
+            {
+                if let Some(on_click) = on_click {
+                    view! {
+                        <ModalTrigger class=class on_click=on_click>
+                            {children.map(|children| children())}
+                        </ModalTrigger>
+                    }.into_view()
+                } else {
+                    view! {
+                        <ModalTrigger class=class>
+                            {children.map(|children| children())}
+                        </ModalTrigger>
+                    }.into_view()
+                }
+            }
             <ModalContent class="w-[440px] max-h-[720px] rounded p-0 h-auto overflow-hidden flex flex-col items-center">
                 <div class="text-start p-[16px] w-full">
                     <h1 class="font-bold text-[24px] leading-[30px]">"Edit Channel"</h1>
@@ -45,7 +57,7 @@ pub fn EditChannelModal(
                     <div class="px-[16px] w-full">
                         <div class="text-[12px] mb-0.5 leading-[18px] uppercase font-bold text-base-content">"channel name"</div>
                         <div class="mt-2 mb-4 w-full bg-base-300 rounded flex items-center">
-                            <input name="name" minlength="1" type="text" value=channel.get_value().name class="w-full h-10 bg-base-300 py-[10px]"/>
+                            <input name="new_name" minlength="1" type="text" value=channel.get_value().name class="w-full h-10 bg-base-300 py-[10px]"/>
                         </div>
                     </div>
                     <div class="relative p-4 flex justify-end w-full bg-base-200">

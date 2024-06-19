@@ -29,7 +29,6 @@ pub fn ProvideMenu(
     let open = open.unwrap_or(create_rw_signal(false));
     let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
     let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
-    create_effect(move |_| log::info!("open update: {}", open.get()));
     view! {
         <Provider value=MenuProviderContext{ open, modal, trigger_ref, content_ref, trigger_key }>
             {   children()}
@@ -54,7 +53,7 @@ pub fn MenuTrigger(
                         false => ""
                     })
                 }
-                on:click=move |_| {
+                on:click=move |evt| {
                     open.set(true);
                 }
             node_ref=trigger_ref>
@@ -69,7 +68,7 @@ pub fn MenuTrigger(
                             })
             }
             on:contextmenu=move |evt| {
-            evt.prevent_default();
+                evt.prevent_default();
                 open.set(true);
             }
             node_ref=trigger_ref>

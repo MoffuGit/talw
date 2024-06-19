@@ -29,4 +29,30 @@ impl Category {
             .ok()?;
         Some(id)
     }
+
+    pub async fn rename(
+        new_name: String,
+        channel_id: Uuid,
+        server: Uuid,
+        pool: &MySqlPool,
+    ) -> Option<()> {
+        sqlx::query("UPDATE category SET category.name = ? WHERE category.server_id = ? AND category.id = ?")
+            .bind(new_name)
+            .bind(
+                server
+            ).bind(channel_id)
+            .execute(pool)
+            .await
+            .ok()?;
+        Some(())
+    }
+    pub async fn delete(id: Uuid, server_id: Uuid, pool: &MySqlPool) -> Option<()> {
+        sqlx::query("DELETE FROM category WHERE server_id = ? AND id = ?")
+            .bind(server_id)
+            .bind(id)
+            .execute(pool)
+            .await
+            .ok()?;
+        Some(())
+    }
 }

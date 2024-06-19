@@ -9,7 +9,7 @@ cfg_if! {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Copy)]
 #[cfg_attr(feature = "ssr", derive(Decode, Encode))]
 pub enum Role {
     ADMIN,

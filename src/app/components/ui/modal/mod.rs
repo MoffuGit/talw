@@ -36,7 +36,8 @@ pub fn ModalTrigger(
         .open;
 
     view! {
-        <div on:click=move |_| {
+        <div on:click=move |evt| {
+            evt.stop_propagation();
             is_open.update(|value| *value = !*value);
             if let Some(on_click) = on_click {
                 on_click.get();
@@ -89,7 +90,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
                 dialog.close();
             }
         } else {
-            warn!("cant get the dialog ref")
+            log::info!("cant get the dialog ref");
         }
     });
 
@@ -98,7 +99,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
     view! {
         <Show when=move || show.get()>
             <Portal mount=document().get_element_by_id("app").expect("acces to the app") clone:children>
-                <dialog class="modal" _ref=dialog_ref on:close=move |_| {
+                <dialog class="modal" node_ref=dialog_ref on:close=move |_| {
                     if let Some(on_close) = on_close { on_close.get() }
                 }>
                     <div class=format!("modal-box {}", class)>

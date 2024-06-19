@@ -110,4 +110,29 @@ impl Channel {
             .ok()?;
         Some(())
     }
+
+    pub async fn delete(channel_id: Uuid, server_id: Uuid, pool: &MySqlPool) -> Option<()> {
+        sqlx::query("DELETE FROM channels WHERE server_id = ? AND id = ?")
+            .bind(server_id)
+            .bind(channel_id)
+            .execute(pool)
+            .await
+            .ok()?;
+        Some(())
+    }
+
+    pub async fn remove_all_from_category(
+        server_id: Uuid,
+        category_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Option<()> {
+        sqlx::query("UPDATE channels SET channels.category_id = NULL WHERE channels.category_id = ? AND channels.server_id = ?")
+            .bind(
+                category_id
+            ).bind(server_id)
+            .execute(pool)
+            .await
+            .ok()?;
+        Some(())
+    }
 }

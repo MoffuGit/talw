@@ -1,24 +1,31 @@
 use super::category::Category;
 use super::channel::Channel;
 use super::server_menu::ServerMenu;
-use crate::app::components::create_category::CreateCategoryModal;
-use crate::app::components::create_channel::CreateChannelModal;
+use crate::app::api::category::get_categories;
+use crate::app::api::category::use_category;
+use crate::app::components::modal::create_category::CreateCategoryModal;
+use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::ui::context_menu::*;
 use crate::{
-    app::api::server::{get_categories, get_general_channels, use_server},
+    app::api::channel::{get_general_channels, use_channel},
     entities::{member::Member, server::Server},
 };
 use leptos::*;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
     //NOTE: las acciones las vamos a crear en el contexto del server y ya luego subscribimos los
     //resources a esas acciones aqui, create_channel, create_category,rename_member, server_settings...
-    let use_server = use_server();
-    let create_channel = use_server.create_channel;
-    let delete_channel = use_server.delete_channel;
-    let rename_channel = use_server.rename_channel;
-    let delete_category = use_server.delete_category;
+    let use_channel = use_channel();
+    let create_channel = use_channel.create_channel;
+    let delete_channel = use_channel.delete_channel;
+    let rename_channel = use_channel.rename_channel;
+
+    let use_category = use_category();
+    let delete_category = use_category.delete_category;
+    let create_category = use_category.create_category;
+    let rename_category = use_category.rename_category;
 
     let channels = create_resource(
         move || {
@@ -32,8 +39,6 @@ pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
         move |_| get_general_channels(server.id),
     );
 
-    let create_category = use_server.create_category;
-    let rename_category = use_server.rename_category;
     let categories = create_resource(
         move || {
             (

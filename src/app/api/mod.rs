@@ -1,8 +1,13 @@
 pub mod auth;
+pub mod category;
+pub mod channel;
 pub mod server;
 pub mod theme;
 
+use crate::entities::member::Member;
+use crate::entities::server::Server;
 use cfg_if::cfg_if;
+use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -22,6 +27,12 @@ cfg_if! {
 
         pub fn auth_user() -> Result<User, ServerFnError> {
             auth()?.current_user.ok_or_else(|| ServerFnError::new("cant auth user".to_string()))
+        }
+
+        pub async fn auth_member(server_id: Uuid) -> Result<Member, ServerFnError> {
+            let pool = pool()?;
+            let user = auth_user()?;
+            Server::get_member(server_id, user.id, &pool).await.ok_or_else(|| ServerFnError::new("cant get the member"))
         }
     }
 }

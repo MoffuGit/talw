@@ -1,13 +1,14 @@
-use crate::app::components::create_category::CreateCategoryModal;
-use crate::app::components::create_channel::CreateChannelModal;
-use crate::app::components::invite_people::InvitePeopleModal;
-use crate::app::components::leave_server::LeaveServer;
+use crate::app::components::modal::create_category::CreateCategoryModal;
+use crate::app::components::modal::create_channel::CreateChannelModal;
+use crate::app::components::modal::invite_people::InvitePeopleModal;
+use crate::app::components::modal::leave_server::LeaveServer;
 use crate::app::components::ui::context_menu::*;
 use crate::entities::member::Member;
 use crate::entities::member::Role;
 use crate::entities::server::Server;
 use leptos::*;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn ContextServerMenu(
     server: Server,
@@ -54,6 +55,7 @@ pub fn ContextServerMenu(
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 fn ServerMenuAdminItems(on_click: Signal<()>, server: Server) -> impl IntoView {
     view! {
@@ -73,6 +75,7 @@ fn ServerMenuAdminItems(on_click: Signal<()>, server: Server) -> impl IntoView {
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 fn ServerMenuGuestItems(server: Server, on_click: Signal<()>) -> impl IntoView {
     view! {

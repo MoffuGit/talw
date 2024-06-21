@@ -1,4 +1,4 @@
-use crate::app::api::server::use_server;
+use crate::app::api::channel::use_channel;
 use crate::app::components::ui::modal::*;
 use crate::entities::channel::ChannelType;
 use icondata;
@@ -7,6 +7,7 @@ use leptos_icons::*;
 use leptos_router::ActionForm;
 use uuid::Uuid;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn CreateChannelModal(
     class: &'static str,
@@ -27,7 +28,7 @@ pub fn CreateChannelModal(
     };
     match (category_id, category_name) {
         (Some(category_id), Some(category_name)) => {
-            let create_channel_with_category = use_server().create_channel_with_category;
+            let create_channel_with_category = use_channel().create_channel_with_category;
             create_effect(move |_| {
                 create_channel_with_category.version().with(|_| {
                     if let Some(Ok(_)) = create_channel_with_category.value().get() {
@@ -114,7 +115,7 @@ pub fn CreateChannelModal(
             }.into_view()
         }
         _ => {
-            let create_channel = use_server().create_channel;
+            let create_channel = use_channel().create_channel;
             create_effect(move |_| {
                 create_channel.version().with(|_| {
                     if let Some(Ok(_)) = create_channel.value().get() {

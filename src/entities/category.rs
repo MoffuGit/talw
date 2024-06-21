@@ -36,7 +36,7 @@ impl Category {
         server: Uuid,
         pool: &MySqlPool,
     ) -> Option<()> {
-        sqlx::query("UPDATE category SET category.name = ? WHERE category.server_id = ? AND category.id = ?")
+        sqlx::query("UPDATE categories SET categories.name = ? WHERE categories.server_id = ? AND categories.id = ?")
             .bind(new_name)
             .bind(
                 server

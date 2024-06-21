@@ -8,6 +8,7 @@ use leptos_router::Outlet;
 use leptos_router::Redirect;
 use uuid::Uuid;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Server() -> impl IntoView {
     let params = use_params_map();

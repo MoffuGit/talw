@@ -2,6 +2,7 @@ use crate::app::api::auth::use_auth;
 use leptos::*;
 use leptos_router::{ActionForm, A};
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Signup() -> impl IntoView {
     let signup = use_auth().signup;

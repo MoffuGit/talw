@@ -1,7 +1,7 @@
-use crate::app::components::create_category::CreateCategoryModal;
-use crate::app::components::create_channel::CreateChannelModal;
-use crate::app::components::invite_people::InvitePeopleModal;
-use crate::app::components::leave_server::LeaveServer;
+use crate::app::components::modal::create_category::CreateCategoryModal;
+use crate::app::components::modal::create_channel::CreateChannelModal;
+use crate::app::components::modal::invite_people::InvitePeopleModal;
+use crate::app::components::modal::leave_server::LeaveServer;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::entities::member::Member;
 use crate::entities::member::Role;
@@ -10,6 +10,7 @@ use icondata;
 use leptos::*;
 use leptos_icons::*;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn ServerMenu(server: Server, member: Member) -> impl IntoView {
     let open = create_rw_signal(false);
@@ -71,8 +72,9 @@ pub fn ServerMenu(server: Server, member: Member) -> impl IntoView {
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
-pub fn ServerMenuAdminItems(on_click: Signal<()>, server: Server) -> impl IntoView {
+fn ServerMenuAdminItems(on_click: Signal<()>, server: Server) -> impl IntoView {
     view! {
         //NOTE: only ui not functioanl
         <div class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
@@ -93,8 +95,9 @@ pub fn ServerMenuAdminItems(on_click: Signal<()>, server: Server) -> impl IntoVi
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
-pub fn ServerMenuGuestItems(server: Server, on_click: Signal<()>) -> impl IntoView {
+fn ServerMenuGuestItems(server: Server, on_click: Signal<()>) -> impl IntoView {
     view! {
         <div class="divider relative my-0 mx-1 w-auto"/>
         <LeaveServer server=server class="flex justify-between text-error hover:text-error-content hover:bg-error items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=on_click>

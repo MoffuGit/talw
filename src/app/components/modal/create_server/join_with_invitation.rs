@@ -1,5 +1,5 @@
+use super::use_create_server;
 use crate::app::api::server::use_server;
-use crate::app::components::create_server::use_create_server;
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;
 use icondata;
@@ -7,8 +7,9 @@ use leptos::*;
 use leptos_icons::*;
 use leptos_router::{ActionForm, A};
 
+#[allow(non_snake_case)]
 #[component]
-pub fn Join_with_invitation() -> impl IntoView {
+pub fn JoinWithInvitation() -> impl IntoView {
     let use_server = use_server();
     let use_create_server = use_create_server();
     let join_with_invitation_ref = use_create_server.join_with_invitation_ref;

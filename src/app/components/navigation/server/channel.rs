@@ -1,7 +1,7 @@
 use super::use_current_channel;
-use crate::app::components::delete_channel::DeleteChannel;
-use crate::app::components::edit_channel::EditChannelModal;
-use crate::app::components::invite_people::InvitePeopleModal;
+use crate::app::components::modal::delete_channel::DeleteChannel;
+use crate::app::components::modal::edit_channel::EditChannelModal;
+use crate::app::components::modal::invite_people::InvitePeopleModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::components::ui::tool_tip::ToolTipSide;
 use crate::app::components::ui::tool_tip::TooltipContent;
@@ -17,6 +17,7 @@ use leptos_router::A;
 use std::time::Duration;
 use uuid::Uuid;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Channel(
     channel: Channel,

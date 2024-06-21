@@ -1,5 +1,5 @@
+use super::use_create_server;
 use crate::app::api::server::ServerTemplate;
-use crate::app::components::create_server::use_create_server;
 use crate::app::components::ui::modal::slide_modal::SlideForward;
 use crate::app::components::ui::modal::ModalClose;
 use icondata;
@@ -7,6 +7,7 @@ use leptos::*;
 use leptos_icons::*;
 use strum::IntoEnumIterator;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn SelectTemplate() -> impl IntoView {
     view! {
@@ -31,8 +32,9 @@ pub fn SelectTemplate() -> impl IntoView {
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
-pub fn Templates(template: ServerTemplate, children: Children) -> impl IntoView {
+fn Templates(template: ServerTemplate, children: Children) -> impl IntoView {
     let selected_template = use_create_server().selected_template;
     view! {
         <SlideForward value=2 class="rounded-lg border-secondary border-[1px] border-solid mb-2  w-full p-0">

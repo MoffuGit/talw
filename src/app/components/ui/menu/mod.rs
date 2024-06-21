@@ -17,6 +17,7 @@ pub enum TriggerKey {
     Rtl,
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn ProvideMenu(
     children: Children,
@@ -36,6 +37,7 @@ pub fn ProvideMenu(
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn MenuTrigger(
     #[prop(optional)] class: &'static str,
@@ -53,7 +55,7 @@ pub fn MenuTrigger(
                         false => ""
                     })
                 }
-                on:click=move |evt| {
+                on:click=move |_| {
                     open.set(true);
                 }
             node_ref=trigger_ref>
@@ -78,6 +80,7 @@ pub fn MenuTrigger(
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn MenuContent(
     #[prop(optional)] class: String,
@@ -86,15 +89,7 @@ pub fn MenuContent(
 ) -> impl IntoView {
     let context = use_context::<MenuProviderContext>().expect("acces to menu context");
     let content_ref = context.content_ref;
-    let trigger_ref = context.trigger_ref;
     let style = style.unwrap_or_default();
-    let visibility = move || {
-        if !context.open.get() {
-            "visibility: hidden;"
-        } else {
-            ""
-        }
-    };
     create_effect(move |_| {
         if context.modal {
             if let Some(app) = document().get_element_by_id("app") {
@@ -112,7 +107,7 @@ pub fn MenuContent(
         }
     });
     if context.trigger_key == TriggerKey::Rtl {
-        let _ = use_event_listener(use_document(), contextmenu, move |evt| {
+        let _ = use_event_listener(use_document(), contextmenu, move |_| {
             if context.open.get() {
                 context.open.set(false)
             }

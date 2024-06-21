@@ -3,8 +3,7 @@ use std::time::Duration;
 use web_sys::PointerEvent;
 
 #[derive(Clone)]
-pub struct TooltipProviderContext {
-    // content_id: String,
+struct TooltipProviderContext {
     is_open: RwSignal<bool>,
     on_trigger_leave: Signal<()>,
     on_trigger_enter: Signal<()>,
@@ -13,6 +12,7 @@ pub struct TooltipProviderContext {
     trigger_ref: NodeRef<html::Div>,
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn TooltipProvider(
     children: Children,
@@ -97,6 +97,7 @@ pub fn TooltipProvider(
     children()
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn TooltipTrigger(children: Children, #[prop(optional)] class: &'static str) -> impl IntoView {
     let provider_context = use_context::<TooltipProviderContext>().expect("have this context");
@@ -135,6 +136,7 @@ pub fn TooltipTrigger(children: Children, #[prop(optional)] class: &'static str)
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone, Copy)]
 pub enum ToolTipSide {
     Bottom,
@@ -178,6 +180,7 @@ pub fn get_tooltip_position(
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn TooltipContent(
     tip: String,

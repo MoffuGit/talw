@@ -74,6 +74,7 @@ pub fn use_theme() -> ThemeContext {
     use_context::<ThemeContext>().expect("theme context")
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Theme() -> impl IntoView {
     let theme_context = use_theme();
@@ -88,6 +89,6 @@ pub fn Theme() -> impl IntoView {
 
     view! {
         <Body class={move || format!("w-full h-screen font-satoshi {}", theme())}/>
-        <Html attr:data-theme={move || theme()} />
+        <Html attr:data-theme=theme />
     }
 }

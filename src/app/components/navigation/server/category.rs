@@ -1,7 +1,8 @@
-use crate::app::api::server::use_server;
-use crate::app::components::create_channel::CreateChannelModal;
-use crate::app::components::delete_category::DeleteCategoryModal;
-use crate::app::components::edit_category::EditCategoryModal;
+use crate::app::api::category::use_category;
+use crate::app::api::channel::use_channel;
+use crate::app::components::modal::create_channel::CreateChannelModal;
+use crate::app::components::modal::delete_category::DeleteCategoryModal;
+use crate::app::components::modal::edit_category::EditCategoryModal;
 use crate::app::components::navigation::server::channel::Channel;
 use crate::app::components::ui::collapsible::*;
 use crate::app::components::ui::context_menu::*;
@@ -13,8 +14,10 @@ use leptos_icons::*;
 use std::time::Duration;
 use uuid::Uuid;
 
-use crate::{app::api::server::get_channels_with_category, entities::category::Category};
+use crate::app::api::channel::get_channels_with_category;
+use crate::entities::category::Category;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Category(
     category: Category,
@@ -25,10 +28,10 @@ pub fn Category(
     let collapsible_open = create_rw_signal(false);
     let context_menu_open = create_rw_signal(false);
     //NOTE: agregar subs to resource
-    let delete_category = use_server().delete_category;
-    let create_channel_with_category = use_server().create_channel_with_category;
-    let delete_channel = use_server().delete_channel;
-    let rename_channel = use_server().rename_channel;
+    let delete_category = use_category().delete_category;
+    let create_channel_with_category = use_channel().create_channel_with_category;
+    let delete_channel = use_channel().delete_channel;
+    let rename_channel = use_channel().rename_channel;
 
     let channels = create_resource(
         move || {

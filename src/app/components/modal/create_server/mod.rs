@@ -3,19 +3,19 @@ pub mod select_name;
 pub mod select_template;
 use crate::app::api::server::use_server;
 use crate::app::api::server::ServerTemplate;
-use crate::app::components::create_server::select_template::SelectTemplate;
+use crate::app::components::modal::create_server::join_with_invitation::JoinWithInvitation;
 use crate::app::components::ui::modal::slide_modal::*;
 use crate::app::components::ui::modal::*;
 use crate::app::components::ui::tool_tip::*;
 use icondata;
-use join_with_invitation::Join_with_invitation;
 use leptos::*;
 use leptos_icons::Icon;
-use select_name::Select_Name;
+use select_name::SelectName;
+use select_template::SelectTemplate;
 use std::time::Duration;
 
 #[derive(Clone)]
-pub struct CreateServerContext {
+struct CreateServerContext {
     is_open: RwSignal<bool>,
     selected_template: RwSignal<ServerTemplate>,
     join_with_invitation_ref: NodeRef<html::Form>,
@@ -26,8 +26,9 @@ fn use_create_server() -> CreateServerContext {
     use_context::<CreateServerContext>().expect("have create server context")
 }
 
+#[allow(non_snake_case)]
 #[component]
-pub fn Create_server_modal() -> impl IntoView {
+pub fn CreateServerModal() -> impl IntoView {
     let use_server = use_server();
 
     let is_open = create_rw_signal(false);
@@ -94,10 +95,10 @@ pub fn Create_server_modal() -> impl IntoView {
                             <SelectTemplate/>
                         </SlideContent>
                         <SlideContent value=1 class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 ">
-                            <Join_with_invitation/>
+                            <JoinWithInvitation/>
                         </SlideContent>
                         <SlideContent value=2 class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 ">
-                            <Select_Name/>
+                            <SelectName/>
                         </SlideContent>
                     </SlideViewport>
                 </SlideProvider>

@@ -1,12 +1,3 @@
-pub mod create_category;
-pub mod create_channel;
-pub mod create_server;
-pub mod delete_category;
-pub mod delete_channel;
-pub mod edit_category;
-pub mod edit_channel;
-pub mod invite_people;
-pub mod leave_server;
 pub mod modal;
 pub mod navigation;
 pub mod theme;

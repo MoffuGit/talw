@@ -5,10 +5,11 @@ use crate::app::components::ui::menu::{MenuContent, MenuTrigger, ProvideMenu, Tr
 
 #[derive(Clone)]
 pub struct DropdownProviderContext {
-    open: RwSignal<bool>,
     trigger_ref: NodeRef<html::Div>,
     content_ref: NodeRef<html::Div>,
 }
+
+#[allow(non_snake_case)]
 #[component]
 pub fn DropdownProvider(
     children: Children,
@@ -20,7 +21,6 @@ pub fn DropdownProvider(
     let content_ref = create_node_ref::<html::Div>();
     view! {
         <Provider value=DropdownProviderContext {
-        open,
         trigger_ref,
         content_ref,
         }>
@@ -31,6 +31,7 @@ pub fn DropdownProvider(
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn DropdownTrigger(
     #[prop(optional)] children: Option<Children>,
@@ -43,6 +44,7 @@ pub fn DropdownTrigger(
     }
 }
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub enum MenuSide {
     Bottom,
@@ -51,6 +53,7 @@ pub enum MenuSide {
     Top,
 }
 
+#[allow(dead_code)]
 #[derive(Clone)]
 pub enum MenuAlign {
     Start,
@@ -140,6 +143,7 @@ fn use_menu_position(
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn DropdownContent(
     #[prop(optional)] class: String,

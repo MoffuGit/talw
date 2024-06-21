@@ -1,4 +1,4 @@
-use crate::app::api::server::use_server;
+use crate::app::api::category::use_category;
 use crate::app::components::ui::modal::*;
 use icondata;
 use leptos::*;
@@ -6,6 +6,7 @@ use leptos_icons::*;
 use leptos_router::ActionForm;
 use uuid::Uuid;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn CreateCategoryModal(
     class: &'static str,
@@ -14,7 +15,7 @@ pub fn CreateCategoryModal(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let open = create_rw_signal(false);
-    let create_category = use_server().create_category;
+    let create_category = use_category().create_category;
     let form_ref = create_node_ref::<html::Form>();
     let on_close = move || {
         if let Some(form) = form_ref.get() {

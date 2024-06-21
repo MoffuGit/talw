@@ -3,6 +3,7 @@ mod components;
 mod routes;
 
 use api::auth::provide_auth_context;
+use api::channel::provide_channel_context;
 use api::server::provide_server_context;
 use api::theme::{provide_theme_context, Theme};
 use leptos::*;
@@ -14,12 +15,17 @@ use routes::servers::server::Server;
 use routes::servers::Servers;
 use routes::signup::Signup;
 
+use crate::app::api::category::provide_category_context;
+
+#[allow(non_snake_case)]
 #[component]
 pub fn App() -> impl IntoView {
     provide_meta_context();
     provide_server_context();
     provide_theme_context();
     provide_auth_context();
+    provide_channel_context();
+    provide_category_context();
 
     //NOTE: agregar el context menu donde esta vacio
     //acomodar de mejor manera el codigo, separar el contexto del server a channels y categories,

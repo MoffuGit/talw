@@ -1,5 +1,5 @@
+use super::use_create_server;
 use crate::app::api::{auth::current_user, server::use_server};
-use crate::app::components::create_server::use_create_server;
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;
 use icondata;
@@ -7,8 +7,9 @@ use leptos::*;
 use leptos_icons::*;
 use leptos_router::ActionForm;
 
+#[allow(non_snake_case)]
 #[component]
-pub fn Select_Name() -> impl IntoView {
+pub fn SelectName() -> impl IntoView {
     let create_server = use_server().create_server;
     let select_name_ref = use_create_server().select_name_ref;
     let user = move || {

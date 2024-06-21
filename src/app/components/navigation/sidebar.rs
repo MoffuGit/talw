@@ -1,5 +1,5 @@
 use crate::app::api::server::use_server;
-use crate::app::components::create_server::Create_server_modal;
+use crate::app::components::modal::create_server::CreateServerModal;
 use crate::app::components::navigation::context_server_menu::ContextServerMenu;
 use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
 use crate::entities::server::Server;
@@ -31,7 +31,7 @@ pub fn SideBar() -> impl IntoView {
                     }))
                 }).collect_view())}
 
-                <Create_server_modal/>
+                <CreateServerModal/>
 
                 <Navigation id="search_servers".to_string() name="Explore Discoverable Servers".to_string()>
                     <Icon icon=icondata::RiCompassMapLine class="h-8 w-8 group-hover:fill-base-100 fill-primary"/>

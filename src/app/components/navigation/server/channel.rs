@@ -97,7 +97,7 @@ pub fn Channel(
 
                     </ContextMenuTrigger>
 
-                    <ContextMenuContent class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded".to_string()>
+                    <ContextMenuContent class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40".to_string()>
                         <InvitePeopleModal invite_code=invite_code class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || open.set(false))>
                             <div class="group-hover:text-primary-content">"Invite People"</div>
                         </InvitePeopleModal>

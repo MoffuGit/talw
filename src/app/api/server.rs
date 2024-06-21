@@ -350,7 +350,7 @@ pub async fn create_channel_with_category(
         return Err(ServerFnError::new("min len is 1"));
     }
 
-    Channel::create(name, channel_type, server_id, &pool)
+    Channel::create_with_category(name, channel_type, server_id, category_id, &pool)
         .await
         .ok_or_else(|| ServerFnError::new("cant create the new channel"))
 }

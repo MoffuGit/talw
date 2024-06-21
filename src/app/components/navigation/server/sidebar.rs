@@ -1,8 +1,11 @@
 use super::category::Category;
 use super::channel::Channel;
 use super::server_menu::ServerMenu;
+use crate::app::components::create_category::CreateCategoryModal;
+use crate::app::components::create_channel::CreateChannelModal;
+use crate::app::components::ui::context_menu::*;
 use crate::{
-    app::api::server::{get_categories, get_general_channels, rename_category, use_server},
+    app::api::server::{get_categories, get_general_channels, use_server},
     entities::{member::Member, server::Server},
 };
 use leptos::*;
@@ -15,10 +18,12 @@ pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
     let create_channel = use_server.create_channel;
     let delete_channel = use_server.delete_channel;
     let rename_channel = use_server.rename_channel;
+    let delete_category = use_server.delete_category;
 
     let channels = create_resource(
         move || {
             (
+                delete_category.version().get(),
                 create_channel.version().get(),
                 delete_channel.version().get(),
                 rename_channel.version().get(),
@@ -28,7 +33,6 @@ pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
     );
 
     let create_category = use_server.create_category;
-    let delete_category = use_server.delete_category;
     let rename_category = use_server.rename_category;
     let categories = create_resource(
         move || {
@@ -40,6 +44,7 @@ pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
         },
         move |_| get_categories(server.id),
     );
+    let open = create_rw_signal(false);
     view! {
         <div class="w-full h-full flex flex-col items-center relative bg-base-200 scrollbar-none overflow-y-scroll overflow-x-hidden">
             <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
@@ -68,6 +73,17 @@ pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
                     </div>
                 </Transition>
             </div>
+            <ContextMenuProvider modal=false open=open >
+                <ContextMenuTrigger class="h-full w-full bg-none"/>
+                <ContextMenuContent class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40".to_string()>
+                    <CreateChannelModal server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || open.set(false))>
+                        <div class="group-hover:text-primary-content">"Create Channel"</div>
+                    </CreateChannelModal>
+                    <CreateCategoryModal server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || open.set(false))>
+                        <div class="group-hover:text-primary-content">"Create Category"</div>
+                    </CreateCategoryModal>
+                </ContextMenuContent>
+            </ContextMenuProvider>
         </div>
     }
 }

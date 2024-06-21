@@ -47,7 +47,7 @@ impl Category {
         Some(())
     }
     pub async fn delete(id: Uuid, server_id: Uuid, pool: &MySqlPool) -> Option<()> {
-        sqlx::query("DELETE FROM category WHERE server_id = ? AND id = ?")
+        sqlx::query("DELETE FROM categories WHERE server_id = ? AND id = ?")
             .bind(server_id)
             .bind(id)
             .execute(pool)

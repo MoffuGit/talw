@@ -21,6 +21,10 @@ pub fn App() -> impl IntoView {
     provide_theme_context();
     provide_auth_context();
 
+    //NOTE: agregar el context menu donde esta vacio
+    //acomodar de mejor manera el codigo, separar el contexto del server a channels y categories,
+    //moover los modales a una carpeta de modales
+    //trabajar en la overview
     view! {
         <Stylesheet id="leptos" href="/pkg/TALW.css"/>
 

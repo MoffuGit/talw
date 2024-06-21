@@ -6,7 +6,7 @@ use leptos::*;
 use uuid::Uuid;
 
 #[component]
-pub fn LeaveServer(
+pub fn DeleteCategoryModal(
     category: Category,
     class: &'static str,
     server_id: Uuid,
@@ -21,9 +21,9 @@ pub fn LeaveServer(
             </ModalTrigger>
             <ModalContent class="w-[440px] rounded p-0 h-auto overflow-hidden flex flex-col items-center">
                 <h2 class="p-4  leading-[24px] text-[20px] font-bold text-start w-full">{
-                    format!("Leave '{}'", category.name)
+                    format!("Delete '{}'", category.name)
                 }</h2>
-                <div class="px-4 pb-10 w-full">{format!("Are you sure you want to leave '{}'? You won't be able to rejoin this category unless you are re-invited.", category.name)}</div>
+                <div class="px-4 pb-10 w-full">{format!("Are you sure you want to delete {}? This cannnot be undone.", category.name)}</div>
                 <div class="relative p-4 flex justify-end w-full bg-base-300/80">
                     <ModalClose class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 hover:underline">
                         "Cancel"
@@ -32,7 +32,7 @@ pub fn LeaveServer(
                         <input value=category.id.to_string() type="hidden" name="category_id"/>
                         <input value=server_id.to_string() type="hidden" name="server_id"/>
                         <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-error text-error-content" >
-                            "Leave Server"
+                            "Delete Category"
                         </button>
                     </ActionForm>
                 </div>

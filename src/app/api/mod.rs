@@ -3,6 +3,7 @@ pub mod category;
 pub mod channel;
 pub mod server;
 pub mod theme;
+pub mod uploadthing;
 
 use crate::entities::member::Member;
 use crate::entities::server::Server;

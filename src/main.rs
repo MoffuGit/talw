@@ -9,6 +9,7 @@ async fn main() {
     use start_axum::entities::user::AuthSession;
     use start_axum::entities::user::User;
     use start_axum::state::AppState;
+    use start_axum::uploadthing::UploadThing;
     use start_axum::ws::ws_handler;
     use start_axum::ws::WsChannels;
 
@@ -42,6 +43,7 @@ async fn main() {
         handle_server_fns_with_context(
             move || {
                 provide_context(app_state.pool.clone());
+                provide_context(app_state.uploadthing.clone());
                 provide_context(cookies.clone());
                 provide_context(auth_session.clone())
             },
@@ -61,6 +63,7 @@ async fn main() {
             move || {
                 provide_context(cookies.clone());
                 provide_context(app_state.pool.clone());
+                provide_context(app_state.uploadthing.clone());
                 provide_context(auth_session.clone())
             },
             || view! {<App/>},
@@ -93,11 +96,13 @@ async fn main() {
     let routes = generate_route_list(App);
 
     let ws_channels = WsChannels::default();
+    let uploadthing = UploadThing::default();
 
     let app_state = AppState {
         leptos_options,
         pool: pool.clone(),
         ws_channels,
+        uploadthing,
     };
 
     let app = Router::new()

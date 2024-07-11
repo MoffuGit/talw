@@ -1,5 +1,7 @@
 use cfg_if::cfg_if;
 
+use crate::uploadthing::UploadThing;
+
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use crate::ws::WsChannels;
@@ -10,7 +12,8 @@ cfg_if! {
         pub struct AppState {
             pub leptos_options: LeptosOptions,
             pub pool: MySqlPool,
-            pub ws_channels: WsChannels
+            pub ws_channels: WsChannels,
+            pub uploadthing: UploadThing
         }
     }
 }

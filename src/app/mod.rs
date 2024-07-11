@@ -27,10 +27,11 @@ pub fn App() -> impl IntoView {
     provide_channel_context();
     provide_category_context();
 
-    //NOTE: agregar el context menu donde esta vacio
-    //acomodar de mejor manera el codigo, separar el contexto del server a channels y categories,
-    //moover los modales a una carpeta de modales
-    //trabajar en la overview
+    //NOTE: investigar como guardar imagenes en mysql y permitir al usuario tener una imgane de
+    //perifl asi como poner una imagen al server
+    //avanzar en la overview server setting and server porifle setting
+    //redirect the user when the path=channel_id is empty
+    //avanzar en path=":channel_id"
     view! {
         <Stylesheet id="leptos" href="/pkg/TALW.css"/>
 

@@ -18,8 +18,11 @@ pub async fn upload_file(data: MultipartData) -> Result<usize, ServerFnError> {
     let mut data = data.into_inner().unwrap();
 
     if let Ok(Some(field)) = data.next_field().await {
-        let up = uploadthing.upload_file(field, false).await;
-        return Ok(0);
+        match uploadthing.upload_file(field, true).await {
+            Ok(res) => println!("{res:?}"),
+            Err(err) => println!("{err}"),
+        }
+        Ok(0)
     } else {
         Err(ServerFnError::new("cant get the len of the file"))
     }

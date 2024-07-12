@@ -30,13 +30,17 @@ pub struct UploadPartOpts {
 
 #[derive(Serialize, Clone)]
 pub enum Acl {
+    #[serde(rename(serialize = "public-read"))]
     PublicRead,
+    #[serde(rename(serialize = "private"))]
     Private,
 }
 
 #[derive(Serialize, Clone, Debug, Display)]
 pub enum ContentDisposition {
+    #[serde(rename(serialize = "inline"))]
     Inline,
+    #[serde(rename(serialize = "attachment"))]
     Attachment,
 }
 
@@ -62,17 +66,16 @@ pub struct PresignedUrlResponse {
 
 #[derive(Debug, serde::Deserialize, Clone)]
 pub struct PresignedUrlResponseData {
-    pub fields: serde_json::Value,
+    pub fields: Option<serde_json::Value>,
     #[serde(rename = "fileUrl")]
     pub file_url: String,
-    #[serde(rename = "uploadId")]
-    pub upload_id: String,
     pub key: String,
-    #[serde(rename = "presignedUrl")]
-    pub presigned_url: String,
+    #[serde(rename = "uploadId")]
+    pub upload_id: Option<String>,
     pub url: Option<String>,
     pub urls: Option<Vec<String>>,
-    pub chunk_size: Option<u64>,
+    #[serde(rename = "chunkSize")]
+    pub chunk_size: Option<usize>,
 }
 
 #[derive(Debug, serde::Deserialize, Clone)]
@@ -80,5 +83,5 @@ pub struct UploadFileResponse {
     pub key: String,
     pub url: String,
     pub name: String,
-    pub size: u64,
+    pub size: usize,
 }

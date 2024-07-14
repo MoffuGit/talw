@@ -15,8 +15,6 @@ use leptos::*;
 #[allow(non_snake_case)]
 #[component]
 pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
-    //NOTE: las acciones las vamos a crear en el contexto del server y ya luego subscribimos los
-    //resources a esas acciones aqui, create_channel, create_category,rename_member, server_settings...
     let use_channel = use_channel();
     let create_channel = use_channel.create_channel;
     let delete_channel = use_channel.delete_channel;

@@ -27,3 +27,8 @@ pub async fn upload_file(data: MultipartData) -> Result<usize, ServerFnError> {
         Err(ServerFnError::new("cant get the len of the file"))
     }
 }
+
+#[server(name = UploadServerImage, prefix = "/api", input = MultipartFormData)]
+pub async fn upload_server_image(data: MultipartData) -> Result<(), ServerFnError> {
+    todo!()
+}

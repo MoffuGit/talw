@@ -37,7 +37,6 @@ pub fn ContextServerMenu(
                         ().into_view()
                     }
                 }
-                //NOTE: only ui not functioanl
                 <div class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
                     <div class="group-hover:text-primary-content">"Edit Server Profile"</div>
                 </div>
@@ -59,7 +58,6 @@ pub fn ContextServerMenu(
 #[component]
 fn ServerMenuAdminItems(on_click: Signal<()>, server: Server) -> impl IntoView {
     view! {
-        //NOTE: only ui not functioanl
         <div class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
             <div class="group-hover:text-primary-content">"Server Settings"</div>
         </div>

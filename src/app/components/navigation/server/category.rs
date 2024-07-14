@@ -27,7 +27,6 @@ pub fn Category(
 ) -> impl IntoView {
     let collapsible_open = create_rw_signal(false);
     let context_menu_open = create_rw_signal(false);
-    //NOTE: agregar subs to resource
     let delete_category = use_category().delete_category;
     let create_channel_with_category = use_channel().create_channel_with_category;
     let delete_channel = use_channel().delete_channel;

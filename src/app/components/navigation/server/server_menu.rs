@@ -52,7 +52,6 @@ pub fn ServerMenu(server: Server, member: Member) -> impl IntoView {
                             ().into_view()
                         }
                     }
-                    //NOTE: only ui not functioanl
                     <div class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
                         <div class="group-hover:text-primary-content">"Edit Server Profile"</div>
                         <Icon icon=icondata::RiPencilDesignFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>
@@ -76,7 +75,6 @@ pub fn ServerMenu(server: Server, member: Member) -> impl IntoView {
 #[component]
 fn ServerMenuAdminItems(on_click: Signal<()>, server: Server) -> impl IntoView {
     view! {
-        //NOTE: only ui not functioanl
         <div class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
             <div class="group-hover:text-primary-content">"Server Settings"</div>
             <Icon icon=icondata::RiSettings5SystemFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>

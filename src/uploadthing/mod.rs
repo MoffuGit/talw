@@ -9,7 +9,7 @@ use multer::bytes::Bytes as MulterBytes;
 use multer::Field;
 use reqwest::{header, multipart, Client, Response};
 use serde::Serialize;
-use serde_json::{json, Value};
+use serde_json::json;
 use std::env;
 use std::time::Duration;
 use urlencoding::encode;
@@ -76,9 +76,9 @@ impl UploadThing {
         if response.status().is_success() {
             Ok(response)
         } else {
-            let response_data =
-                serde_json::to_string_pretty(&response.json::<serde_json::Value>().await?)?;
-            Err(anyhow!(response_data))
+            Err(anyhow!(serde_json::to_string_pretty(
+                &response.json::<serde_json::Value>().await?,
+            )?))
         }
     }
 
@@ -112,11 +112,15 @@ impl UploadThing {
         let name = field.file_name().expect("no filename on field").to_string();
         let file_type = field.content_type().expect("mime type").to_string();
         let chunks = field.try_collect::<Vec<MulterBytes>>().await?.concat();
+        let size = chunks.len();
+        if size == 0 {
+            return Err(anyhow!("we didn't get the file or is to small"));
+        }
 
         let file_data = FileData {
             name,
             file_type,
-            size: chunks.len(),
+            size,
         };
 
         let presigned_url_data = self.get_presigned_url(&opts, &file_data).await?;
@@ -133,9 +137,9 @@ impl UploadThing {
             self.upload_presigned_post(presigned_url, &url, &file_data, &chunks)
                 .await?;
         }
-        if !wait_until_done {
-            let pool_url = format!("{}/v6/pollUpload/:{}", self.host, &presigned_url.key);
-            retry_async_with_time(|| self.poll_file_data(&pool_url), 60).await?;
+        if wait_until_done {
+            let pool_url = format!("{}/v6/pollUpload/{}", self.host, &presigned_url.key);
+            let _ = retry_async_with_time(|| self.poll_file_data(&pool_url), 60).await;
         }
         println!("finished the upload of the file");
         Ok(UploadFileResponse {
@@ -201,10 +205,12 @@ impl UploadThing {
     }
 
     async fn poll_file_data(&self, url: &str) -> Result<(), Error> {
+        println!("poll url: {url}");
         match self.client.get(url).send().await {
             Ok(res) => match res.json::<serde_json::Value>().await {
                 Err(err) => Err(err.into()),
                 Ok(json) => {
+                    println!("poll json: {:?}", json);
                     if json["status"] == "done" {
                         return Ok(());
                     }
@@ -409,8 +415,7 @@ where
             return Err(anyhow!("Operation cancelled after {} retries", retries));
         }
 
-        let res = f().await;
-        match res {
+        match f().await {
             Ok(res) => return Ok(res),
             Err(err) => {
                 retries += 1;
@@ -440,18 +445,15 @@ where
     E: std::fmt::Display,
 {
     let mut retries = 0;
-    let mut backoff_ms = 100;
+    let mut backoff_ms = 10;
     loop {
-        if backoff_ms / 1000 > max_time {
-            return Err(anyhow!("Operation cancelled after {} retries", retries));
-        }
-
-        let res = f().await;
-        match res {
+        match f().await {
             Ok(res) => return Ok(res),
             Err(err) => {
+                if backoff_ms / 1000 > max_time {
+                    return Err(anyhow!("Operation cancelled after {} retries", retries));
+                }
                 retries += 1;
-                backoff_ms *= 4;
                 println!(
                     "Retry {} fail with err {}. Retrying in {} seconds...",
                     retries,
@@ -465,6 +467,7 @@ where
                     }
                     _ = tokio::time::sleep(Duration::from_millis(backoff_ms)) => {}
                 }
+                backoff_ms *= 4;
             }
         }
     }

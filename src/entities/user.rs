@@ -59,7 +59,7 @@ impl User {
     }
 
     pub async fn get_servers(self, pool: &MySqlPool) -> Option<Vec<Server>> {
-        let servers = sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ?")
+        let servers = sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code, servers.image_url FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ?")
             .bind(self.id)
             .fetch_all(pool)
             .await;

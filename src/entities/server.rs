@@ -17,6 +17,7 @@ pub struct Server {
     pub id: Uuid,
     pub name: String,
     pub invite_code: Uuid,
+    pub image_url: Option<String>,
 }
 
 #[cfg(feature = "ssr")]
@@ -31,6 +32,16 @@ impl Server {
             .await
             .ok()?;
         Some(id)
+    }
+
+    pub async fn set_image_url(url: String, server_id: Uuid, pool: &MySqlPool) -> Option<()> {
+        sqlx::query("UPDATE servers SET servers.image_url = ? WHERE servers.id = ?")
+            .bind(url)
+            .bind(server_id)
+            .execute(pool)
+            .await
+            .ok()?;
+        Some(())
     }
 
     pub async fn get_from_invitation(invitation: Uuid, pool: &MySqlPool) -> Option<Uuid> {
@@ -52,7 +63,7 @@ impl Server {
     }
 
     pub async fn check_server(server_id: Uuid, user_id: Uuid, pool: &MySqlPool) -> Option<Server> {
-        let server = sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ? AND servers.id = ?").bind(user_id).bind(server_id).fetch_one(pool).await.ok()?;
+        let server = sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code, servers.image_url FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ? AND servers.id = ?").bind(user_id).bind(server_id).fetch_one(pool).await.ok()?;
         log::info!("{server:?}");
         Some(server)
     }

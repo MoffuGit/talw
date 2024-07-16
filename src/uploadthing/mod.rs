@@ -3,10 +3,8 @@ pub mod list_files;
 pub mod upload_file;
 
 use anyhow::{anyhow, Error};
-use futures::{future, Future, TryStreamExt};
+use futures::{future, Future};
 use http::HeaderValue;
-use multer::bytes::Bytes as MulterBytes;
-use multer::Field;
 use reqwest::{header, multipart, Client, Response};
 use serde::Serialize;
 use serde_json::json;
@@ -96,33 +94,26 @@ impl UploadThing {
 
     pub async fn upload_file(
         &self,
-        field: Field<'static>,
+        chunks: Vec<u8>,
+        file_data: FileData,
         wait_until_done: bool,
     ) -> Result<UploadFileResponse, Error> {
-        self.upload_file_with_options(UploadFileOpts::default(), field, wait_until_done)
-            .await
+        self.upload_file_with_options(
+            UploadFileOpts::default(),
+            chunks,
+            file_data,
+            wait_until_done,
+        )
+        .await
     }
 
     pub async fn upload_file_with_options(
         &self,
         opts: UploadFileOpts,
-        field: Field<'static>,
+        chunks: Vec<u8>,
+        file_data: FileData,
         wait_until_done: bool,
     ) -> Result<UploadFileResponse, Error> {
-        let name = field.file_name().expect("no filename on field").to_string();
-        let file_type = field.content_type().expect("mime type").to_string();
-        let chunks = field.try_collect::<Vec<MulterBytes>>().await?.concat();
-        let size = chunks.len();
-        if size == 0 {
-            return Err(anyhow!("we didn't get the file or is to small"));
-        }
-
-        let file_data = FileData {
-            name,
-            file_type,
-            size,
-        };
-
         let presigned_url_data = self.get_presigned_url(&opts, &file_data).await?;
         let presigned_url = presigned_url_data
             .data
@@ -139,7 +130,7 @@ impl UploadThing {
         }
         if wait_until_done {
             let pool_url = format!("{}/v6/pollUpload/{}", self.host, &presigned_url.key);
-            let _ = retry_async_with_time(|| self.poll_file_data(&pool_url), 60).await;
+            retry_async_with_time(|| self.poll_file_data(&pool_url), 60).await?;
         }
         println!("finished the upload of the file");
         Ok(UploadFileResponse {

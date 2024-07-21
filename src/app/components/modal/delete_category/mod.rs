@@ -1,4 +1,4 @@
-use crate::app::api::category::use_category;
+use crate::app::api::category::{delete_category, use_category};
 use crate::app::components::ui::modal::*;
 use crate::app::ActionForm;
 use crate::entities::category::Category;
@@ -32,7 +32,7 @@ pub fn DeleteCategoryModal(
                     <ActionForm action=delete_category>
                         <input value=category.id.to_string() type="hidden" name="category_id"/>
                         <input value=server_id.to_string() type="hidden" name="server_id"/>
-                        <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-error text-error-content" >
+                        <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-error text-error-content" disabled=move || delete_category.pending().get()>
                             "Delete Category"
                         </button>
                     </ActionForm>

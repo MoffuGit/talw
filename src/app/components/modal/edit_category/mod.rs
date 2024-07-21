@@ -55,7 +55,7 @@ pub fn EditCategoryModal(
                         </ModalClose>
                         <input value=category.get_value().server_id.to_string() type="hidden" name="server_id"/>
                         <input value=category.get_value().id.to_string() type="hidden" name="category_id"/>
-                        <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-secondary text-seconday-content" >
+                        <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-secondary text-seconday-content" disabled=move || rename_category.pending().get()>
                             "Rename Channel"
                         </button>
                     </div>

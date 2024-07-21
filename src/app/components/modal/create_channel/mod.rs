@@ -105,7 +105,7 @@ pub fn CreateChannelModal(
                                 </ModalClose>
                                 <input value=server_id.to_string() type="hidden" name="server_id"/>
                                 <input value=category_id.to_string() type="hidden" name="category_id"/>
-                                <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-secondary text-seconday-content" >
+                                <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-secondary text-seconday-content" disabled=move || create_channel_with_category.pending().get()>
                                     "Create Channel"
                                 </button>
                             </div>
@@ -188,7 +188,7 @@ pub fn CreateChannelModal(
                                     "Cancel"
                                 </ModalClose>
                                 <input value=server_id.to_string() type="hidden" name="server_id"/>
-                                <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-secondary text-seconday-content" >
+                                <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-secondary text-seconday-content" disabled=move|| create_channel.pending().get()>
                                     "Create Channel"
                                 </button>
                             </div>

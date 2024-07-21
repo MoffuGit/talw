@@ -30,7 +30,7 @@ pub fn Login() -> impl IntoView {
                     <input type="checkbox" name="remember" class="checkbox" />
                 </label>
             </div>
-            <button type="submit" class="btn btn-sm btn-outline btn-error w-full max-w-xs mb-2">"Log In"</button>
+            <button type="submit" class="btn btn-sm btn-outline btn-error w-full max-w-xs mb-2" disabled=move || login.pending().get()>"Log In"</button>
             <Transition fallback=move || ()>
                 {move || {
                     login.value().get().map(|res| match res {

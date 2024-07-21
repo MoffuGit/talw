@@ -10,18 +10,17 @@ use leptos_router::{ActionForm, A};
 #[allow(non_snake_case)]
 #[component]
 pub fn JoinWithInvitation() -> impl IntoView {
-    let use_server = use_server();
+    let join_with_invitation = use_server().join_with_invitation;
     let use_create_server = use_create_server();
     let join_with_invitation_ref = use_create_server.join_with_invitation_ref;
     create_effect(move |_| {
-        use_server
-            .join_with_invitation
+        join_with_invitation
             .version()
             .with(|_| use_create_server.is_open.set(false));
     });
     view! {
         <Transition fallback=move || ()>
-            <ActionForm action=use_server.join_with_invitation node_ref=join_with_invitation_ref>
+            <ActionForm action=join_with_invitation node_ref=join_with_invitation_ref>
                 <div class="text-center p-[16px]">
                     <h1 class="font-bold mb-2 mt-6 text-[24px] leading-[30px]">Join a Server</h1>
                     <div class="text-[14px] leading-[18px]">Enter an invite below to join an existing server</div>
@@ -35,7 +34,7 @@ pub fn JoinWithInvitation() -> impl IntoView {
                             {
                             move ||
                                 {
-                                    use_server.join_with_invitation.value().get().map(|res| {
+                                    join_with_invitation.value().get().map(|res| {
                                         match res {
                                             Err(ServerFnError::ServerError(err)) => view! { <p class="text-error mb-2 text-xs italic">{err}</p>},
                                             _ => view! { <p/>},
@@ -68,7 +67,7 @@ pub fn JoinWithInvitation() -> impl IntoView {
                     <SlideBack attr:type="reset" class="w-auto min-h-min h-[38px] py-0.5 px-1 leading-[16px] hover:underline text-base-content text-[14px]">
                             Back
                     </SlideBack>
-                    <button type="submit" class="bg-primary hover:bg-primary-focus text-neutral py-0.5 px-4 font-medium text-[14px] leading-[16px] align-middle rounded-[3px] h-[38px] no-animation">Join Server</button>
+                    <button type="submit" class="bg-primary hover:bg-primary-focus text-neutral py-0.5 px-4 font-medium text-[14px] leading-[16px] align-middle rounded-[3px] h-[38px] no-animation" disabled=move || join_with_invitation.pending().get()>Join Server</button>
                 </div>
             </ActionForm>
         </Transition>

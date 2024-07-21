@@ -28,7 +28,7 @@ pub fn LeaveServer(
                     </ModalClose>
                     <ActionForm action=leave_server>
                         <input value=server.id.to_string() type="hidden" name="server_id"/>
-                        <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-error text-error-content" >
+                        <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-error text-error-content" disabled=move || leave_server.pending().get()>
                             "Leave Server"
                         </button>
                     </ActionForm>

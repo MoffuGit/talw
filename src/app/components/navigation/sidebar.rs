@@ -10,6 +10,7 @@ use leptos_icons::*;
 use leptos_router::{use_router, A};
 use std::time::Duration;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn SideBar() -> impl IntoView {
     let servers = use_server().servers;
@@ -49,6 +50,7 @@ pub fn SideBar() -> impl IntoView {
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Navigation_action(tip: String, children: Children) -> impl IntoView {
     view! {
@@ -62,6 +64,7 @@ pub fn Navigation_action(tip: String, children: Children) -> impl IntoView {
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Navigation(
     id: String,
@@ -94,6 +97,7 @@ pub fn Navigation(
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Navigation_server(server: Server, member: Member) -> impl IntoView {
     let current_server = move || {
@@ -113,7 +117,17 @@ pub fn Navigation_server(server: Server, member: Member) -> impl IntoView {
                         }
                     })
                     />
-                    <ContextServerMenu  server=server.get_value() member=member/>
+                    <ContextServerMenu  server=server.get_value() member=member>
+                        {
+                            move || match server.get_value().image_url {
+                                None => ().into_view(),
+                                Some(url) => view!{
+                                    <img class="w-full h-full object-cover " src=url/>
+
+                                }.into_view()
+                            }
+                        }
+                    </ContextServerMenu>
                 </A>
             </TooltipTrigger>
             <TooltipContent tip=server.get_value().name class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"/>

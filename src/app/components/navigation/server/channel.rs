@@ -37,7 +37,7 @@ pub fn Channel(
             true => "bg-primary/50",
             false => "",
         })>
-            <A href=move || channel.get_value().id.simple().to_string() class="relative box-border flex flex-col cursor-pointer" attr:disabled="disabled">
+            <A href=move || channel.get_value().id.simple().to_string() class="relative box-border flex flex-col cursor-pointer">
                 <ContextMenuProvider open=open modal=false>
                     <ContextMenuTrigger class="relative flex flex-row group items-center py-[6px] px-2">
                         {

@@ -1,8 +1,14 @@
 use crate::entities::{category::Category, channel::Channel, member::Member, server::Server};
+use crate::uploadthing::upload_file::FileData;
+use crate::uploadthing::UploadThing;
 use cfg_if::cfg_if;
+use futures::TryStreamExt;
 use leptos::*;
+use multer::bytes::Bytes as MulterBytes;
+use server_fn::codec::{MultipartData, MultipartFormData};
 use strum_macros::{Display, EnumIter};
 use uuid::Uuid;
+use web_sys::FormData;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use leptos_axum::redirect;
@@ -39,7 +45,7 @@ pub struct ServerContext {
     pub servers: Resource<(usize, usize, usize), Result<Vec<Server>, ServerFnError>>,
     pub members: Resource<(usize, usize, usize), Result<Vec<Member>, ServerFnError>>,
     pub join_with_invitation: Action<JoinServerWithInvitation, Result<(), ServerFnError>>,
-    pub create_server: Action<CreateServer, Result<String, ServerFnError>>,
+    pub create_server: Action<FormData, Result<String, ServerFnError>>,
     pub leave_server: Action<LeaveServer, Result<(), ServerFnError>>,
 }
 
@@ -63,7 +69,10 @@ pub enum ServerTemplate {
 
 pub fn provide_server_context() {
     let join_with_invitation = create_server_action::<JoinServerWithInvitation>();
-    let create_server = create_server_action::<CreateServer>();
+    let create_server = create_action(|data: &FormData| {
+        let data = data.clone();
+        create_server(data.into())
+    });
     let leave_server = create_server_action::<LeaveServer>();
     // let create_category = create_server_action::<CreateCategory>();
     // let rename_category = create_server_action::<RenameCategory>();
@@ -151,18 +160,67 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
     Ok(())
 }
 
-#[server(CreateServer, "/api")]
-pub async fn create_server(name: String) -> Result<String, ServerFnError> {
+#[server(name = CreateServer, prefix = "/api", input = MultipartFormData)]
+pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError> {
     let pool = pool()?;
     let auth = auth_user()?;
+    let mut data = data.into_inner().unwrap();
+    let mut server_name: String = Default::default();
+    let mut chunks: Option<Vec<u8>> = None;
+    let mut file_name: Option<String> = None;
+    let mut file_type: Option<String> = None;
 
-    if name.len() < 2 || name.len() > 100 {
+    while let Ok(Some(mut field)) = data.next_field().await {
+        match field.name().unwrap_or_default() {
+            "name" => {
+                if let Ok(Some(chunk)) = field.chunk().await {
+                    if let Ok(name) = String::from_utf8(chunk.to_vec()) {
+                        server_name = name
+                    }
+                }
+            }
+            "image" => {
+                file_name = Some(field.file_name().expect("file name").to_string());
+                file_type = Some(field.content_type().expect("mime type").to_string());
+                chunks = Some(field.try_collect::<Vec<MulterBytes>>().await?.concat());
+            }
+            field => {
+                return Err(ServerFnError::new(format!(
+                    "Field {field} not should exist"
+                )))
+            }
+        }
+    }
+
+    if server_name.len() < 2 || server_name.len() > 100 {
         return Err(ServerFnError::new("Must be between 2 and 100 in length"));
     }
 
-    let server = Server::create(name, &pool)
+    let server = Server::create(server_name, &pool)
         .await
         .ok_or_else(|| ServerFnError::new("Cant create server".to_string()))?;
+    if let (Some(chunks), Some(file_name), Some(file_type)) = (chunks, file_name, file_type) {
+        let uploadthing = use_context::<UploadThing>().expect("acces to upload thing");
+        let size = chunks.len();
+        if size > 0 {
+            if let Ok(res) = uploadthing
+                .upload_file(
+                    chunks,
+                    FileData {
+                        name: file_name.to_string(),
+                        file_type,
+                        size,
+                    },
+                    true,
+                )
+                .await
+            {
+                Server::set_image_url(res.url, server, &pool)
+                    .await
+                    .ok_or_else(|| ServerFnError::new("Error".to_string()))?;
+            }
+        }
+    }
     Member::create(crate::entities::member::Role::ADMIN, auth.id, server, &pool)
         .await
         .ok_or_else(|| ServerFnError::new("Error".to_string()))?;
@@ -214,7 +272,7 @@ pub async fn create_server(name: String) -> Result<String, ServerFnError> {
     )
     .await
     .ok_or_else(|| ServerFnError::new("cant create the channel with category".to_string()))?;
-    redirect(&format!("/servers/{}", server));
+    redirect(&format!("/servers/{}", server.simple()));
     Ok(server.to_string())
 }
 

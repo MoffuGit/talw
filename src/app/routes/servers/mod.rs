@@ -1,3 +1,5 @@
+pub mod channel;
+pub mod empty_server;
 pub mod server;
 
 use crate::app::api::auth::current_user;
@@ -6,6 +8,7 @@ use leptos::*;
 use leptos_router::Outlet;
 use leptos_router::Redirect;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Servers() -> impl IntoView {
     view! {

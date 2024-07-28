@@ -20,7 +20,7 @@ pub fn ContextServerMenu(
     let on_click_item = Signal::derive(move || open.set(false));
     view! {
         <ContextMenuProvider open=open modal=false>
-            <ContextMenuTrigger class="flex mx-3 h-[48px] transition-all items-center justify-center bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px]">
+            <ContextMenuTrigger class="flex overflow-hidden mx-3 h-[48px] transition-all items-center justify-center bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px]">
                 {children.map(|children| children())}
             </ContextMenuTrigger>
             <ContextMenuContent class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded".to_string()>

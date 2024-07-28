@@ -33,11 +33,6 @@ pub fn Server() -> impl IntoView {
         },
         move |(_, server_id)| get_member(server_id),
     );
-    // let list_files = create_resource(|| (), |_| get_list_files());
-    // let upload_action = create_action(|data: &FormData| {
-    //     let data = data.clone();
-    //     upload_file(data.into())
-    // });
 
     view! {
             <div class="h-full w-full relative z-40">
@@ -62,35 +57,6 @@ pub fn Server() -> impl IntoView {
                 </div>
 
                 <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
-        //             <Transition fallback=move || ()>
-        //             {
-        //                 move || {
-        //                     list_files.and_then(|files| files.files.iter().map(|file| view! {<div>{file.name.clone()}</div>} ).collect_view())
-        //                 }
-        //             }
-        //             </Transition >
-        //           <h3>File Upload</h3>
-        // <p>Uploading files is fairly easy using multipart form data.</p>
-        // <form on:submit=move |ev: SubmitEvent| {
-        //     ev.prevent_default();
-        //     let target = ev.target().unwrap().unchecked_into::<HtmlFormElement>();
-        //     let form_data = FormData::new_with_form(&target).unwrap();
-        //     upload_action.dispatch(form_data);
-        // }>
-        //     <input type="file" name="file_to_upload"/>
-        //     <input type="submit"/>
-        // </form>
-        // <p>
-        //     {move || if upload_action.input().get().is_none() && upload_action.value().get().is_none() {
-        //         "Upload a file.".to_string()
-        //     } else if upload_action.pending().get() {
-        //         "Uploading...".to_string()
-        //     } else if let Some(Ok(value)) = upload_action.value().get() {
-        //         value.to_string()
-        //     } else {
-        //         format!("{:?}", upload_action.value().get())
-        //     }}
-        // </p>
                     <Outlet/>
                 </div>
 

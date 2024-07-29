@@ -18,7 +18,7 @@ use routes::servers::Servers;
 use routes::signup::Signup;
 
 use crate::app::api::category::provide_category_context;
-use crate::app::components::thread::ThreadSidebar;
+use crate::app::routes::servers::thread_sidebar::ThreadSidebar;
 
 #[allow(non_snake_case)]
 #[component]
@@ -30,13 +30,16 @@ pub fn App() -> impl IntoView {
     provide_channel_context();
     provide_category_context();
 
-    //NOTE:avanzar en path=":channel_id"
-    //agregar la entite para los mensajes, checar que es una thread y agregar los pinned messages
-    //last thread tienen dos views, una va a ser /servers/:id/thread/:thread_id
-    //y la otra va a estar dentro de :channel_id/thread/:thread_id
-    //la primera va a tener componentes iguales a :channel_id con ligeros cambios
-    //y la segunda va a ser una division de la pantalla, de un lado el canal del otro la thread
+    //NOTE: keep working on Channel section,
+    //check the routes for channel and thread,
+    //update the sidebar with the channels and threads,
     //redirect the user when the path=channel_id is empty or message of empty server
+    //already added the thread sidebar section, no use for now, add the thread entity, is like
+    //a channel, same values, not uses for now
+    //needed to add the topbar, bottom bar and users_side_bar,
+    //remember that this components are going to get reused inside the thread page,
+    //add the entity for Messages, add a table for pinn messages inside a server or channel, not
+    //sure on this take,
     //avanzar en la overview server setting and server porifle setting
     view! {
         <Stylesheet id="leptos" href="/pkg/TALW.css"/>
@@ -54,6 +57,7 @@ pub fn App() -> impl IntoView {
                                 <Route path=":thread_id" view=|| view!{<ThreadSidebar/>}/>
                                 <Route path="" view=|| view!{<>}/>
                             </Route>
+                            // <Route path="thread/:thread_id" view=|| view!{<div/>}/>
                             <Route path="" view=|| view!{<EmptyServer/>}/>
                         </Route>
                         <Route path="me" view=|| view! {<div>"user stuff"</div>}/>

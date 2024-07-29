@@ -1,6 +1,7 @@
 pub mod channel;
 pub mod empty_server;
 pub mod server;
+pub mod thread_sidebar;
 
 use crate::app::api::auth::current_user;
 use crate::app::components::navigation::sidebar::SideBar;

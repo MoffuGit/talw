@@ -135,4 +135,18 @@ impl Channel {
             .ok()?;
         Some(())
     }
+
+    pub async fn get_channel(
+        channel_id: Uuid,
+        server_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Option<Channel> {
+        let channel = sqlx::query_as::<_, Channel>("SELECT channels.id,channels.name,channels.channel_type,channels.server_id,channels.category_id FROM channels LEFT JOIN servers ON servers.id = channels.server_id WHERE channels.id = ? AND servers.id = ?")
+            .bind(channel_id)
+            .bind(server_id)
+            .fetch_one(pool)
+            .await;
+        println!("{channel:?}");
+        channel.ok()
+    }
 }

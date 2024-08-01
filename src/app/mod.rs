@@ -11,7 +11,7 @@ use leptos_meta::*;
 use leptos_router::*;
 use routes::home::Home;
 use routes::login::Login;
-use routes::servers::channel::Channel;
+use routes::servers::channel::ChannelView;
 use routes::servers::empty_server::EmptyServer;
 use routes::servers::server::Server;
 use routes::servers::Servers;
@@ -31,10 +31,8 @@ pub fn App() -> impl IntoView {
     provide_category_context();
 
     //NOTE: keep working on Channel section,
-    //check the routes for channel and thread,
     //update the sidebar with the channels and threads,
-    //redirect the user when the path=channel_id is empty or message of empty server
-    //already added the thread sidebar section, no use for now, add the thread entity, is like
+    //add the thread entity, is like
     //a channel, same values, not uses for now
     //needed to add the topbar, bottom bar and users_side_bar,
     //remember that this components are going to get reused inside the thread page,
@@ -53,9 +51,9 @@ pub fn App() -> impl IntoView {
                     <Route path="" view=|| view!{<Home/>}/>
                     <Route path="servers" view=|| view!{<Servers/>}>
                         <Route path=":id" view=|| view! {<Server/>} >
-                            <Route path=":channel_id" view=|| view!{<Channel/>}>
+                            <Route path=":channel_id" view=|| view!{<ChannelView/>}>
                                 <Route path=":thread_id" view=|| view!{<ThreadSidebar/>}/>
-                                <Route path="" view=|| view!{<>}/>
+                                <Route path="" view=|| view!{<div/>}/>
                             </Route>
                             // <Route path="thread/:thread_id" view=|| view!{<div/>}/>
                             <Route path="" view=|| view!{<EmptyServer/>}/>

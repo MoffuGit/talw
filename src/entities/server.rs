@@ -64,7 +64,6 @@ impl Server {
 
     pub async fn check_server(server_id: Uuid, user_id: Uuid, pool: &MySqlPool) -> Option<Server> {
         let server = sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code, servers.image_url FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ? AND servers.id = ?").bind(user_id).bind(server_id).fetch_one(pool).await.ok()?;
-        log::info!("{server:?}");
         Some(server)
     }
 
@@ -118,7 +117,7 @@ impl Server {
         .bind(user_id)
         .fetch_one(pool)
         .await;
-        log::info!("{member:?}");
+        // log::info!("{member:?}");
         member.ok()
     }
 }

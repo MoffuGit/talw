@@ -91,6 +91,7 @@ pub fn Category(
                 </ContextMenuProvider>
             </CollapsibleTrigger>
             <CollapsibleContent>
+            <Transition fallback=move || ()>
                 {
                     move || {
                         channels.and_then(|channels| {
@@ -100,6 +101,7 @@ pub fn Category(
                         })
                     }
                 }
+            </Transition>
             </CollapsibleContent>
         </CollapsibleProvider>
     }

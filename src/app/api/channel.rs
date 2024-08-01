@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::entities::channel::Channel;
 use crate::entities::channel::ChannelType;
 use crate::entities::member::Role;
@@ -5,6 +7,8 @@ use crate::entities::server::Server;
 use cfg_if::cfg_if;
 use leptos::*;
 use uuid::Uuid;
+
+use super::server;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -39,6 +43,32 @@ pub fn provide_channel_context() {
         rename_channel,
         delete_channel,
     })
+}
+
+#[server(GetChannel, "/api")]
+pub async fn get_channel(channel_id: String, server_id: String) -> Result<Channel, ServerFnError> {
+    let _ = auth_user()?;
+    let pool = pool()?;
+    let channels = Channel::get_channel(
+        Uuid::from_str(&channel_id).unwrap_or_default(),
+        Uuid::from_str(&server_id).unwrap_or_default(),
+        &pool,
+    )
+    .await
+    .ok_or_else(|| ServerFnError::new("cant get the channel"))?;
+    Ok(channels)
+}
+
+#[server(GetAllChannels, "/api")]
+pub async fn get_all_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
+    let _ = auth_user()?;
+    let pool = pool()?;
+
+    let channels = Server::get_channels(server_id, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::new("cant get channels server, sorry".to_string()))?;
+
+    Ok(channels)
 }
 
 #[server(GetGeneralChannels, "/api")]

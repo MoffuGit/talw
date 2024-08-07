@@ -42,8 +42,6 @@ cfg_if! {
 
 #[derive(Clone, Copy)]
 pub struct ServerContext {
-    pub servers: Resource<(usize, usize, usize), Result<Vec<Server>, ServerFnError>>,
-    pub members: Resource<(usize, usize, usize), Result<Vec<Member>, ServerFnError>>,
     pub join_with_invitation: Action<JoinServerWithInvitation, Result<(), ServerFnError>>,
     pub create_server: Action<FormData, Result<String, ServerFnError>>,
     pub leave_server: Action<LeaveServer, Result<(), ServerFnError>>,
@@ -79,30 +77,8 @@ pub fn provide_server_context() {
     // let delete_category = create_server_action::<DeleteCategory>();
     //NOTE: agregar mas razones de cambio para los resources, leave_server, server_settings...,
     //rename_member
-    let servers = create_resource(
-        move || {
-            (
-                leave_server.version().get(),
-                join_with_invitation.version().get(),
-                create_server.version().get(),
-            )
-        },
-        move |_| get_user_servers(),
-    );
-    let members = create_resource(
-        move || {
-            (
-                leave_server.version().get(),
-                join_with_invitation.version().get(),
-                create_server.version().get(),
-            )
-        },
-        move |_| get_user_members(),
-    );
     provide_context(ServerContext {
         leave_server,
-        servers,
-        members,
         join_with_invitation,
         create_server,
     })
@@ -110,6 +86,24 @@ pub fn provide_server_context() {
 
 pub fn use_server() -> ServerContext {
     use_context::<ServerContext>().expect("have server context")
+}
+
+#[server(GetUserServersWithMembers)]
+pub async fn get_user_servers_with_members() -> Result<Vec<(Server, Member)>, ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+    let servers = user
+        .get_servers(&pool)
+        .await
+        .ok_or_else(|| ServerFnError::new("cant get servers".to_string()))?;
+    let mut res = vec![];
+    for server in servers {
+        match &user.get_member(server.id, &pool).await {
+            None => continue,
+            Some(member) => res.push((server, member.clone())),
+        }
+    }
+    Ok(res)
 }
 
 #[server(GetUserServers, "/api")]

@@ -13,7 +13,7 @@ use leptos_router::Redirect;
 #[component]
 pub fn Servers() -> impl IntoView {
     view! {
-        <Suspense fallback=move || ()>
+        <Transition fallback=move || ()>
             {move || {
                 current_user().get().map(|result| match result {
                     Ok(Some(_)) => {
@@ -35,6 +35,6 @@ pub fn Servers() -> impl IntoView {
                     }
                 })
             }}
-        </Suspense>
+        </Transition>
     }
 }

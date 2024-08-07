@@ -1,4 +1,4 @@
-use crate::app::api::server::use_server;
+use crate::app::api::server::{get_user_servers_with_members, use_server};
 use crate::app::components::modal::create_server::CreateServerModal;
 use crate::app::components::navigation::context_server_menu::ContextServerMenu;
 use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
@@ -13,24 +13,41 @@ use std::time::Duration;
 #[allow(non_snake_case)]
 #[component]
 pub fn SideBar() -> impl IntoView {
-    let servers = use_server().servers;
-    let members = use_server().members;
+    let use_server = use_server();
+    let servers = create_resource(
+        move || {
+            (
+                use_server.leave_server.version().get(),
+                use_server.join_with_invitation.version().get(),
+                use_server.create_server.version().get(),
+            )
+        },
+        move |_| get_user_servers_with_members(),
+    );
     view! {
         <div class="w-full h-full flex flex-col items-center pt-3 bg-base-300 scrollbar-none overflow-y-scroll overflow-x-hidden">
-            <Transition fallback=move || ()>
                 <Navigation id="me".to_string() name="Direct messages".to_string()>
                     <Icon icon=icondata::RiEmotionUserFacesFill class="h-8 w-8 group-hover:fill-base-100 fill-primary"/>
                 </Navigation>
                 <div class="divider my-0.5 mx-[10px] h-0.5"></div>
-                {move || servers.and_then(|servers| servers.iter().map(|server| {
-                    let server = server.clone();
-                    members.and_then(|members|members.iter().find(|member| member.server_id == server.id).map(|member| {
-                        let member = member.clone();
-                        view! {
-                            <Navigation_server server=server member=member/>
+                <Transition fallback=move || ()>
+                    {
+                        move || {
+                            servers.with(|servers|
+                                match  servers {
+                                    Some(Ok(servers)) => {
+                                        servers.iter().map(|(server, member)| {
+                                            view! {
+                                                <Navigation_server server=server.clone() member=member.clone()/>
+                                            }
+                                        }).collect_view()
+                                    },
+                                    _ => view!{<div/>}.into_view()
+                                }
+                            )
                         }
-                    }))
-                }).collect_view())}
+                    }
+                </Transition>
 
                 <CreateServerModal/>
 
@@ -45,7 +62,6 @@ pub fn SideBar() -> impl IntoView {
                         icons=ThemeIcons{dark: icondata::RiSunWeatherFill, light: icondata::RiMoonWeatherFill, class: "fill-primary w-7 h-7 group-hover:fill-base-100"}
                     />
                 </Navigation_action>
-            </Transition>
         </div>
     }
 }

@@ -35,31 +35,34 @@ pub fn Server() -> impl IntoView {
     );
 
     view! {
-            <div class="h-full w-full relative z-40">
-                <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
-                    <Transition fallback=move || ()>
-                    {
-                        move || {
-                            server.get().map(|server| {
-                                member.get().map(|member| {
-                                    if let (Ok(server), Ok(member)) = (server, member) {
-                                        view! {
-                                            <ServerSideBar server=server member=member/>
-                                        }.into_view()
-                                    } else {
-                                        view!{<Redirect path="/servers/me"/>}.into_view()
-                                    }
-                                })
-                            })
-                        }
+        <div class="h-full w-full relative z-40">
+            <Transition fallback=move || ()>
+            {
+                move || {
+                    match (server.get(), member.get()) {
+                        (Some(Ok(server)), Some(Ok(member))) => {
+                            view! {
+                                <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
+                                    <ServerSideBar server=server member=member/>
+                                </div>
+                                <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
+                                    <Outlet/>
+                                </div>
+                            }.into_view()
+                        },
+                        (None, _) | (_, None) => {
+                            view! {
+                                <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
+                                </div>
+                                <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
+                                </div>
+                            }.into_view()
+                        },
+                        _ => view!{<Redirect path="/servers/me"/>}.into_view()
                     }
-                    </Transition>
-                </div>
-
-                <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
-                    <Outlet/>
-                </div>
-
-            </div>
+                }
+            }
+            </Transition>
+        </div>
     }
 }

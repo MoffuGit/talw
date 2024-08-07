@@ -1,5 +1,6 @@
 use super::use_create_server;
-use crate::app::api::{auth::current_user, server::use_server};
+use crate::app::api::auth::current_user;
+use crate::app::api::server::use_server;
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;
 use icondata;
@@ -25,7 +26,6 @@ pub fn SelectName() -> impl IntoView {
     let image_preview_url = create_rw_signal::<String>("".into());
 
     view! {
-        <Transition fallback=move || ()>
             <form node_ref=select_name_ref on:submit=move |ev: SubmitEvent| {
                 ev.prevent_default();
                 let target = ev.target().unwrap().unchecked_into::<HtmlFormElement>();
@@ -86,7 +86,9 @@ pub fn SelectName() -> impl IntoView {
                         }
                         <label class="mb-2 text-xs leading-4 font-bold">SERVER NAME</label>
                         <div class="flex flex-col">
-                            <input name="name" class="input input-secondary font-medium p-[10px] h-10 text-base w-full rounded-[3px]" type="text" placeholder=user />
+                            <Transition fallback=move || ()>
+                                <input name="name" class="input input-secondary font-medium p-[10px] h-10 text-base w-full rounded-[3px]" type="text" placeholder=user />
+                            </Transition>
                         </div>
                     </div>
                     <div class="mt-2 pb-1 text-xs leading-4 font-normal">"By creating a server, you agree to Discord's Community Guidelines."</div>
@@ -98,6 +100,5 @@ pub fn SelectName() -> impl IntoView {
                     <button type="submit" class="bg-primary hover:bg-primary-focus text-neutral py-0.5 px-4 font-medium text-[14px] leading-[16px] align-middle rounded-[3px] h-[38px] no-animation" disabled=move || create_server.pending().get()>Create Server</button>
                 </div>
             </form>
-        </Transition>
     }
 }

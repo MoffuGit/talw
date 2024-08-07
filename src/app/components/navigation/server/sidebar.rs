@@ -52,29 +52,41 @@ pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
         <div class="w-full h-full flex flex-col items-center relative bg-base-200 scrollbar-none overflow-y-scroll overflow-x-hidden">
             <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
                 <ServerMenu server=server.clone() member=member.clone()/>
-                <Transition fallback=move || ()>
-                    <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
-                        <div class="h-3"/>
+                <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
+                    <div class="h-3"/>
+                    <Transition fallback=move || ()>
                         {
                             move || {
-                                channels.and_then(|channels| {
-                                    channels.iter().map(|channel| {
-                                        view! {<Channel channel=channel.clone() invite_code=server.invite_code server_id=server.id member_role=member.role/>}
-                                    }).collect_view()
+                                channels.with(|channels| {
+                                    match channels {
+                                        Some(Ok(channels)) => {
+                                            channels.iter().map(|channel| {
+                                                view! {<Channel channel=channel.clone() invite_code=server.invite_code server_id=server.id member_role=member.role/>}
+                                            }).collect_view()
+                                        },
+                                        _ => view!{<div/>}.into_view()
+                                    }
                                 })
                             }
                         }
+                    </Transition>
+                    <Transition fallback=move || ()>
                         {
                             move || {
-                                categories.and_then(|categories| {
-                                    categories.iter().map(|category| {
-                                        view! {<Category category=category.clone() server_id=server.id invite_code=server.invite_code member_role=member.role/>}
-                                    }).collect_view()
+                                categories.with(|categories| {
+                                    match categories  {
+                                        Some(Ok(categories)) => {
+                                            categories.iter().map(|category| {
+                                                view! {<Category category=category.clone() server_id=server.id invite_code=server.invite_code member_role=member.role/>}
+                                            }).collect_view()
+                                        },
+                                        _ => view!{<div/>}.into_view()
+                                    }
                                 })
                             }
                         }
-                    </div>
-                </Transition>
+                    </Transition>
+                </div>
             </div>
             <ContextMenuProvider modal=false open=open >
                 <ContextMenuTrigger class="h-full w-full bg-none"/>

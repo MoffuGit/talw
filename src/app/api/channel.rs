@@ -145,7 +145,7 @@ pub async fn create_channel_with_category(
         .ok_or_else(|| ServerFnError::new("cant create the new channel"))
 }
 
-#[server(RenameChannel)]
+#[server(RenameChannel, "/api")]
 pub async fn rename_channel(
     server_id: Uuid,
     channel_id: Uuid,
@@ -168,7 +168,7 @@ pub async fn rename_channel(
         .ok_or_else(|| ServerFnError::new("cant change the name"))
 }
 
-#[server(DeleteChannel)]
+#[server(DeleteChannel, "/api")]
 pub async fn delete_channel(server_id: Uuid, channel_id: Uuid) -> Result<(), ServerFnError> {
     let pool = pool()?;
 

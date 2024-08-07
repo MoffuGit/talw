@@ -58,7 +58,7 @@ impl User {
         Some(id)
     }
 
-    pub async fn get_servers(self, pool: &MySqlPool) -> Option<Vec<Server>> {
+    pub async fn get_servers(&self, pool: &MySqlPool) -> Option<Vec<Server>> {
         let servers = sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code, servers.image_url FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ?")
             .bind(self.id)
             .fetch_all(pool)
@@ -71,6 +71,16 @@ impl User {
             .bind(self.id)
             .fetch_all(pool)
             .await;
+        members.ok()
+    }
+
+    pub async fn get_member(&self, server_id: Uuid, pool: &MySqlPool) -> Option<Member> {
+        let members = sqlx::query_as::<_, Member>("SELECT members.id, members.role, members.user_id, members.server_id FROM members WHERE members.user_id = ? AND members.server_id = ?")
+            .bind(self.id)
+            .bind(server_id)
+            .fetch_one(pool)
+            .await;
+        log::info!("{members:?}");
         members.ok()
     }
 }

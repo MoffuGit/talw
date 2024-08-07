@@ -1,6 +1,6 @@
+use crate::app::api::auth::current_user;
 use leptos::*;
 
-use crate::app::api::auth::current_user;
 use crate::app::components::navigation::navbar::Navbar;
 
 #[allow(non_snake_case)]

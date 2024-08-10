@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use crate::entities::channel::Channel;
 use crate::entities::channel::ChannelType;
 use crate::entities::member::Role;
@@ -46,17 +44,13 @@ pub fn provide_channel_context() {
 }
 
 #[server(GetChannel, "/api")]
-pub async fn get_channel(channel_id: String, server_id: String) -> Result<Channel, ServerFnError> {
+pub async fn get_channel(channel_id: Uuid, server_id: Uuid) -> Result<Channel, ServerFnError> {
     let _ = auth_user()?;
     let pool = pool()?;
-    let channels = Channel::get_channel(
-        Uuid::from_str(&channel_id).unwrap_or_default(),
-        Uuid::from_str(&server_id).unwrap_or_default(),
-        &pool,
-    )
-    .await
-    .ok_or_else(|| ServerFnError::new("cant get the channel"))?;
-    Ok(channels)
+    let channel = Channel::get_channel(channel_id, server_id, &pool)
+        .await
+        .ok_or_else(|| ServerFnError::new("cant get the channel"))?;
+    Ok(channel)
 }
 
 #[server(GetAllChannels, "/api")]

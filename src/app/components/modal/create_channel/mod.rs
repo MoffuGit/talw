@@ -1,7 +1,7 @@
 use crate::app::api::channel::use_channel;
 use crate::app::components::ui::modal::*;
 use crate::entities::channel::ChannelType;
-use icondata;
+use icondata::{self, Icon};
 use leptos::*;
 use leptos_icons::*;
 use leptos_router::ActionForm;
@@ -88,12 +88,7 @@ pub fn CreateChannelModal(
                                 <div class="mt-2 mb-4 w-full bg-base-300 rounded flex items-center">
                                     {
                                         move || {
-                                            match channel_type.get() {
-                                                ChannelType::TEXT => view!{<Icon icon=icondata::RiHashtagEditor class="w-5 h-5 mx-2"/>},
-                                                ChannelType::VOICE => view!{<Icon icon=icondata::RiVolumeUpMediaFill class="w-5 h-5 mx-2"/>},
-                                                ChannelType::ANNOUNCEMENTS => view!{<Icon icon=icondata::RiHashtagEditor class="w-5 h-5 mx-2"/>},
-                                                ChannelType::RULES => view!{<Icon icon=icondata::RiHashtagEditor class="w-5 h-5 mx-2"/>},
-                                            }
+                                            view! {<Icon icon=Icon::from(channel_type.get()) class="w-5 h-5 mx-2"/>}
                                         }
                                     }
                                     <input name="name" minlength="1" type="text" placeholder="new-channel" class="w-full h-10 bg-base-300 py-[10px]"/>
@@ -172,12 +167,7 @@ pub fn CreateChannelModal(
                                 <div class="mt-2 mb-4 w-full bg-base-300 rounded flex items-center">
                                     {
                                         move || {
-                                            match channel_type.get() {
-                                                ChannelType::TEXT => view!{<Icon icon=icondata::RiHashtagEditor class="w-5 h-5 mx-2"/>},
-                                                ChannelType::VOICE => view!{<Icon icon=icondata::RiVolumeUpMediaFill class="w-5 h-5 mx-2"/>},
-                                                ChannelType::ANNOUNCEMENTS => view!{<Icon icon=icondata::RiHashtagEditor class="w-5 h-5 mx-2"/>},
-                                                ChannelType::RULES => view!{<Icon icon=icondata::RiHashtagEditor class="w-5 h-5 mx-2"/>},
-                                            }
+                                            view! {<Icon icon=Icon::from(channel_type.get()) class="w-5 h-5 mx-2"/>}
                                         }
                                     }
                                     <input name="name" minlength="1" type="text" placeholder="new-channel" class="w-full h-10 bg-base-300 py-[10px]"/>

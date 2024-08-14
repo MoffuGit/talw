@@ -8,9 +8,9 @@ use crate::app::components::ui::tool_tip::TooltipContent;
 use crate::app::components::ui::tool_tip::TooltipProvider;
 use crate::app::components::ui::tool_tip::TooltipTrigger;
 use crate::entities::channel::Channel;
-use crate::entities::channel::ChannelType;
 use crate::entities::member::Role;
 use icondata;
+use icondata::Icon;
 use leptos::*;
 use leptos_icons::Icon;
 use leptos_router::A;
@@ -40,14 +40,7 @@ pub fn Channel(
             <A href=move || channel.get_value().id.simple().to_string() class="relative box-border flex flex-col cursor-pointer">
                 <ContextMenuProvider open=open modal=false>
                     <ContextMenuTrigger class="relative flex flex-row group items-center py-[6px] px-2">
-                        {
-                            match channel.get_value().channel_type {
-                                ChannelType::TEXT => view! {<Icon icon=icondata::RiHashtagEditor class="relative w-[18px] h-[18px] shrink-0 mr-[6px] fill-base-content"/>},
-                                ChannelType::VOICE => view! {<Icon icon=icondata::RiVolumeUpMediaFill class="relative w-[18px] h-[18px] shrink-0 mr-[6px] fill-base-content"/>},
-                                ChannelType::ANNOUNCEMENTS => view! {<Icon icon=icondata::RiMegaphoneBusinessFill class="relative w-[18px] shrink-0 h-[18px] mr-[6px] fill-base-content"/>},
-                                ChannelType::RULES => view! {<Icon icon=icondata::RiBookMarkDocumentFill class="relative w-[18px] h-[18px] shrink-0 mr-[6px] fill-base-content"/>},
-                            }
-                        }
+                        <Icon icon=Icon::from(channel.get_value().channel_type) class="relative w-[18px] h-[18px] shrink-0 mr-[6px] fill-base-content"/>
                         <div class=move || format!("whitespace-nowrap overflow-hidden text-ellipsis text-[16px] mr-auto font-bold text-base-content/50 leading-5 flex-auto relative group-hover:text-base-content/75 {}", match is_current_channel() {
                             true => "text-base-content/60",
                             false => ""

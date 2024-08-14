@@ -37,7 +37,7 @@ pub fn ModalTrigger(
 
     view! {
         <div on:click=move |evt| {
-            evt.stop_propagation();
+            // evt.stop_propagation();
             is_open.update(|value| *value = !*value);
             if let Some(on_click) = on_click {
                 on_click.get();

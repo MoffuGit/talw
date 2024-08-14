@@ -41,6 +41,7 @@ pub fn Server() -> impl IntoView {
                 move || {
                     match (server.get(), member.get()) {
                         (Some(Ok(server)), Some(Ok(member))) => {
+                            provide_context((server.clone(), member.clone()));
                             view! {
                                 <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
                                     <ServerSideBar server=server member=member/>

@@ -31,11 +31,11 @@ pub fn App() -> impl IntoView {
     provide_category_context();
 
     //NOTE: keep working on Channel section,
-    //update the sidebar with the channels and threads,
-    //add the thread entity, is like
-    //a channel, same values, not uses for now
     //needed to add the topbar, bottom bar and users_side_bar,
     //remember that this components are going to get reused inside the thread page,
+    //add the thread entity, is like
+    //a channel, same values, not uses for now
+    //update the sidebar with the channels and threads,
     //add the entity for Messages, add a table for pinn messages inside a server or channel, not
     //sure on this take,
     //avanzar en la overview server setting and server porifle setting

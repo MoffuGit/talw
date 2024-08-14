@@ -1,4 +1,5 @@
 use cfg_if::cfg_if;
+use icondata::Icon;
 use leptos::IntoAttribute;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -16,6 +17,17 @@ pub enum ChannelType {
     VOICE,
     ANNOUNCEMENTS,
     RULES,
+}
+
+impl From<ChannelType> for Icon {
+    fn from(value: ChannelType) -> Self {
+        match value {
+            ChannelType::TEXT => icondata::RiHashtagEditor,
+            ChannelType::VOICE => icondata::RiVolumeUpMediaFill,
+            ChannelType::ANNOUNCEMENTS => icondata::RiHashtagEditor,
+            ChannelType::RULES => icondata::RiHashtagEditor,
+        }
+    }
 }
 
 impl IntoAttribute for ChannelType {
@@ -146,7 +158,6 @@ impl Channel {
             .bind(server_id)
             .fetch_one(pool)
             .await;
-        println!("{channel:?}");
         channel.ok()
     }
 }

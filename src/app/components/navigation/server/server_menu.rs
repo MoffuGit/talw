@@ -59,7 +59,7 @@ pub fn ServerMenu(server: Server, member: Member) -> impl IntoView {
                     {
                         if let Role::GUEST = member.role {
                             view! {
-                                <ServerMenuGuestItems server=server.get_value().clone() on_click=on_click_item/>
+                                <ServerMenuGuestItems server=server.get_value() on_click=on_click_item/>
                             }
                         } else {
                             ().into_view()

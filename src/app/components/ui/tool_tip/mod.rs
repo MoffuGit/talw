@@ -99,7 +99,12 @@ pub fn TooltipProvider(
 
 #[allow(non_snake_case)]
 #[component]
-pub fn TooltipTrigger(children: Children, #[prop(optional)] class: &'static str) -> impl IntoView {
+pub fn TooltipTrigger(
+    children: Children,
+    #[prop(optional)] class: &'static str,
+    #[prop(optional)] close_on_click: bool,
+    #[prop(optional)] on_click: Option<Signal<()>>,
+) -> impl IntoView {
     let provider_context = use_context::<TooltipProviderContext>().expect("have this context");
     let is_hover = create_rw_signal(false);
     let trigger_ref = provider_context.trigger_ref;
@@ -122,7 +127,12 @@ pub fn TooltipTrigger(children: Children, #[prop(optional)] class: &'static str)
             }
             on:click=move |evt| {
                 evt.stop_propagation();
-                provider_context.on_close.get_untracked();
+                if close_on_click {
+                    provider_context.on_close.get_untracked();
+                }
+                if let Some(on_click) = on_click {
+                    on_click.get()
+                }
             }
             on:wheel=move |_| {
                 provider_context.on_close.get_untracked();
@@ -183,7 +193,7 @@ pub fn get_tooltip_position(
 #[allow(non_snake_case)]
 #[component]
 pub fn TooltipContent(
-    tip: String,
+    #[prop(into)] tip: MaybeSignal<String>,
     #[prop(optional)] class: &'static str,
     #[prop(optional, default = ToolTipSide::Right)] tooltip_side: ToolTipSide,
     #[prop(optional, default = 2.0)] tooltip_of_side: f64,
@@ -217,6 +227,7 @@ pub fn TooltipContent(
 
     create_effect(move |_| show.update(|value| *value = true));
 
+    // let tip = store_value(tip);
     view! {
         <Show when=move || show.get()>
             <Portal mount=document().get_element_by_id("app").unwrap() clone:tip>

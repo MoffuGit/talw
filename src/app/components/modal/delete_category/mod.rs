@@ -1,4 +1,4 @@
-use crate::app::api::category::{delete_category, use_category};
+use crate::app::api::category::use_category;
 use crate::app::components::ui::modal::*;
 use crate::app::ActionForm;
 use crate::entities::category::Category;

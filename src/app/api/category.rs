@@ -1,6 +1,6 @@
 use crate::entities::category::Category;
 use crate::entities::channel::Channel;
-use crate::entities::member::Role;
+use crate::entities::member::{Member, Role};
 use crate::entities::server::Server;
 use cfg_if::cfg_if;
 use leptos::*;
@@ -8,7 +8,6 @@ use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use super::auth_member;
         use super::auth_user;
         use super::pool;
     }
@@ -38,33 +37,31 @@ pub fn use_category() -> CategoryContext {
 
 #[server(GetCategories, "/api")]
 pub async fn get_categories(server_id: Uuid) -> Result<Vec<Category>, ServerFnError> {
-    let _ = auth_user()?;
+    auth_user()?;
     let pool = pool()?;
 
-    let categories = Server::get_categories(server_id, &pool)
+    Server::get_server_categories(server_id, &pool)
         .await
-        .ok_or_else(|| ServerFnError::new("cant get the categories".to_string()))?;
-
-    Ok(categories)
+        .or(Err(ServerFnError::new("We can't find the categories")))
 }
 
 #[server(CreateCategory, "/api")]
 pub async fn create_category(server_id: Uuid, name: String) -> Result<Uuid, ServerFnError> {
     let pool = pool()?;
+    let user = auth_user()?;
 
     if name.len() <= 1 {
         return Err(ServerFnError::new("min len is 1"));
     }
-
-    if auth_member(server_id).await?.role != Role::ADMIN {
-        return Err(ServerFnError::new(
-            "the user is not an admin of this server",
-        ));
+    match Member::get_member_role(server_id, user.id, &pool).await {
+        Ok(Role::ADMIN) => Category::create(name, server_id, &pool)
+            .await
+            .or(Err(ServerFnError::new("We cant create the category"))),
+        Ok(_) | Err(sqlx::Error::RowNotFound) => {
+            Err(ServerFnError::new("You can't create the category"))
+        }
+        Err(_) => Err(ServerFnError::new("Something go wrong in our servers")),
     }
-
-    Category::create(name, server_id, &pool)
-        .await
-        .ok_or_else(|| ServerFnError::new("cant create the category"))
 }
 
 #[server(RenameCategory)]
@@ -74,36 +71,40 @@ pub async fn rename_category(
     new_name: String,
 ) -> Result<(), ServerFnError> {
     let pool = pool()?;
+    let user = auth_user()?;
 
     if new_name.len() <= 1 {
         return Err(ServerFnError::new("min len is 1"));
     }
 
-    if auth_member(server_id).await?.role != Role::ADMIN {
-        return Err(ServerFnError::new(
-            "the user is not an admin of this server",
-        ));
+    match Member::get_member_role(server_id, user.id, &pool).await {
+        Ok(Role::ADMIN) => Category::rename(new_name, category_id, server_id, &pool)
+            .await
+            .or(Err(ServerFnError::new("We cant change the name"))),
+        Ok(_) | Err(sqlx::Error::RowNotFound) => {
+            Err(ServerFnError::new("You can't rename the category"))
+        }
+        Err(_) => Err(ServerFnError::new("Something go wrong in our servers")),
     }
-
-    Category::rename(new_name, category_id, server_id, &pool)
-        .await
-        .ok_or_else(|| ServerFnError::new("cant change the name"))
 }
 
 #[server(DeleteCategory)]
 pub async fn delete_category(server_id: Uuid, category_id: Uuid) -> Result<(), ServerFnError> {
     let pool = pool()?;
+    let user = auth_user()?;
 
-    if auth_member(server_id).await?.role != Role::ADMIN {
-        return Err(ServerFnError::new(
-            "the user is not an admin of this server",
-        ));
+    match Member::get_member_role(server_id, user.id, &pool).await {
+        Ok(Role::ADMIN) => {
+            Channel::remove_all_from_category(server_id, category_id, &pool)
+                .await
+                .or(Err(ServerFnError::new("cant delete the channel")))?;
+            Category::delete(category_id, server_id, &pool)
+                .await
+                .or(Err(ServerFnError::new("cant delte the channel")))
+        }
+        Ok(_) | Err(sqlx::Error::RowNotFound) => {
+            Err(ServerFnError::new("You can't delete the category"))
+        }
+        Err(_) => Err(ServerFnError::new("Something go wrong in our servers")),
     }
-
-    Channel::remove_all_from_category(server_id, category_id, &pool)
-        .await
-        .ok_or_else(|| ServerFnError::new("cant delte the channel"))?;
-    Category::delete(category_id, server_id, &pool)
-        .await
-        .ok_or_else(|| ServerFnError::new("cant delte the channel"))
 }

@@ -46,10 +46,6 @@ pub fn use_auth() -> AuthContext {
     use_context::<AuthContext>().expect("have auth context")
 }
 
-pub fn current_user() -> Signal<Option<Result<Option<User>, ServerFnError>>> {
-    Signal::derive(move || use_auth().auth.get())
-}
-
 #[server(GetUser, "/api")]
 pub async fn get_user() -> Result<Option<User>, ServerFnError> {
     let auth = auth()?;
@@ -65,9 +61,15 @@ pub async fn login(
     let pool = pool()?;
     let auth = auth()?;
 
-    let user = User::get_from_username(username, &pool)
-        .await
-        .ok_or_else(|| ServerFnError::new("User dont exist".to_string()))?;
+    let user = match User::get_from_username(username, &pool).await {
+        Ok(user) => user,
+        Err(sqlx::Error::RowNotFound) => return Err(ServerFnError::new("This user don't exist")),
+        Err(_) => {
+            return Err(ServerFnError::new(
+                "Looks like we are having problems on our servers",
+            ))
+        }
+    };
 
     match verify(password, &user.password) {
         Ok(true) => {
@@ -76,9 +78,9 @@ pub async fn login(
             leptos_axum::redirect("/");
             Ok(())
         }
-        Ok(false) => Err(ServerFnError::new("Password dont match".to_string())),
+        Ok(false) => Err(ServerFnError::new("Your passwords dont match")),
         _ => Err(ServerFnError::new(
-            "Cannot verify your password".to_string(),
+            "We cant verify your password".to_string(),
         )),
     }
 }
@@ -95,26 +97,31 @@ pub async fn signup(
 
     if username.len() < 4 || username.len() > 20 {
         return Err(ServerFnError::new(
-            "Must be between 4 and 20 in length".to_string(),
+            "Your username needs to be between 4 and 20 character long",
         ));
     }
 
     if password.len() < 8 || password.len() > 20 {
         return Err(ServerFnError::new(
-            "Must be between 8 and 20 in length".to_string(),
+            "Your password needs to be between 8 and 20 character long",
         ));
     }
 
     if password != confirmation_password {
-        return Err(ServerFnError::new("Password did not match".to_string()));
+        return Err(ServerFnError::new("Your password dont match"));
     }
 
-    User::create(username.clone(), password, &pool)
+    let user = User::create(username.clone(), password, &pool)
         .await
-        .ok_or_else(|| ServerFnError::new("Cant create user".to_string()))?;
-    let user = User::get_from_username(username, &pool)
-        .await
-        .ok_or_else(|| ServerFnError::new("Signup failed".to_string()))?;
+        .map(|id| async move {
+            User::get(id, &pool).await.or(Err(ServerFnError::new(
+                "Something go wrong creating your account".to_string(),
+            )))
+        })
+        .or(Err(ServerFnError::new(
+            "We can't create your account in this moments".to_string(),
+        )))?
+        .await?;
 
     auth.login_user(user.id);
     auth.remember_user(remember.is_some());

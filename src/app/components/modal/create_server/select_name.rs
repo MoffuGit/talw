@@ -1,5 +1,5 @@
 use super::use_create_server;
-use crate::app::api::auth::current_user;
+use crate::app::api::auth::use_auth;
 use crate::app::api::server::use_server;
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;
@@ -17,7 +17,7 @@ pub fn SelectName() -> impl IntoView {
     let create_server = use_server().create_server;
     let select_name_ref = use_create_server().select_name_ref;
     let user = move || {
-        current_user().get().map(|user| match user {
+        use_auth().auth.get().map(|user| match user {
             Ok(Some(user)) => format!("{}'s server", user.username),
             _ => "User".to_string(),
         })

@@ -17,26 +17,6 @@ cfg_if! {
         use super::auth_user;
         use super::pool;
 
-        pub fn validate_invitation(invitation: String) -> Result<Uuid, ServerFnError> {
-            match Uuid::parse_str(&invitation) {
-                Ok(uuid) => Ok(uuid),
-                Err(_) => {
-                    let uri = invitation.parse::<Uri>()?;
-                    if uri.host().is_some_and(|host| host == "discord.gg")
-                        && uri.scheme().is_some_and(|scheme| scheme == &Scheme::HTTPS)
-                    {
-                        Uuid::parse_str(uri.path().split('/').last().ok_or_else(|| {
-                            ServerFnError::new("Error with invitation".to_string())
-                        })?)
-                        .map_err(|_| ServerFnError::new("Error with the invitation".to_string()))
-                    } else {
-                        Err(ServerFnError::new(
-                            "Error with the invitation".to_string(),
-                        ))
-                    }
-                }
-            }
-        }
     }
 }
 
@@ -88,19 +68,28 @@ pub fn use_server() -> ServerContext {
     use_context::<ServerContext>().expect("have server context")
 }
 
+#[server(GetServerMembers)]
+pub async fn get_server_members(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+    Server::get_server_members(server_id, &pool)
+        .await
+        .or(Err(ServerFnError::new("Something go wrong")))
+}
+
 #[server(GetUserServersWithMembers)]
 pub async fn get_user_servers_with_members() -> Result<Vec<(Server, Member)>, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
-    let servers = user
-        .get_servers(&pool)
+    let servers = Server::get_user_servers(user.id, &pool)
         .await
-        .ok_or_else(|| ServerFnError::new("cant get servers".to_string()))?;
+        .or(Err(ServerFnError::new(
+            "We can't get yours servers in this moment",
+        )))?;
     let mut res = vec![];
     for server in servers {
-        match &user.get_member(server.id, &pool).await {
-            None => continue,
-            Some(member) => res.push((server, member.clone())),
+        if let Ok(member) = Member::get_user_member(user.id, server.id, &pool).await {
+            res.push((server, member.clone()))
         }
     }
     Ok(res)
@@ -111,9 +100,11 @@ pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
 
-    user.get_servers(&pool)
+    Server::get_user_servers(user.id, &pool)
         .await
-        .ok_or_else(|| ServerFnError::new("cant get servers".to_string()))
+        .or(Err(ServerFnError::new(
+            "We can't get yours servers in this moment",
+        )))
 }
 
 #[server(GetUserMembers, "/api")]
@@ -121,9 +112,11 @@ pub async fn get_user_members() -> Result<Vec<Member>, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
 
-    user.get_members(&pool)
+    Member::get_user_members(user.id, &pool)
         .await
-        .ok_or_else(|| ServerFnError::new("cant get members from user".to_string()))
+        .or(Err(ServerFnError::new(
+            "cant get members from user".to_string(),
+        )))
 }
 
 #[server(GetMember, "/api")]
@@ -131,25 +124,47 @@ pub async fn get_member(server_id: Uuid) -> Result<Member, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
 
-    Server::get_member(server_id, user.id, &pool)
-        .await
-        .ok_or_else(|| ServerFnError::new("cant get member from user".to_string()))
+    match Member::get_member(server_id, user.id, &pool).await {
+        Ok(member) => Ok(member),
+        Err(sqlx::Error::RowNotFound) => Err(ServerFnError::new("Your user dont exist")),
+        Err(_) => Err(ServerFnError::new("We cant get your member")),
+    }
 }
 
 #[server(JoinServerWithInvitation, "/api")]
 pub async fn join_server_with_invitation(invitation: String) -> Result<(), ServerFnError> {
+    fn validate_invitation(invitation: String) -> Option<Uuid> {
+        match Uuid::parse_str(&invitation) {
+            Ok(uuid) => Some(uuid),
+            Err(_) => invitation.parse::<Uri>().ok().and_then(|uri| {
+                if uri.host().is_some_and(|host| host == "discord.gg")
+                    && uri.scheme().is_some_and(|scheme| scheme == &Scheme::HTTPS)
+                {
+                    Uuid::parse_str(uri.path().split('/').last()?).ok()
+                } else {
+                    None
+                }
+            }),
+        }
+    }
     let pool = pool()?;
     let user = auth_user()?;
-    let invitation = validate_invitation(invitation)?;
-    let existing_member = Server::check_member_from_invitation(user.id, invitation, &pool).await;
-    match existing_member {
-        Some(uuid) => redirect(&format!("/servers/{}", uuid)),
-        None => {
-            let server = Member::create_member_from_invitation(user.id, invitation, &pool)
+    let invitation = validate_invitation(invitation)
+        .ok_or_else(|| ServerFnError::new("Your invitation is invalid"))?;
+    match Member::check_member_from_invitation(user.id, invitation, &pool).await {
+        Ok(uuid) => redirect(&format!("/servers/{}", uuid)),
+        Err(sqlx::Error::RowNotFound) => {
+            match Member::create_member_from_invitation(user.id, invitation, user.username, &pool)
                 .await
-                .ok_or_else(|| ServerFnError::new("your invitation is incorrect".to_string()))?;
-            redirect(&format!("/servers/{}", server))
+            {
+                Ok(id) => redirect(&format!("/servers/{}", id)),
+                Err(sqlx::Error::RowNotFound) => {
+                    return Err(ServerFnError::new("Your invitation is invalid"))
+                }
+                Err(_) => return Err(ServerFnError::new("We can't to this")),
+            };
         }
+        Err(_) => return Err(ServerFnError::new("We can't to this")),
     };
     Ok(())
 }
@@ -176,7 +191,13 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
             "image" => {
                 file_name = Some(field.file_name().expect("file name").to_string());
                 file_type = Some(field.content_type().expect("mime type").to_string());
-                chunks = Some(field.try_collect::<Vec<MulterBytes>>().await?.concat());
+                chunks = Some(
+                    field
+                        .try_collect::<Vec<MulterBytes>>()
+                        .await
+                        .or(Err(ServerFnError::new("Something go wrong in our servers")))?
+                        .concat(),
+                );
             }
             field => {
                 return Err(ServerFnError::new(format!(
@@ -187,12 +208,14 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
     }
 
     if server_name.len() < 2 || server_name.len() > 100 {
-        return Err(ServerFnError::new("Must be between 2 and 100 in length"));
+        return Err(ServerFnError::new(
+            "The server name should be between 2 and 100 in length",
+        ));
     }
 
     let server = Server::create(server_name, &pool)
         .await
-        .ok_or_else(|| ServerFnError::new("Cant create server".to_string()))?;
+        .or(Err(ServerFnError::new("Cant create server".to_string())))?;
     if let (Some(chunks), Some(file_name), Some(file_type)) = (chunks, file_name, file_type) {
         let uploadthing = use_context::<UploadThing>().expect("acces to upload thing");
         let size = chunks.len();
@@ -211,13 +234,19 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
             {
                 Server::set_image_url(res.url, server, &pool)
                     .await
-                    .ok_or_else(|| ServerFnError::new("Error".to_string()))?;
+                    .or(Err(ServerFnError::new("Error".to_string())))?;
             }
         }
     }
-    Member::create(crate::entities::member::Role::ADMIN, auth.id, server, &pool)
-        .await
-        .ok_or_else(|| ServerFnError::new("Error".to_string()))?;
+    Member::create(
+        crate::entities::member::Role::ADMIN,
+        auth.id,
+        server,
+        auth.username,
+        &pool,
+    )
+    .await
+    .or(Err(ServerFnError::new("Error".to_string())))?;
     Channel::create(
         "general".to_string(),
         crate::entities::channel::ChannelType::TEXT,
@@ -225,7 +254,9 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         &pool,
     )
     .await
-    .ok_or_else(|| ServerFnError::new("cant create the channel for this server".to_string()))?;
+    .or(Err(ServerFnError::new(
+        "cant create the channel for this server".to_string(),
+    )))?;
     Channel::create(
         "announcement".to_string(),
         crate::entities::channel::ChannelType::ANNOUNCEMENTS,
@@ -233,7 +264,9 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         &pool,
     )
     .await
-    .ok_or_else(|| ServerFnError::new("cant create the channel for this server".to_string()))?;
+    .or(Err(ServerFnError::new(
+        "cant create the channel for this server".to_string(),
+    )))?;
     Channel::create(
         "rules".to_string(),
         crate::entities::channel::ChannelType::RULES,
@@ -241,10 +274,14 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         &pool,
     )
     .await
-    .ok_or_else(|| ServerFnError::new("cant create the channel for this server".to_string()))?;
+    .or(Err(ServerFnError::new(
+        "cant create the channel for this server".to_string(),
+    )))?;
     let text_category = Category::create("text".to_string(), server, &pool)
         .await
-        .ok_or_else(|| ServerFnError::new("cant create the category".to_string()))?;
+        .or(Err(ServerFnError::new(
+            "cant create the category".to_string(),
+        )))?;
     Channel::create_with_category(
         "text".to_string(),
         crate::entities::channel::ChannelType::TEXT,
@@ -253,10 +290,14 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         &pool,
     )
     .await
-    .ok_or_else(|| ServerFnError::new("cant create the channel with category".to_string()))?;
+    .or(Err(ServerFnError::new(
+        "cant create the channel with category".to_string(),
+    )))?;
     let voice_category = Category::create("voice".to_string(), server, &pool)
         .await
-        .ok_or_else(|| ServerFnError::new("cant create the category".to_string()))?;
+        .or(Err(ServerFnError::new(
+            "cant create the category".to_string(),
+        )))?;
     Channel::create_with_category(
         "voice".to_string(),
         crate::entities::channel::ChannelType::VOICE,
@@ -265,7 +306,9 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         &pool,
     )
     .await
-    .ok_or_else(|| ServerFnError::new("cant create the channel with category".to_string()))?;
+    .or(Err(ServerFnError::new(
+        "cant create the channel with category".to_string(),
+    )))?;
     redirect(&format!("/servers/{}", server.simple()));
     Ok(server.to_string())
 }
@@ -277,7 +320,7 @@ pub async fn check_server(server_id: Uuid) -> Result<Server, ServerFnError> {
 
     let server = Server::check_server(server_id, auth.id, &pool)
         .await
-        .ok_or_else(|| ServerFnError::new("you cant acces here".to_string()))?;
+        .or(Err(ServerFnError::new("you cant acces here".to_string())))?;
     Ok(server)
 }
 
@@ -287,7 +330,8 @@ pub async fn leave_server(server_id: Uuid) -> Result<(), ServerFnError> {
     let auth = auth_user()?;
     Member::delete_from_server(auth.id, server_id, &pool)
         .await
-        .ok_or_else(|| ServerFnError::new("cant delte the member form the server"))?;
-    println!("{server_id:?}");
+        .or(Err(ServerFnError::new(
+            "cant delte the member form the server",
+        )))?;
     Ok(())
 }

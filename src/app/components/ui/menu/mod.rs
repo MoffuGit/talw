@@ -51,7 +51,7 @@ pub fn MenuTrigger(
             <div
                 class=move || {
                     format!("{} {}", class, match open.get() {
-                        true => "pointer-events-auto",
+                        true => "pointer-events-none",
                         false => ""
                     })
                 }

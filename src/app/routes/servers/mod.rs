@@ -3,7 +3,7 @@ pub mod empty_server;
 pub mod server;
 pub mod thread_sidebar;
 
-use crate::app::api::auth::current_user;
+use crate::app::api::auth::use_auth;
 use crate::app::components::navigation::sidebar::SideBar;
 use leptos::*;
 use leptos_router::Outlet;
@@ -15,7 +15,7 @@ pub fn Servers() -> impl IntoView {
     view! {
         <Transition fallback=move || ()>
             {move || {
-                current_user().get().map(|result| match result {
+                use_auth().auth.get().map(|result| match result {
                     Ok(Some(_)) => {
                         view! {
                             <div class="h-full w-full">

@@ -102,7 +102,7 @@ pub fn TooltipProvider(
 pub fn TooltipTrigger(
     children: Children,
     #[prop(optional)] class: &'static str,
-    #[prop(optional)] close_on_click: bool,
+    #[prop(optional, default = true)] close_on_click: bool,
     #[prop(optional)] on_click: Option<Signal<()>>,
 ) -> impl IntoView {
     let provider_context = use_context::<TooltipProviderContext>().expect("have this context");

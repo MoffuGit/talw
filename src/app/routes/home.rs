@@ -1,4 +1,4 @@
-use crate::app::api::auth::current_user;
+use crate::app::api::auth::use_auth;
 use leptos::*;
 
 use crate::app::components::navigation::navbar::Navbar;
@@ -11,7 +11,7 @@ pub fn Home() -> impl IntoView {
         <Suspense fallback=move || ()>
             {
                 move || {
-                    current_user().get().map(|user| match user {
+                    use_auth().auth.get().map(|user| match user {
                         Ok(Some(user)) => view! {<div>{user.username}</div>}.into_view(),
                         _ => view! {<div>"error with auth"</div>}.into_view(),
                     })

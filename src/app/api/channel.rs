@@ -1,7 +1,5 @@
 use crate::entities::channel::Channel;
 use crate::entities::channel::ChannelType;
-use crate::entities::member::Member;
-use crate::entities::member::Role;
 use crate::entities::server::Server;
 use cfg_if::cfg_if;
 use leptos::*;
@@ -11,6 +9,7 @@ use super::server;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use super::user_can_edit;
         use super::auth_user;
         use super::pool;
     }
@@ -103,21 +102,16 @@ pub async fn create_channel(
     let pool = pool()?;
     let user = auth_user()?;
 
-    match Member::get_member_role(server_id, user.id, &pool).await {
-        Ok(Role::ADMIN) => {
-            if name.len() <= 1 {
-                return Err(ServerFnError::new("the name have a min len of 1 char"));
-            }
+    if user_can_edit(server_id, user.id, &pool).await? {
+        if name.len() <= 1 {
+            return Err(ServerFnError::new("the name have a min len of 1 char"));
+        }
 
-            Channel::create(name, channel_type, server_id, &pool)
-                .await
-                .or(Err(ServerFnError::new("We cant create the new channel")))
-        }
-        Ok(_) | Err(sqlx::Error::RowNotFound) => {
-            Err(ServerFnError::new("You cant create a channel"))
-        }
-        Err(_) => Err(ServerFnError::new("Something go wrong in our servers")),
+        return Channel::create(name, channel_type, server_id, &pool)
+            .await
+            .or(Err(ServerFnError::new("We cant create the new channel")));
     }
+    Err(ServerFnError::new("You cant create a channel"))
 }
 
 #[server(CreateChannelWithCategory, "/api")]
@@ -130,21 +124,17 @@ pub async fn create_channel_with_category(
     let pool = pool()?;
     let user = auth_user()?;
 
-    match Member::get_member_role(server_id, user.id, &pool).await {
-        Ok(Role::ADMIN) => {
-            if name.len() <= 1 {
-                return Err(ServerFnError::new("min len is 1"));
-            }
+    if user_can_edit(server_id, user.id, &pool).await? {
+        if name.len() <= 1 {
+            return Err(ServerFnError::new("min len is 1"));
+        }
 
-            Channel::create_with_category(name, channel_type, server_id, category_id, &pool)
-                .await
-                .or(Err(ServerFnError::new("cant create the new channel")))
-        }
-        Ok(_) | Err(sqlx::Error::RowNotFound) => {
-            Err(ServerFnError::new("You cant create a channel"))
-        }
-        Err(_) => Err(ServerFnError::new("Something go wrong in our servers")),
+        return Channel::create_with_category(name, channel_type, server_id, category_id, &pool)
+            .await
+            .or(Err(ServerFnError::new("cant create the new channel")));
     }
+
+    Err(ServerFnError::new("You cant create a channel"))
 }
 
 #[server(RenameChannel, "/api")]
@@ -156,21 +146,16 @@ pub async fn rename_channel(
     let pool = pool()?;
     let user = auth_user()?;
 
-    match Member::get_member_role(server_id, user.id, &pool).await {
-        Ok(Role::ADMIN) => {
-            if new_name.len() <= 1 {
-                return Err(ServerFnError::new("min len is 1"));
-            }
+    if user_can_edit(server_id, user.id, &pool).await? {
+        if new_name.len() <= 1 {
+            return Err(ServerFnError::new("min len is 1"));
+        }
 
-            Channel::rename(new_name, channel_id, server_id, &pool)
-                .await
-                .or(Err(ServerFnError::new("cant change the name")))
-        }
-        Ok(_) | Err(sqlx::Error::RowNotFound) => {
-            Err(ServerFnError::new("You cant create a channel"))
-        }
-        Err(_) => Err(ServerFnError::new("Something go wrong in our servers")),
+        return Channel::rename(new_name, channel_id, server_id, &pool)
+            .await
+            .or(Err(ServerFnError::new("cant change the name")));
     }
+    Err(ServerFnError::new("You cant create a channel"))
 }
 
 #[server(DeleteChannel, "/api")]
@@ -178,13 +163,11 @@ pub async fn delete_channel(server_id: Uuid, channel_id: Uuid) -> Result<(), Ser
     let pool = pool()?;
     let user = auth_user()?;
 
-    match Member::get_member_role(server_id, user.id, &pool).await {
-        Ok(Role::ADMIN) => Channel::delete(channel_id, server_id, &pool)
+    if user_can_edit(server_id, user.id, &pool).await? {
+        return Channel::delete(channel_id, server_id, &pool)
             .await
-            .or(Err(ServerFnError::new("cant delte the channel"))),
-        Ok(_) | Err(sqlx::Error::RowNotFound) => {
-            Err(ServerFnError::new("You cant create a channel"))
-        }
-        Err(_) => Err(ServerFnError::new("Something go wrong in our servers")),
+            .or(Err(ServerFnError::new("cant delte the channel")));
     }
+
+    Err(ServerFnError::new("You cant create a channel"))
 }

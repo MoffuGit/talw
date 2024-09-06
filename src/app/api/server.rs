@@ -15,6 +15,7 @@ cfg_if! {
         use http::uri::Scheme;
         use http::Uri;
         use super::auth_user;
+        use super::user_can_edit;
         use super::pool;
 
     }
@@ -77,24 +78,6 @@ pub async fn get_server_members(server_id: Uuid) -> Result<Vec<Member>, ServerFn
         .or(Err(ServerFnError::new("Something go wrong")))
 }
 
-#[server(GetUserServersWithMembers)]
-pub async fn get_user_servers_with_members() -> Result<Vec<(Server, Member)>, ServerFnError> {
-    let pool = pool()?;
-    let user = auth_user()?;
-    let servers = Server::get_user_servers(user.id, &pool)
-        .await
-        .or(Err(ServerFnError::new(
-            "We can't get yours servers in this moment",
-        )))?;
-    let mut res = vec![];
-    for server in servers {
-        if let Ok(member) = Member::get_user_member(user.id, server.id, &pool).await {
-            res.push((server, member.clone()))
-        }
-    }
-    Ok(res)
-}
-
 #[server(GetUserServers, "/api")]
 pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     let pool = pool()?;
@@ -131,6 +114,14 @@ pub async fn get_member(server_id: Uuid) -> Result<Member, ServerFnError> {
     }
 }
 
+#[server(MemberCanEdit)]
+pub async fn member_can_edit(server_id: Uuid) -> Result<bool, ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+
+    user_can_edit(server_id, user.id, &pool).await
+}
+
 #[server(JoinServerWithInvitation, "/api")]
 pub async fn join_server_with_invitation(invitation: String) -> Result<(), ServerFnError> {
     fn validate_invitation(invitation: String) -> Option<Uuid> {
@@ -161,10 +152,14 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
                 Err(sqlx::Error::RowNotFound) => {
                     return Err(ServerFnError::new("Your invitation is invalid"))
                 }
-                Err(_) => return Err(ServerFnError::new("We can't to this")),
+                Err(_) => {
+                    return Err(ServerFnError::new("We can't to this"));
+                }
             };
         }
-        Err(_) => return Err(ServerFnError::new("We can't to this")),
+        Err(_) => {
+            return Err(ServerFnError::new("We can't to this"));
+        }
     };
     Ok(())
 }
@@ -213,7 +208,7 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         ));
     }
 
-    let server = Server::create(server_name, &pool)
+    let server = Server::create(server_name, auth.id, &pool)
         .await
         .or(Err(ServerFnError::new("Cant create server".to_string())))?;
     if let (Some(chunks), Some(file_name), Some(file_type)) = (chunks, file_name, file_type) {
@@ -238,15 +233,9 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
             }
         }
     }
-    Member::create(
-        crate::entities::member::Role::ADMIN,
-        auth.id,
-        server,
-        auth.username,
-        &pool,
-    )
-    .await
-    .or(Err(ServerFnError::new("Error".to_string())))?;
+    Member::create(auth.id, server, auth.username, &pool)
+        .await
+        .or(Err(ServerFnError::new("Error".to_string())))?;
     Channel::create(
         "general".to_string(),
         crate::entities::channel::ChannelType::TEXT,
@@ -314,11 +303,11 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
 }
 
 #[server(CheckServer, "/api")]
-pub async fn check_server(server_id: Uuid) -> Result<Server, ServerFnError> {
+pub async fn get_server(server_id: Uuid) -> Result<Server, ServerFnError> {
     let pool = pool()?;
-    let auth = auth_user()?;
+    auth_user()?;
 
-    let server = Server::check_server(server_id, auth.id, &pool)
+    let server = Server::get_server(server_id, &pool)
         .await
         .or(Err(ServerFnError::new("you cant acces here".to_string())))?;
     Ok(server)
@@ -333,5 +322,6 @@ pub async fn leave_server(server_id: Uuid) -> Result<(), ServerFnError> {
         .or(Err(ServerFnError::new(
             "cant delte the member form the server",
         )))?;
+    redirect("/servers/me");
     Ok(())
 }

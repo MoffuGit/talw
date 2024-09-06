@@ -3,18 +3,17 @@ use super::channel::Channel;
 use super::server_menu::ServerMenu;
 use crate::app::api::category::get_categories;
 use crate::app::api::category::use_category;
+use crate::app::api::channel::{get_general_channels, use_channel};
 use crate::app::components::modal::create_category::CreateCategoryModal;
 use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::ui::context_menu::*;
-use crate::{
-    app::api::channel::{get_general_channels, use_channel},
-    entities::{member::Member, server::Server},
-};
+use crate::app::routes::servers::server::use_current_server_context;
+use crate::app::routes::servers::server::CurrentServerContext;
 use leptos::*;
 
 #[allow(non_snake_case)]
 #[component]
-pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
+pub fn ServerSideBar() -> impl IntoView {
     let use_channel = use_channel();
     let create_channel = use_channel.create_channel;
     let delete_channel = use_channel.delete_channel;
@@ -24,6 +23,8 @@ pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
     let delete_category = use_category.delete_category;
     let create_category = use_category.create_category;
     let rename_category = use_category.rename_category;
+
+    let CurrentServerContext { server, .. } = use_current_server_context();
 
     let channels = create_resource(
         move || {
@@ -51,7 +52,7 @@ pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
     view! {
         <div class="w-full h-full flex flex-col items-center relative bg-base-200 scrollbar-none overflow-y-scroll overflow-x-hidden">
             <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
-                <ServerMenu server=server.clone() member=member.clone()/>
+                <ServerMenu />
                 <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
                     <div class="h-3"/>
                     <Transition fallback=move || ()>
@@ -61,7 +62,8 @@ pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
                                     match channels {
                                         Some(Ok(channels)) => {
                                             channels.iter().map(|channel| {
-                                                view! {<Channel channel=channel.clone() invite_code=server.invite_code server_id=server.id member_role=member.role/>}
+                                                let channel = store_value(channel.clone());
+                                                view! {<Channel channel=channel />}
                                             }).collect_view()
                                         },
                                         _ => view!{<div/>}.into_view()
@@ -77,7 +79,8 @@ pub fn ServerSideBar(server: Server, member: Member) -> impl IntoView {
                                     match categories  {
                                         Some(Ok(categories)) => {
                                             categories.iter().map(|category| {
-                                                view! {<Category category=category.clone() server_id=server.id invite_code=server.invite_code member_role=member.role/>}
+                                                let category = store_value(category.clone());
+                                                view! {<Category category=category />}
                                             }).collect_view()
                                         },
                                         _ => view!{<div/>}.into_view()

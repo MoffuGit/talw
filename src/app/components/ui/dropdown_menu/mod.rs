@@ -98,7 +98,7 @@ fn use_menu_position(
         }
         MenuSide::Left => {
             let content_position_x =
-                move || trigger_position_x.get() - content_width.get() + side_of_set;
+                move || trigger_position_x.get() - content_width.get() - side_of_set;
             let content_position_y = move || {
                 trigger_position_y.get()
                     + match align {

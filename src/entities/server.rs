@@ -18,6 +18,7 @@ pub struct Server {
     pub name: String,
     pub invite_code: Uuid,
     pub image_url: Option<String>,
+    pub owner_id: Uuid,
 }
 
 #[cfg(feature = "ssr")]
@@ -26,7 +27,7 @@ impl Server {
         user_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<Vec<Server>, sqlx::Error> {
-        sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code, servers.image_url FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ?")
+        sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code, servers.image_url, servers.owner_id FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ?")
             .bind(user_id)
             .fetch_all(pool)
             .await
@@ -40,12 +41,17 @@ impl Server {
             .fetch_all(pool)
             .await
     }
-    pub async fn create(name: String, pool: &MySqlPool) -> Result<Uuid, sqlx::Error> {
+    pub async fn create(
+        name: String,
+        user_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Uuid, sqlx::Error> {
         let id = Uuid::new_v4();
-        sqlx::query("INSERT INTO servers (id, name, invite_code) VALUES (?, ?, ?)")
+        sqlx::query("INSERT INTO servers (id, name, invite_code, owner_id) VALUES (?, ?, ?, ?)")
             .bind(id)
             .bind(name)
             .bind(Uuid::new_v4())
+            .bind(user_id)
             .execute(pool)
             .await?;
         Ok(id)
@@ -77,12 +83,18 @@ impl Server {
         )
     }
 
-    pub async fn check_server(
-        server_id: Uuid,
-        user_id: Uuid,
-        pool: &MySqlPool,
-    ) -> Result<Server, sqlx::Error> {
-        sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code, servers.image_url FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ? AND servers.id = ?").bind(user_id).bind(server_id).fetch_one(pool).await
+    pub async fn get_server(server_id: Uuid, pool: &MySqlPool) -> Result<Server, sqlx::Error> {
+        sqlx::query_as::<_, Server>("SELECT servers.id, servers.name, servers.invite_code, servers.image_url, servers.owner_id FROM servers WHERE servers.id = ?").bind(server_id).fetch_one(pool).await
+    }
+
+    pub async fn get_server_owner(server_id: Uuid, pool: &MySqlPool) -> Result<Uuid, sqlx::Error> {
+        Ok(sqlx::query_as::<_, (Uuid,)>(
+            "SELECT servers.owner_id FROM servers WHERE servers.id = ?",
+        )
+        .bind(server_id)
+        .fetch_one(pool)
+        .await?
+        .0)
     }
 
     pub async fn get_general_channels(

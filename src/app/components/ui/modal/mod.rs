@@ -8,6 +8,7 @@ pub struct ModalProviderContext {
     on_close: Option<Signal<()>>,
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn ModalProvider(
     children: Children,
@@ -25,6 +26,7 @@ pub fn ModalProvider(
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn ModalTrigger(
     children: Children,
@@ -36,7 +38,7 @@ pub fn ModalTrigger(
         .open;
 
     view! {
-        <div on:click=move |evt| {
+        <div on:click=move |_| {
             // evt.stop_propagation();
             is_open.update(|value| *value = !*value);
             if let Some(on_click) = on_click {
@@ -48,6 +50,7 @@ pub fn ModalTrigger(
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn ModalClose(
     #[prop(optional)] children: Option<Children>,
@@ -72,6 +75,7 @@ pub fn ModalClose(
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView {
     let modal_context = use_context::<ModalProviderContext>().expect("have context");

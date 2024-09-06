@@ -20,7 +20,12 @@ pub struct User {
     pub id: Uuid,
     pub username: String,
     pub password: String,
+    pub image_url: Option<String>,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[cfg_attr(feature = "ssr", derive(FromRow))]
+pub struct AboutUser(pub Option<String>);
 
 #[cfg(feature = "ssr")]
 impl User {

@@ -1,9 +1,9 @@
-use crate::app::api::server::{get_user_servers_with_members, use_server};
+use crate::app::api::server::{get_user_servers, use_server};
 use crate::app::components::modal::create_server::CreateServerModal;
 use crate::app::components::navigation::context_server_menu::ContextServerMenu;
 use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
+use crate::app::components::ui::tool_tip::*;
 use crate::entities::server::Server;
-use crate::{app::components::ui::tool_tip::*, entities::member::Member};
 use icondata;
 use leptos::*;
 use leptos_icons::*;
@@ -22,46 +22,46 @@ pub fn SideBar() -> impl IntoView {
                 use_server.create_server.version().get(),
             )
         },
-        move |_| get_user_servers_with_members(),
+        move |_| get_user_servers(),
     );
     view! {
         <div class="w-full h-full flex flex-col items-center pt-3 bg-base-300 scrollbar-none overflow-y-scroll overflow-x-hidden">
-                <Navigation id="me".to_string() name="Direct messages".to_string()>
-                    <Icon icon=icondata::RiEmotionUserFacesFill class="h-8 w-8 group-hover:fill-base-100 fill-primary"/>
-                </Navigation>
-                <div class="divider my-0.5 mx-[10px] h-0.5"></div>
-                <Transition fallback=move || ()>
-                    {
-                        move || {
-                            servers.with(|servers|
-                                match  servers {
-                                    Some(Ok(servers)) => {
-                                        servers.iter().map(|(server, member)| {
-                                            view! {
-                                                <Navigation_server server=server.clone() member=member.clone()/>
-                                            }
-                                        }).collect_view()
-                                    },
-                                    _ => view!{<div/>}.into_view()
-                                }
-                            )
-                        }
+            <Navigation id="me".to_string() name="Direct messages".to_string()>
+                <Icon icon=icondata::RiEmotionUserFacesFill class="h-8 w-8 group-hover:fill-base-100 fill-primary"/>
+            </Navigation>
+            <div class="divider my-0.5 mx-[10px] h-0.5"></div>
+            <Transition fallback=move || ()>
+                {
+                    move || {
+                        servers.with(|servers|
+                            match  servers {
+                                Some(Ok(servers)) => {
+                                    servers.iter().map(|server| {
+                                        view! {
+                                            <Navigation_server server=server.clone()/>
+                                        }
+                                    }).collect_view()
+                                },
+                                _ => view!{<div/>}.into_view()
+                            }
+                        )
                     }
-                </Transition>
+                }
+            </Transition>
 
-                <CreateServerModal/>
+            <CreateServerModal/>
 
-                <Navigation id="search_servers".to_string() name="Explore Discoverable Servers".to_string()>
-                    <Icon icon=icondata::RiCompassMapLine class="h-8 w-8 group-hover:fill-base-100 fill-primary"/>
-                </Navigation>
+            <Navigation id="search_servers".to_string() name="Explore Discoverable Servers".to_string()>
+                <Icon icon=icondata::RiCompassMapLine class="h-8 w-8 group-hover:fill-base-100 fill-primary"/>
+            </Navigation>
 
-                <div class="divider my-0.5 mx-[10px] h-0.5"></div>
-                <Navigation_action tip="Toggle theme".into()>
-                    <Toggle_Theme
-                        class="relative mx-3 h-[48px] transition-all bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px] overflow-hidden"
-                        icons=ThemeIcons{dark: icondata::RiSunWeatherFill, light: icondata::RiMoonWeatherFill, class: "fill-primary w-7 h-7 group-hover:fill-base-100"}
-                    />
-                </Navigation_action>
+            <div class="divider my-0.5 mx-[10px] h-0.5"></div>
+            <Navigation_action tip="Toggle theme".into()>
+                <Toggle_Theme
+                    class="relative mx-3 h-[48px] transition-all bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px] overflow-hidden"
+                    icons=ThemeIcons{dark: icondata::RiSunWeatherFill, light: icondata::RiMoonWeatherFill, class: "fill-primary w-7 h-7 group-hover:fill-base-100"}
+                />
+            </Navigation_action>
         </div>
     }
 }
@@ -115,27 +115,28 @@ pub fn Navigation(
 
 #[allow(non_snake_case)]
 #[component]
-pub fn Navigation_server(server: Server, member: Member) -> impl IntoView {
+pub fn Navigation_server(server: Server) -> impl IntoView {
     let current_server = move || {
         use_router()
             .pathname()
             .with(|path| path.split('/').nth(2).map(|path| path.to_string()))
     };
-    let server = store_value(server);
+    let image_url = store_value(server.image_url.clone());
+    let name = store_value(server.name.clone());
     view! {
         <TooltipProvider delay_duration=Duration::new(0,0)>
             <TooltipTrigger class="relative my-0.5">
-                <A href=server.get_value().id.simple().to_string() class="group flex relative items-center">
+                <A href=server.id.simple().to_string() class="group flex relative items-center">
                     <div class=move || format!("absolute left-0 bg-primary rounded-r-full transition-all w-[4px] {}", {
-                        match current_server().is_some_and(|current| current == server.get_value().id.simple().to_string()) {
+                        match current_server().is_some_and(|current| current == server.id.simple().to_string()) {
                             false => "group-hover:h-[20px] h-[8px]",
                             true =>"h-[36px]",
                         }
                     })
                     />
-                    <ContextServerMenu  server=server.get_value() member=member>
+                    <ContextServerMenu  server=server>
                         {
-                            move || match server.get_value().image_url {
+                            move || match image_url.get_value() {
                                 None => ().into_view(),
                                 Some(url) => view!{
                                     <img class="w-full h-full object-cover " src=url/>
@@ -146,7 +147,7 @@ pub fn Navigation_server(server: Server, member: Member) -> impl IntoView {
                     </ContextServerMenu>
                 </A>
             </TooltipTrigger>
-            <TooltipContent tip=server.get_value().name class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"/>
+            <TooltipContent tip=name.get_value() class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"/>
         </TooltipProvider>
     }
 }

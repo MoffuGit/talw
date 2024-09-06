@@ -1,6 +1,5 @@
 use crate::entities::category::Category;
 use crate::entities::channel::Channel;
-use crate::entities::member::{Member, Role};
 use crate::entities::server::Server;
 use cfg_if::cfg_if;
 use leptos::*;
@@ -8,6 +7,7 @@ use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use super::user_can_edit;
         use super::auth_user;
         use super::pool;
     }
@@ -50,18 +50,15 @@ pub async fn create_category(server_id: Uuid, name: String) -> Result<Uuid, Serv
     let pool = pool()?;
     let user = auth_user()?;
 
-    if name.len() <= 1 {
-        return Err(ServerFnError::new("min len is 1"));
-    }
-    match Member::get_member_role(server_id, user.id, &pool).await {
-        Ok(Role::ADMIN) => Category::create(name, server_id, &pool)
+    if user_can_edit(server_id, user.id, &pool).await? {
+        if name.len() <= 1 {
+            return Err(ServerFnError::new("min len is 1"));
+        };
+        return Category::create(name, server_id, &pool)
             .await
-            .or(Err(ServerFnError::new("We cant create the category"))),
-        Ok(_) | Err(sqlx::Error::RowNotFound) => {
-            Err(ServerFnError::new("You can't create the category"))
-        }
-        Err(_) => Err(ServerFnError::new("Something go wrong in our servers")),
+            .or(Err(ServerFnError::new("We cant create the category")));
     }
+    Err(ServerFnError::new("You can't create the category"))
 }
 
 #[server(RenameCategory)]
@@ -73,19 +70,16 @@ pub async fn rename_category(
     let pool = pool()?;
     let user = auth_user()?;
 
-    if new_name.len() <= 1 {
-        return Err(ServerFnError::new("min len is 1"));
-    }
-
-    match Member::get_member_role(server_id, user.id, &pool).await {
-        Ok(Role::ADMIN) => Category::rename(new_name, category_id, server_id, &pool)
-            .await
-            .or(Err(ServerFnError::new("We cant change the name"))),
-        Ok(_) | Err(sqlx::Error::RowNotFound) => {
-            Err(ServerFnError::new("You can't rename the category"))
+    if user_can_edit(server_id, user.id, &pool).await? {
+        if new_name.len() <= 1 {
+            return Err(ServerFnError::new("min len is 1"));
         }
-        Err(_) => Err(ServerFnError::new("Something go wrong in our servers")),
-    }
+        return Category::rename(new_name, category_id, server_id, &pool)
+            .await
+            .or(Err(ServerFnError::new("We cant change the name")));
+    };
+
+    Err(ServerFnError::new("You can't rename the category"))
 }
 
 #[server(DeleteCategory)]
@@ -93,18 +87,14 @@ pub async fn delete_category(server_id: Uuid, category_id: Uuid) -> Result<(), S
     let pool = pool()?;
     let user = auth_user()?;
 
-    match Member::get_member_role(server_id, user.id, &pool).await {
-        Ok(Role::ADMIN) => {
-            Channel::remove_all_from_category(server_id, category_id, &pool)
-                .await
-                .or(Err(ServerFnError::new("cant delete the channel")))?;
-            Category::delete(category_id, server_id, &pool)
-                .await
-                .or(Err(ServerFnError::new("cant delte the channel")))
-        }
-        Ok(_) | Err(sqlx::Error::RowNotFound) => {
-            Err(ServerFnError::new("You can't delete the category"))
-        }
-        Err(_) => Err(ServerFnError::new("Something go wrong in our servers")),
-    }
+    if user_can_edit(server_id, user.id, &pool).await? {
+        Channel::remove_all_from_category(server_id, category_id, &pool)
+            .await
+            .or(Err(ServerFnError::new("cant delete the channel")))?;
+        Category::delete(category_id, server_id, &pool)
+            .await
+            .or(Err(ServerFnError::new("cant delte the channel")))?;
+        return Ok(());
+    };
+    Err(ServerFnError::new("You can't delete the category"))
 }

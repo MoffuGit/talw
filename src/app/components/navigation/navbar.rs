@@ -1,8 +1,9 @@
-use crate::app::api::auth::{current_user, use_auth};
+use crate::app::api::auth::use_auth;
 use crate::app::components::theme::Toggle_Theme;
 use leptos::*;
 use leptos_router::*;
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Logout() -> impl IntoView {
     let logout = use_auth().logout;
@@ -13,6 +14,7 @@ pub fn Logout() -> impl IntoView {
     }
 }
 
+#[allow(non_snake_case)]
 #[component]
 pub fn Navbar() -> impl IntoView {
     view! {
@@ -21,7 +23,7 @@ pub fn Navbar() -> impl IntoView {
                 <div class="navbar-start"/>
                 <div class="navbar-end">
                     {
-                        move || current_user().get().map(|user| match user {
+                        move || use_auth().auth.get().map(|user| match user {
                             Ok(Some(_)) => view! {<Logout/>}.into_view(),
                             _ => view!{<A href="/login" class="btn btn-ghost btn-sm m-1">"Login"</A> <A href="/signup" class="btn btn-neutral btn-sm">"Signup"</A>}.into_view()
                         })

@@ -1,8 +1,7 @@
 use crate::app::api::channel::{get_channel, use_channel};
 use crate::app::components::channel::header::ChannelHeader;
-use crate::app::components::channel::members_sidebar::{MemberSideBar, SideBarContext};
-use crate::entities::member::Member;
-use crate::entities::server::Server;
+use crate::app::components::channel::sidebars::members::{MemberSideBar, SideBarContext};
+use crate::app::routes::servers::server::use_current_server_context;
 use leptos::*;
 use leptos_router::{use_params_map, Outlet, Redirect};
 use uuid::Uuid;
@@ -10,10 +9,6 @@ use uuid::Uuid;
 #[component]
 #[allow(non_snake_case)]
 pub fn ChannelView() -> impl IntoView {
-    let (server, member) =
-        use_context::<(Server, Member)>().expect("acced to the server and member");
-    let server = store_value(server);
-    let member = store_value(member);
     let use_channel = use_channel();
     let params = use_params_map();
     let channel = create_resource(
@@ -27,6 +22,9 @@ pub fn ChannelView() -> impl IntoView {
         },
         move |(_, _, server_id, channel_id)| get_channel(channel_id, server_id),
     );
+
+    let server_id = use_current_server_context().server.id;
+
     provide_context(SideBarContext(RwSignal::new(false)));
     view! {
         <div class="w-full h-full flex relative items-stretch">
@@ -34,10 +32,10 @@ pub fn ChannelView() -> impl IntoView {
                 <Transition fallback=move || ()>
                     {move || match channel.get() {
                         Some(Ok(channel)) => view!{
-                            <ChannelHeader channel=channel member=member server=server/>
+                            <ChannelHeader channel=channel/>
                             <div class="w-full h-full flex overflow-hidden">
                                 <div class="w-auto h-full grow"/>
-                                <MemberSideBar/>
+                                <MemberSideBar server_id=server_id/>
                             </div>
                         }.into_view(),
                         Some(Err(_)) => view!{<Redirect path=params.with(|p| format!("/servers/{}",p.get("id").unwrap()))/>}.into_view(),

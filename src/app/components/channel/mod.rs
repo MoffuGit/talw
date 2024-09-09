@@ -1,2 +1,3 @@
 pub mod header;
-pub mod members_sidebar;
+pub mod member;
+pub mod sidebars;

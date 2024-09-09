@@ -8,6 +8,8 @@ pub mod thread;
 use cfg_if::cfg_if;
 use leptos::*;
 
+pub const SERVER_ERROR: &str = "Something go wrong in our servers";
+
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use crate::entities::user::AuthSession;
@@ -18,30 +20,30 @@ cfg_if! {
         use uuid::Uuid;
 
         pub fn pool() -> Result<MySqlPool, ServerFnError> {
-            use_context::<MySqlPool>().ok_or_else(|| ServerFnError::new("Something go wrong in the servers".to_string()))
+            use_context::<MySqlPool>().ok_or_else(|| ServerFnError::new(SERVER_ERROR))
         }
 
         pub fn auth() -> Result<AuthSession, ServerFnError> {
             use_context::<AuthSession>()
-                .ok_or_else(|| ServerFnError::new("Something go wrong in the servers".to_string()))
+                .ok_or_else(|| ServerFnError::new(SERVER_ERROR.to_string()))
         }
 
         pub fn auth_user() -> Result<User, ServerFnError> {
-            auth()?.current_user.ok_or_else(|| ServerFnError::new("You arent' authenticated, please log in or sign in".to_string()))
+            auth()?.current_user.ok_or_else(|| ServerFnError::new("You arent' authenticated, please log in or sign in"))
         }
 
         pub async fn user_can_edit (server: Uuid, user: Uuid, pool: &MySqlPool) -> Result<bool, ServerFnError> {
             if Server::get_server_owner(server, pool)
                 .await
                 .or(Err(ServerFnError::new(
-                    "We are having problems in our servers",
+                    SERVER_ERROR
                 )))?
                 == user
             {
                 return Ok(true);
             };
 
-            if Member::member_can_edit(user, server, pool).await.or(Err(ServerFnError::new("We are havinf problems in our servers")))? {
+            if Member::member_can_edit(user, server, pool).await.or(Err(ServerFnError::new(SERVER_ERROR)))? {
                 return Ok(true);
 
             }

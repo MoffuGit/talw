@@ -1,3 +1,4 @@
+use crate::entities::role::Role;
 use crate::entities::{category::Category, channel::Channel, member::Member, server::Server};
 use crate::uploadthing::upload_file::FileData;
 use crate::uploadthing::UploadThing;
@@ -9,6 +10,8 @@ use server_fn::codec::{MultipartData, MultipartFormData};
 use strum_macros::{Display, EnumIter};
 use uuid::Uuid;
 use web_sys::FormData;
+
+use super::SERVER_ERROR;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use leptos_axum::redirect;
@@ -69,13 +72,32 @@ pub fn use_server() -> ServerContext {
     use_context::<ServerContext>().expect("have server context")
 }
 
-#[server(GetServerMembers)]
-pub async fn get_server_members(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
+#[server(GetMembersWithoutRole)]
+pub async fn get_members_without_role(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
     let pool = pool()?;
     auth_user()?;
-    Server::get_server_members(server_id, &pool)
+    Member::get_members_without_role(server_id, &pool)
         .await
-        .or(Err(ServerFnError::new("Something go wrong")))
+        .or(Err(ServerFnError::new(SERVER_ERROR)))
+}
+
+#[server(GetMembersFromRole)]
+pub async fn get_members_from_role(role_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+    Member::get_member_from_role(role_id, &pool)
+        .await
+        .or(Err(ServerFnError::new(SERVER_ERROR)))
+}
+
+#[server(GetServerRoles)]
+pub async fn get_server_roles(server_id: Uuid) -> Result<Vec<Role>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Role::get_server_roles(server_id, &pool)
+        .await
+        .or(Err(ServerFnError::new(SERVER_ERROR)))
 }
 
 #[server(GetUserServers, "/api")]

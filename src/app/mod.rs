@@ -30,15 +30,38 @@ pub fn App() -> impl IntoView {
     provide_channel_context();
     provide_category_context();
 
-    //NOTE: keep working on Channel section,
-    //needed to add the topbar, bottom bar and users_side_bar,
-    //remember that this components are going to get reused inside the thread page,
+    //NOTE:
     //add the thread entity, is like
     //a channel, same values, not uses for now
     //update the sidebar with the channels and threads,
-    //add the entity for Messages, add a table for pinn messages inside a server or channel, not
-    //sure on this take,
+    //add capacity to create a thread
+    //add the entity for Messages, add a table for pinn messages inside a channel
+    //add the capacity to send messages
     //avanzar en la overview server setting and server porifle setting
+    //add things to user stuff and search stuff
+    //add friends
+
+    //TODO:user_side_bar is waiting the roles and aboout
+    //the roles are needed for the sidebar and groups of users
+    //the about is part of the banners
+
+    //TODO:
+    //add the right click for the member sidebar,
+    //open menu with invite to server and add as friend, and send message
+
+    //TODO:
+    //the memberbanners is missing the part of member_can_edit,
+    //add and remove roles,
+    //add the banner for your self, button for opening the settings
+    //add the send message
+    //add as friend and invite to server
+
+    //TODO:
+    //the topbar is missing the threads, the pinned messages and search
+    //the thread is part of the title and the group of threads
+    //the messages is for the gruop of pinned messages
+    //search is for latter, i want to add all the part before adding the capacity to search
+
     view! {
         <Stylesheet id="leptos" href="/pkg/TALW.css"/>
 

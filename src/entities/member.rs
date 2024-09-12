@@ -4,6 +4,7 @@ use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use super::Error;
         use super::server::Server;
         use super::role::Role;
         use sqlx::{FromRow, MySqlPool};
@@ -26,56 +27,62 @@ pub struct AboutMember(pub Option<String>);
 
 #[cfg(feature = "ssr")]
 impl Member {
+    pub async fn get_about(member_id: Uuid, pool: &MySqlPool) -> Result<AboutMember, Error> {
+        Ok(sqlx::query_as::<_, AboutMember>(
+            r#"
+                        SELECT members.about FROM members WHERE members.id = ?
+                    "#,
+        )
+        .bind(member_id)
+        .fetch_one(pool)
+        .await?)
+    }
     pub async fn get_members_without_role(
         server_id: Uuid,
         pool: &MySqlPool,
-    ) -> Result<Vec<Member>, sqlx::Error> {
-        sqlx::query_as::<_, Member>(
+    ) -> Result<Vec<Member>, Error> {
+        Ok(sqlx::query_as::<_, Member>(
             r#"
-            SELECT m.id, m.user_id, m.server_id, m.name, m.image_url
-            FROM members m
-            WHERE m.server_id = ?
-            AND NOT EXISTS (
-                SELECT 1
-                FROM member_roles mr
-                WHERE mr.member_id = m.id
-            )
-            "#,
+                    SELECT m.id, m.user_id, m.server_id, m.name, m.image_url
+                    FROM members m
+                    WHERE m.server_id = ?
+                    AND NOT EXISTS (
+                        SELECT 1
+                        FROM member_roles mr
+                        WHERE mr.member_id = m.id
+                    )
+                    "#,
         )
         .bind(server_id)
         .fetch_all(pool)
-        .await
+        .await?)
     }
     pub async fn get_member_from_role(
         role_id: Uuid,
         pool: &MySqlPool,
-    ) -> Result<Vec<Member>, sqlx::Error> {
-        sqlx::query_as::<_, Member>(
+    ) -> Result<Vec<Member>, Error> {
+        Ok(sqlx::query_as::<_, Member>(
             r#"
-            SELECT DISTINCT m.id, m.user_id, m.server_id, m.name, m.image_url
-            FROM members m
-            JOIN member_roles mr ON m.id = mr.member_id
-            JOIN roles r ON mr.role_id = r.id
-            WHERE r.priority = ?
-            AND NOT EXIST (
-                SELECT 1
-                FROM member_roles mr2
-                JOIN roles r2 ON mr2.role_id = r2.id
-                WHERE mr2.member_id = m.id
-                AND r2.priority > ? )
-            "#,
+                    SELECT DISTINCT m.id, m.user_id, m.server_id, m.name, m.image_url
+                    FROM members m
+                    JOIN member_roles mr ON m.id = mr.member_id
+                    JOIN roles r ON mr.role_id = r.id
+                    WHERE r.priority = ?
+                    AND NOT EXIST (
+                        SELECT 1
+                        FROM member_roles mr2
+                        JOIN roles r2 ON mr2.role_id = r2.id
+                        WHERE mr2.member_id = m.id
+                        AND r2.priority > ? )
+                    "#,
         )
         .bind(role_id)
         .bind(role_id)
         .fetch_all(pool)
-        .await
+        .await?)
     }
-    pub async fn member_can_edit(
-        user: Uuid,
-        server: Uuid,
-        pool: &MySqlPool,
-    ) -> Result<bool, sqlx::Error> {
-        match Role::get_member_roles(user, server, pool)
+    pub async fn member_can_edit(user: Uuid, pool: &MySqlPool) -> Result<bool, Error> {
+        match Role::get_member_roles(user, pool)
             .await?
             .iter()
             .find(|role| role.can_edit)
@@ -85,32 +92,29 @@ impl Member {
         }
     }
 
-    pub async fn get_user_members(
-        user_id: Uuid,
-        pool: &MySqlPool,
-    ) -> Result<Vec<Member>, sqlx::Error> {
-        sqlx::query_as::<_, Member>("SELECT members.id, members.user_id, members.server_id, members.name FROM members WHERE members.user_id = ?")
-            .bind(user_id)
-            .fetch_all(pool)
-            .await
+    pub async fn get_user_members(user_id: Uuid, pool: &MySqlPool) -> Result<Vec<Member>, Error> {
+        Ok(sqlx::query_as::<_, Member>("SELECT members.id, members.user_id, members.server_id, members.name FROM members WHERE members.user_id = ?")
+                    .bind(user_id)
+                    .fetch_all(pool)
+                    .await?)
     }
     pub async fn get_user_member(
         user_id: Uuid,
         server_id: Uuid,
         pool: &MySqlPool,
-    ) -> Result<Member, sqlx::Error> {
-        sqlx::query_as::<_, Member>("SELECT members.id, members.user_id, members.server_id, members.name FROM members WHERE members.user_id = ? AND members.server_id = ?")
-            .bind(user_id)
-            .bind(server_id)
-            .fetch_one(pool)
-            .await
+    ) -> Result<Member, Error> {
+        Ok(sqlx::query_as::<_, Member>("SELECT members.id, members.user_id, members.server_id, members.name FROM members WHERE members.user_id = ? AND members.server_id = ?")
+                    .bind(user_id)
+                    .bind(server_id)
+                    .fetch_one(pool)
+                    .await?)
     }
     pub async fn create(
         user: Uuid,
         server: Uuid,
         name: String,
         pool: &MySqlPool,
-    ) -> Result<Uuid, sqlx::Error> {
+    ) -> Result<Uuid, Error> {
         let id = Uuid::new_v4();
         sqlx::query("INSERT INTO members (id, user_id, server_id, name) VALUES (?,?,?,?)")
             .bind(id)
@@ -127,7 +131,7 @@ impl Member {
         invitation: Uuid,
         name: String,
         pool: &MySqlPool,
-    ) -> Result<Uuid, sqlx::Error> {
+    ) -> Result<Uuid, Error> {
         let id = Uuid::new_v4();
         let server_id = Server::get_from_invitation(invitation, pool).await?;
         sqlx::query("INSERT INTO members (id, user_id, server_id, name) VALUES(?, ?, ?, ?)")
@@ -140,24 +144,11 @@ impl Member {
         Ok(server_id)
     }
 
-    pub async fn get_member(
-        server_id: Uuid,
-        user_id: Uuid,
-        pool: &MySqlPool,
-    ) -> Result<Member, sqlx::Error> {
-        sqlx::query_as::<_, Member>("SELECT * FROM members WHERE server_id = ? AND user_id = ?")
-            .bind(server_id)
-            .bind(user_id)
-            .fetch_one(pool)
-            .await
-        // log::info!("{member:?}");
-    }
-
     pub async fn check_member_from_invitation(
         user_id: Uuid,
         invitation: Uuid,
         pool: &MySqlPool,
-    ) -> Result<Uuid, sqlx::Error> {
+    ) -> Result<Uuid, Error> {
         Ok(sqlx::query_as::<_, (Uuid,)>("SELECT servers.id FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ? AND servers.invite_code = ?").bind(user_id).bind(invitation).fetch_one(pool).await?.0)
     }
 
@@ -165,7 +156,7 @@ impl Member {
         user_id: Uuid,
         server_id: Uuid,
         pool: &MySqlPool,
-    ) -> Result<(), sqlx::Error> {
+    ) -> Result<(), Error> {
         sqlx::query("DELETE FROM members WHERE user_id=? AND server_id=?")
             .bind(user_id)
             .bind(server_id)

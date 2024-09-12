@@ -1,19 +1,21 @@
+use crate::entities::member::AboutMember;
 use crate::entities::role::Role;
-use crate::entities::{category::Category, channel::Channel, member::Member, server::Server};
-use crate::uploadthing::upload_file::FileData;
-use crate::uploadthing::UploadThing;
+use crate::entities::{member::Member, server::Server};
 use cfg_if::cfg_if;
-use futures::TryStreamExt;
 use leptos::*;
-use multer::bytes::Bytes as MulterBytes;
 use server_fn::codec::{MultipartData, MultipartFormData};
 use strum_macros::{Display, EnumIter};
 use uuid::Uuid;
 use web_sys::FormData;
 
-use super::SERVER_ERROR;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use multer::bytes::Bytes as MulterBytes;
+        use futures::TryStreamExt;
+        use crate::uploadthing::UploadThing;
+        use crate::uploadthing::upload_file::FileData;
+        use crate::entities::{category::Category, channel::Channel};
+        use crate::entities::user::User;
         use leptos_axum::redirect;
         use http::uri::Scheme;
         use http::Uri;
@@ -72,22 +74,52 @@ pub fn use_server() -> ServerContext {
     use_context::<ServerContext>().expect("have server context")
 }
 
+#[server(GetMutualServers)]
+pub async fn get_mutual_servers_url(member_id: Uuid) -> Result<Vec<Option<String>>, ServerFnError> {
+    let pool = pool()?;
+    let user1 = auth_user()?;
+
+    let user2 = User::get_from_member(member_id, &pool).await?;
+
+    let res = Server::get_mutual_servers_url(user1.id, user2.id, &pool).await;
+    Ok(res?)
+}
+
+#[server(GetMemberAbout)]
+pub async fn get_member_about(member_id: Uuid) -> Result<AboutMember, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+    Ok(Member::get_about(member_id, &pool).await?)
+}
+
+#[server(GetMemberRoles)]
+pub async fn get_member_roles(member_id: Uuid) -> Result<Vec<Role>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(Role::get_member_roles(member_id, &pool).await?)
+}
+
+#[server(GetUserNameFromMember)]
+pub async fn get_user_name_from_member(member_id: Uuid) -> Result<String, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(User::get_user_name_from_member(member_id, &pool).await?)
+}
+
 #[server(GetMembersWithoutRole)]
 pub async fn get_members_without_role(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
     let pool = pool()?;
     auth_user()?;
-    Member::get_members_without_role(server_id, &pool)
-        .await
-        .or(Err(ServerFnError::new(SERVER_ERROR)))
+    Ok(Member::get_members_without_role(server_id, &pool).await?)
 }
 
 #[server(GetMembersFromRole)]
 pub async fn get_members_from_role(role_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
     let pool = pool()?;
     auth_user()?;
-    Member::get_member_from_role(role_id, &pool)
-        .await
-        .or(Err(ServerFnError::new(SERVER_ERROR)))
+    Ok(Member::get_member_from_role(role_id, &pool).await?)
 }
 
 #[server(GetServerRoles)]
@@ -95,9 +127,7 @@ pub async fn get_server_roles(server_id: Uuid) -> Result<Vec<Role>, ServerFnErro
     let pool = pool()?;
     auth_user()?;
 
-    Role::get_server_roles(server_id, &pool)
-        .await
-        .or(Err(ServerFnError::new(SERVER_ERROR)))
+    Ok(Role::get_server_roles(server_id, &pool).await?)
 }
 
 #[server(GetUserServers, "/api")]
@@ -105,11 +135,7 @@ pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
 
-    Server::get_user_servers(user.id, &pool)
-        .await
-        .or(Err(ServerFnError::new(
-            "We can't get yours servers in this moment",
-        )))
+    Ok(Server::get_user_servers(user.id, &pool).await?)
 }
 
 #[server(GetUserMembers, "/api")]
@@ -117,23 +143,7 @@ pub async fn get_user_members() -> Result<Vec<Member>, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
 
-    Member::get_user_members(user.id, &pool)
-        .await
-        .or(Err(ServerFnError::new(
-            "cant get members from user".to_string(),
-        )))
-}
-
-#[server(GetMember, "/api")]
-pub async fn get_member(server_id: Uuid) -> Result<Member, ServerFnError> {
-    let pool = pool()?;
-    let user = auth_user()?;
-
-    match Member::get_member(server_id, user.id, &pool).await {
-        Ok(member) => Ok(member),
-        Err(sqlx::Error::RowNotFound) => Err(ServerFnError::new("Your user dont exist")),
-        Err(_) => Err(ServerFnError::new("We cant get your member")),
-    }
+    Ok(Member::get_user_members(user.id, &pool).await?)
 }
 
 #[server(MemberCanEdit)]
@@ -166,12 +176,12 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
         .ok_or_else(|| ServerFnError::new("Your invitation is invalid"))?;
     match Member::check_member_from_invitation(user.id, invitation, &pool).await {
         Ok(uuid) => redirect(&format!("/servers/{}", uuid)),
-        Err(sqlx::Error::RowNotFound) => {
+        Err(crate::entities::Error::NotFound) => {
             match Member::create_member_from_invitation(user.id, invitation, user.username, &pool)
                 .await
             {
                 Ok(id) => redirect(&format!("/servers/{}", id)),
-                Err(sqlx::Error::RowNotFound) => {
+                Err(crate::entities::Error::NotFound) => {
                     return Err(ServerFnError::new("Your invitation is invalid"))
                 }
                 Err(_) => {
@@ -230,9 +240,7 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         ));
     }
 
-    let server = Server::create(server_name, auth.id, &pool)
-        .await
-        .or(Err(ServerFnError::new("Cant create server".to_string())))?;
+    let server = Server::create(server_name, auth.id, &pool).await?;
     if let (Some(chunks), Some(file_name), Some(file_type)) = (chunks, file_name, file_type) {
         let uploadthing = use_context::<UploadThing>().expect("acces to upload thing");
         let size = chunks.len();
@@ -249,50 +257,33 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
                 )
                 .await
             {
-                Server::set_image_url(res.url, server, &pool)
-                    .await
-                    .or(Err(ServerFnError::new("Error".to_string())))?;
+                Server::set_image_url(res.url, server, &pool).await?;
             }
         }
     }
-    Member::create(auth.id, server, auth.username, &pool)
-        .await
-        .or(Err(ServerFnError::new("Error".to_string())))?;
+    Member::create(auth.id, server, auth.username, &pool).await?;
     Channel::create(
         "general".to_string(),
         crate::entities::channel::ChannelType::TEXT,
         server,
         &pool,
     )
-    .await
-    .or(Err(ServerFnError::new(
-        "cant create the channel for this server".to_string(),
-    )))?;
+    .await?;
     Channel::create(
         "announcement".to_string(),
         crate::entities::channel::ChannelType::ANNOUNCEMENTS,
         server,
         &pool,
     )
-    .await
-    .or(Err(ServerFnError::new(
-        "cant create the channel for this server".to_string(),
-    )))?;
+    .await?;
     Channel::create(
         "rules".to_string(),
         crate::entities::channel::ChannelType::RULES,
         server,
         &pool,
     )
-    .await
-    .or(Err(ServerFnError::new(
-        "cant create the channel for this server".to_string(),
-    )))?;
-    let text_category = Category::create("text".to_string(), server, &pool)
-        .await
-        .or(Err(ServerFnError::new(
-            "cant create the category".to_string(),
-        )))?;
+    .await?;
+    let text_category = Category::create("text".to_string(), server, &pool).await?;
     Channel::create_with_category(
         "text".to_string(),
         crate::entities::channel::ChannelType::TEXT,
@@ -300,15 +291,8 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         text_category,
         &pool,
     )
-    .await
-    .or(Err(ServerFnError::new(
-        "cant create the channel with category".to_string(),
-    )))?;
-    let voice_category = Category::create("voice".to_string(), server, &pool)
-        .await
-        .or(Err(ServerFnError::new(
-            "cant create the category".to_string(),
-        )))?;
+    .await?;
+    let voice_category = Category::create("voice".to_string(), server, &pool).await?;
     Channel::create_with_category(
         "voice".to_string(),
         crate::entities::channel::ChannelType::VOICE,
@@ -316,10 +300,7 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         voice_category,
         &pool,
     )
-    .await
-    .or(Err(ServerFnError::new(
-        "cant create the channel with category".to_string(),
-    )))?;
+    .await?;
     redirect(&format!("/servers/{}", server.simple()));
     Ok(server.to_string())
 }
@@ -329,21 +310,14 @@ pub async fn get_server(server_id: Uuid) -> Result<Server, ServerFnError> {
     let pool = pool()?;
     auth_user()?;
 
-    let server = Server::get_server(server_id, &pool)
-        .await
-        .or(Err(ServerFnError::new("you cant acces here".to_string())))?;
-    Ok(server)
+    Ok(Server::get_server(server_id, &pool).await?)
 }
 
 #[server(LeaveServer, "/api")]
 pub async fn leave_server(server_id: Uuid) -> Result<(), ServerFnError> {
     let pool = pool()?;
     let auth = auth_user()?;
-    Member::delete_from_server(auth.id, server_id, &pool)
-        .await
-        .or(Err(ServerFnError::new(
-            "cant delte the member form the server",
-        )))?;
+    Member::delete_from_server(auth.id, server_id, &pool).await?;
     redirect("/servers/me");
     Ok(())
 }

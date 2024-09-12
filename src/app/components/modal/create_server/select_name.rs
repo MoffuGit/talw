@@ -26,7 +26,7 @@ pub fn SelectName() -> impl IntoView {
     let image_preview_url = create_rw_signal::<String>("".into());
 
     view! {
-            <form node_ref=select_name_ref on:submit=move |ev: SubmitEvent| {
+            <form on:submit=move |ev: SubmitEvent| {
                 ev.prevent_default();
                 let target = ev.target().unwrap().unchecked_into::<HtmlFormElement>();
                 let form_data = FormData::new_with_form(&target).unwrap();
@@ -35,6 +35,7 @@ pub fn SelectName() -> impl IntoView {
             on:reset=move |_| {
                 image_preview_url.set("".to_string());
             }
+            node_ref=select_name_ref
             >
                 <div class="px-6 pt-6 relative flex flex-col justify-start items-center ">
                     <div class="text-center font-bold text-2xl leading-[30px]">Customize your server</div>

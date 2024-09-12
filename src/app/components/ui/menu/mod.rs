@@ -58,7 +58,7 @@ pub fn MenuTrigger(
                 on:click=move |_| {
                     open.set(true);
                 }
-            node_ref=trigger_ref>
+                node_ref=trigger_ref>
                 {children.map(|children| children())}
             </div>
         },

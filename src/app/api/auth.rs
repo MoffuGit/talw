@@ -63,7 +63,9 @@ pub async fn login(
 
     let user = match User::get_from_username(username, &pool).await {
         Ok(user) => user,
-        Err(sqlx::Error::RowNotFound) => return Err(ServerFnError::new("This user don't exist")),
+        Err(crate::entities::Error::NotFound) => {
+            return Err(ServerFnError::new("This user don't exist"))
+        }
         Err(_) => {
             return Err(ServerFnError::new(
                 "Looks like we are having problems on our servers",
@@ -113,14 +115,7 @@ pub async fn signup(
 
     let user = User::create(username.clone(), password, &pool)
         .await
-        .map(|id| async move {
-            User::get(id, &pool).await.or(Err(ServerFnError::new(
-                "Something go wrong creating your account".to_string(),
-            )))
-        })
-        .or(Err(ServerFnError::new(
-            "We can't create your account in this moments".to_string(),
-        )))?
+        .map(|id| async move { User::get(id, &pool).await })?
         .await?;
 
     auth.login_user(user.id);

@@ -1,3 +1,4 @@
+use crate::app::api::channel::{get_channel_topic, use_channel};
 use crate::app::components::modal::delete_channel::DeleteChannel;
 use crate::app::components::modal::edit_channel::EditChannelModal;
 use crate::app::components::modal::invite_people::InvitePeopleModal;
@@ -16,12 +17,30 @@ pub fn HeaderTitle(channel: Channel, thread: Option<String>) -> impl IntoView {
         server,
         member_can_edit,
     } = use_current_server_context();
-    let name = store_value(channel.name.clone());
+    let channel_topic = create_resource(
+        move || (use_channel().update_channel.version().get()),
+        move |_| get_channel_topic(channel.id),
+    );
+    let name = channel.name.clone();
     view! {
         <ContextMenuProvider modal=false open=open>
             <ContextMenuTrigger class="relative flex flex-row group items-center py-[6px] px-2 text-base">
                 <Icon icon=Icon::from(channel.channel_type) class="w-6 h-6 mx-2"/>
-                {name.get_value()}
+                <div>
+                    {name}
+                </div>
+                <Transition fallback=move || ()>
+                    {
+                        move || {
+                            channel_topic.and_then(|topic| topic.clone().map(|topic| {
+                                view!{
+                                    <div class="divider divider-horizontal h-auto mx-0.5"/>
+                                    <div>{topic}</div>
+                                }
+                            }))
+                        }
+                    }
+                </Transition>
             </ContextMenuTrigger>
 
             <ContextMenuContent class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40".to_string()>

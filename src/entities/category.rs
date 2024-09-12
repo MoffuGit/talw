@@ -4,6 +4,7 @@ use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use super::Error;
         use sqlx::{FromRow, MySqlPool};
     }
 }
@@ -18,7 +19,7 @@ pub struct Category {
 
 #[cfg(feature = "ssr")]
 impl Category {
-    pub async fn create(name: String, server: Uuid, pool: &MySqlPool) -> Result<Uuid, sqlx::Error> {
+    pub async fn create(name: String, server: Uuid, pool: &MySqlPool) -> Result<Uuid, Error> {
         let id = Uuid::new_v4();
         sqlx::query("INSERT INTO categories (id, name, server_id) VALUES (?,?,?)")
             .bind(id)
@@ -34,7 +35,7 @@ impl Category {
         channel_id: Uuid,
         server: Uuid,
         pool: &MySqlPool,
-    ) -> Result<(), sqlx::Error> {
+    ) -> Result<(), Error> {
         sqlx::query("UPDATE categories SET categories.name = ? WHERE categories.server_id = ? AND categories.id = ?")
             .bind(new_name)
             .bind(
@@ -44,7 +45,7 @@ impl Category {
             .await?;
         Ok(())
     }
-    pub async fn delete(id: Uuid, server_id: Uuid, pool: &MySqlPool) -> Result<(), sqlx::Error> {
+    pub async fn delete(id: Uuid, server_id: Uuid, pool: &MySqlPool) -> Result<(), Error> {
         sqlx::query("DELETE FROM categories WHERE server_id = ? AND id = ?")
             .bind(server_id)
             .bind(id)

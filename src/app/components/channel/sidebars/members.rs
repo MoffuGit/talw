@@ -54,7 +54,7 @@ pub fn Role(role: Role) -> impl IntoView {
             move || match members.get() {
                 Some(Ok(members)) if !members.is_empty() => {
                     view!{
-                        <div class="pt-6 pr-2 pl-4 text-base">{format!("{} - {}", role.name, members.len())}</div>
+                        <div class="pt-6 pr-2 pl-3 text-base">{format!("{} - {}", role.name, members.len())}</div>
                         {members.iter().map(|member| view!{<Member member=member.clone()/>}).collect_view()}
                     }.into_view()
 
@@ -67,12 +67,24 @@ pub fn Role(role: Role) -> impl IntoView {
 
 #[component]
 pub fn Member(member: Member) -> impl IntoView {
-    let member = store_value(member);
+    // let member = store_value(member);
+    let image_url = member.image_url.clone();
+    let name = member.name.clone();
     view! {
-        <MemberBanner side=MenuSide::Left align=MenuAlign::Start class="hover:bg-base-100/60 rounded mb-0.5 ml-4 mr-2 p-2 flex items-center" member=member.get_value()>
-            <div class="rounded-full bg-base-100 w-8 h-8 mr-2"/>
+        <MemberBanner side=MenuSide::Left align=MenuAlign::Start class="hover:bg-base-100/60 rounded mb-0.5 ml-3 mr-2 p-2 flex items-center" member=member>
+            {
+                if let Some(url) = image_url {
+                    view! {
+                        <img class="rounded-full object-cover bg-base-100/80 w-8 h-8 mr-2" src=url/>
+                    }.into_view()
+                } else {
+                    view! {
+                        <div class="rounded-full bg-base-100/80 w-8 h-8 mr-2"/>
+                    }.into_view()
+                }
+            }
             <div>
-                { member.get_value().name}
+                {name}
             </div>
         </MemberBanner>
     }
@@ -87,7 +99,7 @@ pub fn MemberSideBarTrigger() -> impl IntoView {
     view! {
         <TooltipProvider delay_duration=Duration::new(0, 0)>
             <TooltipTrigger close_on_click=false on_click=Signal::derive(move || open.update(|open| *open = !*open))>
-                <Icon icon=icondata::RiGroup2UserFacesFill class="w-6 h-6" />
+                <Icon icon=icondata::RiGroup2UserFacesFill class="w-7 h-7 fill-base-content/40" />
             </TooltipTrigger>
             <TooltipContent tooltip_of_side=10.0 tip=Signal::derive(move || match open.get() { true => "Hide Members SideBar".to_string() , false => "Show Members SideBar".to_string()} )  tooltip_side=ToolTipSide::Bottom class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:bottom-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-b-[#dfdfe2] dark:after:border-b-[#0d0d0d]" />
         </TooltipProvider>

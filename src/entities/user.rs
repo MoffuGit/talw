@@ -10,6 +10,7 @@ cfg_if! {
         use bcrypt::{hash, DEFAULT_COST};
         use sqlx::{FromRow, MySqlPool};
         pub type AuthSession = axum_session_auth::AuthSession<User, Uuid, SessionMySqlPool, MySqlPool>;
+        use super::Error;
 
     }
 }
@@ -29,28 +30,45 @@ pub struct AboutUser(pub Option<String>);
 
 #[cfg(feature = "ssr")]
 impl User {
-    pub async fn get(id: Uuid, pool: &MySqlPool) -> Result<User, sqlx::Error> {
-        sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = ?")
-            .bind(id)
-            .fetch_one(pool)
-            .await
+    pub async fn get_user_name_from_member(
+        member_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<String, Error> {
+        Ok(sqlx::query_as::<_, (String, )>("SELECT users.username FROM users JOIN members ON members.user_id = users.id WHERE members.id = ?")
+                    .bind(member_id)
+                    .fetch_one(pool)
+                    .await?.0)
     }
 
-    pub async fn get_from_username(
-        username: String,
-        pool: &MySqlPool,
-    ) -> Result<User, sqlx::Error> {
-        sqlx::query_as::<_, User>("SELECT * FROM users WHERE username = ?")
-            .bind(username)
-            .fetch_one(pool)
-            .await
+    pub async fn get_from_member(member_id: Uuid, pool: &MySqlPool) -> Result<User, Error> {
+        Ok(sqlx::query_as::<_, User>("SELECT users.id, users.username, users.password, users.image_url FROM users JOIN members ON members.user_id = users.id WHERE members.id = ?")
+                    .bind(member_id)
+                    .fetch_one(pool)
+                    .await?)
+    }
+    pub async fn get(id: Uuid, pool: &MySqlPool) -> Result<User, Error> {
+        Ok(
+            sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = ?")
+                .bind(id)
+                .fetch_one(pool)
+                .await?,
+        )
+    }
+
+    pub async fn get_from_username(username: String, pool: &MySqlPool) -> Result<User, Error> {
+        Ok(
+            sqlx::query_as::<_, User>("SELECT * FROM users WHERE username = ?")
+                .bind(username)
+                .fetch_one(pool)
+                .await?,
+        )
     }
 
     pub async fn create(
         username: String,
         password: String,
         pool: &MySqlPool,
-    ) -> Result<Uuid, sqlx::Error> {
+    ) -> Result<Uuid, Error> {
         let password = hash(password, DEFAULT_COST).unwrap();
         let id = Uuid::new_v4();
         sqlx::query("INSERT INTO users (id, username, password) VALUES (?,?,?)")

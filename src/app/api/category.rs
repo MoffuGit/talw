@@ -1,12 +1,12 @@
 use crate::entities::category::Category;
-use crate::entities::channel::Channel;
-use crate::entities::server::Server;
 use cfg_if::cfg_if;
 use leptos::*;
 use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use crate::entities::server::Server;
+        use crate::entities::channel::Channel;
         use super::user_can_edit;
         use super::auth_user;
         use super::pool;
@@ -40,9 +40,7 @@ pub async fn get_categories(server_id: Uuid) -> Result<Vec<Category>, ServerFnEr
     auth_user()?;
     let pool = pool()?;
 
-    Server::get_server_categories(server_id, &pool)
-        .await
-        .or(Err(ServerFnError::new("We can't find the categories")))
+    Ok(Server::get_server_categories(server_id, &pool).await?)
 }
 
 #[server(CreateCategory, "/api")]
@@ -54,9 +52,7 @@ pub async fn create_category(server_id: Uuid, name: String) -> Result<Uuid, Serv
         if name.len() <= 1 {
             return Err(ServerFnError::new("min len is 1"));
         };
-        return Category::create(name, server_id, &pool)
-            .await
-            .or(Err(ServerFnError::new("We cant create the category")));
+        return Ok(Category::create(name, server_id, &pool).await?);
     }
     Err(ServerFnError::new("You can't create the category"))
 }
@@ -74,9 +70,7 @@ pub async fn rename_category(
         if new_name.len() <= 1 {
             return Err(ServerFnError::new("min len is 1"));
         }
-        return Category::rename(new_name, category_id, server_id, &pool)
-            .await
-            .or(Err(ServerFnError::new("We cant change the name")));
+        return Ok(Category::rename(new_name, category_id, server_id, &pool).await?);
     };
 
     Err(ServerFnError::new("You can't rename the category"))
@@ -88,12 +82,8 @@ pub async fn delete_category(server_id: Uuid, category_id: Uuid) -> Result<(), S
     let user = auth_user()?;
 
     if user_can_edit(server_id, user.id, &pool).await? {
-        Channel::remove_all_from_category(server_id, category_id, &pool)
-            .await
-            .or(Err(ServerFnError::new("cant delete the channel")))?;
-        Category::delete(category_id, server_id, &pool)
-            .await
-            .or(Err(ServerFnError::new("cant delte the channel")))?;
+        Channel::remove_all_from_category(server_id, category_id, &pool).await?;
+        Category::delete(category_id, server_id, &pool).await?;
         return Ok(());
     };
     Err(ServerFnError::new("You can't delete the category"))

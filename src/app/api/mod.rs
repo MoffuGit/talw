@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod category;
 pub mod channel;
+pub mod member;
 pub mod server;
 pub mod theme;
 pub mod thread;
@@ -8,6 +9,7 @@ pub mod thread;
 use cfg_if::cfg_if;
 use leptos::*;
 
+#[cfg(feature = "ssr")]
 pub const SERVER_ERROR: &str = "Something go wrong in our servers";
 
 cfg_if! {
@@ -43,7 +45,7 @@ cfg_if! {
                 return Ok(true);
             };
 
-            if Member::member_can_edit(user, server, pool).await.or(Err(ServerFnError::new(SERVER_ERROR)))? {
+            if Member::member_can_edit(user, pool).await? {
                 return Ok(true);
 
             }

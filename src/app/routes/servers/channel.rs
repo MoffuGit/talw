@@ -3,6 +3,7 @@ use crate::app::components::channel::header::ChannelHeader;
 use crate::app::components::channel::sidebars::members::{MemberSideBar, SideBarContext};
 use crate::app::routes::servers::server::use_current_server_context;
 use leptos::*;
+use leptos_icons::Icon;
 use leptos_router::{use_params_map, Outlet, Redirect};
 use uuid::Uuid;
 
@@ -27,17 +28,34 @@ pub fn ChannelView() -> impl IntoView {
 
     provide_context(SideBarContext(RwSignal::new(false)));
     view! {
-        <div class="w-full h-full flex relative items-stretch">
-            <div class="grow min-w-[400px] shrink-0 flex-col" >
+        <div class="w-full h-full flex relative overflow-hidden">
+            <div class="grow min-w-[400px] shrink-0 flex flex-col" >
                 <Transition fallback=move || ()>
                     {move || match channel.get() {
-                        Some(Ok(channel)) => view!{
-                            <ChannelHeader channel=channel/>
-                            <div class="w-full h-full flex overflow-hidden">
-                                <div class="w-auto h-full grow"/>
-                                <MemberSideBar server_id=server_id/>
-                            </div>
-                        }.into_view(),
+                        Some(Ok(channel)) => {
+                            let name = channel.name.clone();
+                            view!{
+                                <ChannelHeader channel=channel/>
+                                <div class="w-full h-full flex">
+                                    //NOTE:
+                                    //this is the future chat
+                                    <div class="flex flex-col h-auto w-full">
+                                        <div class="flex-grow overflow-auto"/>
+                                        <div class="h-20 flex-shrink-0 flex">
+                                            <div class="m-4 w-full flex-grow bg-base-300/60 rounded-lg flex items-center px-4">
+                                                <Icon icon=icondata::RiAddCircleSystemFill class="w-7 h-7 fill-base-content/40 grow-0 mr-4" />
+                                                <div class="grow text-base-content/60">
+                                                    {format!("Message #{}", name)}
+                                                </div>
+                                                <Icon icon=icondata::RiEmojiStickerCommunicationFill class="w-7 h-7 fill-base-content/40" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <MemberSideBar server_id=server_id/>
+                                </div>
+                            }.into_view()
+
+                        },
                         Some(Err(_)) => view!{<Redirect path=params.with(|p| format!("/servers/{}",p.get("id").unwrap()))/>}.into_view(),
                         _ => view!{}.into_view()
                     }}

@@ -2,31 +2,16 @@ pub mod file_status;
 pub mod list_files;
 pub mod upload_file;
 
-use anyhow::{anyhow, Error};
-use futures::{future, Future};
-use http::HeaderValue;
-use reqwest::{header, multipart, Client, Response};
-use serde::Serialize;
-use serde_json::json;
+use reqwest::Client;
 use std::env;
-use std::time::Duration;
-use urlencoding::encode;
-
-use crate::uploadthing::upload_file::UploadFileOpts;
-
-use self::list_files::{ListFiles, ListFilesOpts};
-use self::upload_file::PresignedUrlResponseData;
-use self::upload_file::UploadFileResponse;
-use self::upload_file::{ContentDisposition, FileData};
-use self::upload_file::{Etag, PresignedUrlResponse};
 
 #[derive(Clone, Debug)]
 pub struct UploadThing {
-    host: String,
-    user_agent: String,
-    api_key: String,
-    version: String,
-    client: Client,
+    pub host: String,
+    pub user_agent: String,
+    pub api_key: String,
+    pub version: String,
+    pub client: Client,
 }
 
 pub const VERSION: &str = "6.13.2";
@@ -48,7 +33,21 @@ impl Default for UploadThing {
 use cfg_if::cfg_if;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use self::upload_file::UploadFileResponse;
+        use self::upload_file::{ContentDisposition, FileData};
+        use self::upload_file::{Etag, PresignedUrlResponse};
+        use self::upload_file::PresignedUrlResponseData;
+        use crate::uploadthing::upload_file::UploadFileOpts;
+        use self::list_files::{ListFiles, ListFilesOpts};
+        use std::time::Duration;
+        use serde_json::json;
+        use serde::Serialize;
+        use reqwest::{header, multipart, Response};
+        use futures::{future, Future};
+        use http::HeaderValue;
+        use anyhow::{anyhow, Error};
         use tokio::task::JoinError;
+            use urlencoding::encode;
         use tokio_util::sync::CancellationToken;
     }
 }

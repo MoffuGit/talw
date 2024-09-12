@@ -122,7 +122,7 @@ pub fn Navigation_server(server: Server) -> impl IntoView {
             .with(|path| path.split('/').nth(2).map(|path| path.to_string()))
     };
     let image_url = store_value(server.image_url.clone());
-    let name = store_value(server.name.clone());
+    let name = server.name.clone();
     view! {
         <TooltipProvider delay_duration=Duration::new(0,0)>
             <TooltipTrigger class="relative my-0.5">
@@ -147,7 +147,7 @@ pub fn Navigation_server(server: Server) -> impl IntoView {
                     </ContextServerMenu>
                 </A>
             </TooltipTrigger>
-            <TooltipContent tip=name.get_value() class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"/>
+            <TooltipContent tip=name class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"/>
         </TooltipProvider>
     }
 }

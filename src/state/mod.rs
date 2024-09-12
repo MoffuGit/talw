@@ -1,9 +1,8 @@
 use cfg_if::cfg_if;
 
-use crate::uploadthing::UploadThing;
-
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use crate::uploadthing::UploadThing;
         use crate::ws::WsChannels;
         use leptos::LeptosOptions;
         use sqlx::MySqlPool;

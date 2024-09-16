@@ -63,20 +63,24 @@ pub async fn get_channel_topic(channel_id: Uuid) -> Result<Option<String>, Serve
 #[server(UpdateChannel)]
 pub async fn update_channel(
     channel_id: Uuid,
+    server_id: Uuid,
     topic: Option<String>,
     name: Option<String>,
 ) -> Result<(), ServerFnError> {
-    auth_user()?;
+    let user = auth_user()?;
     let pool = pool()?;
-    if let Some(name) = name {
-        Channel::rename(name, channel_id, &pool).await?;
-    };
+    if user_can_edit(server_id, user.id, &pool).await? {
+        if let Some(name) = name {
+            Channel::rename(name, channel_id, &pool).await?;
+        };
 
-    if let Some(topic) = topic {
-        Channel::update_topic(channel_id, topic, &pool).await?;
+        if let Some(topic) = topic {
+            Channel::update_topic(channel_id, topic, &pool).await?;
+        }
+        Ok(())
+    } else {
+        Err(ServerFnError::new("You cant updatge this"))
     }
-
-    Ok(())
 }
 
 #[server(GetAllChannels, "/api")]

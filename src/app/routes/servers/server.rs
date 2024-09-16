@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::app::api::server::get_server;
 use crate::app::api::server::member_can_edit;
 use crate::app::api::server::use_server;
@@ -23,61 +25,69 @@ pub fn use_current_server_context() -> CurrentServerContext {
 #[allow(non_snake_case)]
 #[component]
 pub fn Server() -> impl IntoView {
-    let params = use_params_map();
-    let leave_server = use_server().leave_server;
-    let server = create_resource(
-        move || {
-            (
-                leave_server.version().get(),
-                params.with(|p| Uuid::parse_str(p.get("id").unwrap()).unwrap_or_default()),
-            )
-        },
-        move |(_, server_id)| get_server(server_id),
-    );
-
-    let member_can_edit = create_resource(
-        move || {
-            (
-                leave_server.version().get(),
-                params.with(|p| Uuid::parse_str(p.get("id").unwrap()).unwrap_or_default()),
-            )
-        },
-        move |(_, server_id)| member_can_edit(server_id),
-    );
-
     view! {
         <div class="h-full w-full relative z-40">
-            <Transition fallback=move || ()>
             {
                 move || {
-                    match (server.get(),  member_can_edit.get()) {
-                        (Some(Ok(server)), Some(Ok(member_can_edit))) => {
-                            provide_context(CurrentServerContext {
-                                server,
-                                member_can_edit
-                            });
-                            view! {
-                                <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
-                                    <ServerSideBar />
-                                </div>
-                                <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
-                                    <Outlet/>
-                                </div>
+                    match use_params_map().with(|params| Uuid::from_str(params.get("id").unwrap())) {
+                        Err(_) => view!{<Redirect path="/severs/me"/>}.into_view(),
+                        Ok(server_id) => {
+                            let leave_server = use_server().leave_server;
+                            let server = create_resource(
+                                move || {
+                                    (
+                                        leave_server.version().get(),
+                                    )
+                                },
+                                move |_| get_server(server_id),
+                            );
+
+                            let member_can_edit = create_resource(
+                                move || {
+                                    (
+                                        leave_server.version().get(),
+                                    )
+                                },
+                                move |_| member_can_edit(server_id),
+                            );
+
+                            view!{
+                                <Transition fallback=move || ()>
+                                    {
+                                        move || {
+                                            match (server.get(),  member_can_edit.get()) {
+                                                (Some(Ok(server)), Some(Ok(member_can_edit))) => {
+                                                    provide_context(CurrentServerContext {
+                                                        server,
+                                                        member_can_edit
+                                                    });
+                                                    view! {
+                                                        <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
+                                                            <ServerSideBar />
+                                                        </div>
+                                                        <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
+                                                            <Outlet/>
+                                                        </div>
+                                                    }.into_view()
+                                                },
+                                                (None, _) | (_, None) => {
+                                                    view! {
+                                                        <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
+                                                        </div>
+                                                        <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
+                                                        </div>
+                                                    }.into_view()
+                                                },
+                                                _ => view!{<Redirect path="/servers/me"/>}.into_view()
+                                            }
+                                        }
+                                    }
+                                </Transition>
                             }.into_view()
                         },
-                        (None, _) | (_, None) => {
-                            view! {
-                                <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
-                                </div>
-                                <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
-                                </div>
-                            }.into_view()
-                        },
-                        _ => view!{<Redirect path="/servers/me"/>}.into_view()
                     }
                 }
             }
-            </Transition>
         </div>
     }
 }

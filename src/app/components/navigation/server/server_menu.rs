@@ -39,7 +39,7 @@ pub fn ServerMenu() -> impl IntoView {
                     </div>
                 </div>
             </DropdownTrigger>/* transition ease-out */
-            <DropdownContent class=" transition-transform scale-100 origin-top w-[220px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded".to_string() side=MenuSide::Bottom side_of_set=12.0>
+            <DropdownContent class=" transition-transform scale-100 origin-top w-[220px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded" side=MenuSide::Bottom side_of_set=12.0>
                 <div class="transition-transform scale-100 origin-top">
                     <InvitePeopleModal invite_code=server.invite_code class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || open.set(false))>
                         <div class="group-hover:text-primary-content">"Invite People"</div>

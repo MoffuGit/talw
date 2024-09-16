@@ -146,7 +146,7 @@ fn use_menu_position(
 #[allow(non_snake_case)]
 #[component]
 pub fn DropdownContent(
-    #[prop(optional)] class: String,
+    #[prop(optional)] class: &'static str,
     #[prop(optional)] children: Option<ChildrenFn>,
     #[prop(optional, default = MenuSide::Bottom)] side: MenuSide,
     #[prop(optional, default = 0.0)] side_of_set: f64,

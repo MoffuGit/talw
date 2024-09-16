@@ -22,7 +22,7 @@ pub fn MemberBanner(
             <DropdownTrigger class=class>
                 {children()}
             </DropdownTrigger>
-            <DropdownContent class="w-72 h-auto z-50 rounded-lg bg-base-200".into() side=side align=align side_of_set=20.0>
+            <DropdownContent class="w-72 h-auto z-50 rounded-lg bg-base-200" side=side align=align side_of_set=20.0>
                 <div class="relative w-full h-auto ">
                     <div class="w-full h-28 bg-primary rounded-t-lg"/>
                         {

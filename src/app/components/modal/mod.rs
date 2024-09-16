@@ -1,6 +1,7 @@
 pub mod create_category;
 pub mod create_channel;
 pub mod create_server;
+pub mod create_thread;
 pub mod delete_category;
 pub mod delete_channel;
 pub mod edit_category;

@@ -1,4 +1,5 @@
 use crate::app::api::thread::{initial_width, toggle_thread_width};
+use crate::app::components::thread::sidebar::ThreadSideBar;
 use leptos::html::Div;
 use leptos::*;
 use leptos_use::core::Position;
@@ -7,7 +8,7 @@ use leptos_use::{use_window, UseDraggableCallbackArgs, UseDraggableOptions, UseD
 
 #[component]
 #[allow(non_snake_case)]
-pub fn ThreadSidebar() -> impl IntoView {
+pub fn Thread() -> impl IntoView {
     let initial_width = initial_width();
     let update_width = create_action(|width: &f64| toggle_thread_width(*width));
 
@@ -55,6 +56,8 @@ pub fn ThreadSidebar() -> impl IntoView {
 
     view! {
         <div class="w-2 bg-base-300 h-full shrink-0" node_ref=divider_ref/>
-        <div class="min-w-[400px] shrink-0" style =move || format!("width: {}px", current_width.get())/>
+        <div class="min-w-[400px] shrink-0 flex" style =move || format!("width: {}px", current_width.get())>
+            <ThreadSideBar/>
+        </div>
     }
 }

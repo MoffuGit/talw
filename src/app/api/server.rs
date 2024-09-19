@@ -269,20 +269,6 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         &pool,
     )
     .await?;
-    Channel::create(
-        "announcement".to_string(),
-        crate::entities::channel::ChannelType::ANNOUNCEMENTS,
-        server,
-        &pool,
-    )
-    .await?;
-    Channel::create(
-        "rules".to_string(),
-        crate::entities::channel::ChannelType::RULES,
-        server,
-        &pool,
-    )
-    .await?;
     let text_category = Category::create("text".to_string(), server, &pool).await?;
     Channel::create_with_category(
         "text".to_string(),

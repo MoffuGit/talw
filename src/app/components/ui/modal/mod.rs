@@ -93,8 +93,6 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
             } else {
                 dialog.close();
             }
-        } else {
-            log::info!("cant get the dialog ref");
         }
     });
 

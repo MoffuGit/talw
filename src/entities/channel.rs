@@ -16,8 +16,6 @@ cfg_if! {
 pub enum ChannelType {
     TEXT,
     VOICE,
-    ANNOUNCEMENTS,
-    RULES,
 }
 
 impl From<ChannelType> for Icon {
@@ -25,8 +23,6 @@ impl From<ChannelType> for Icon {
         match value {
             ChannelType::TEXT => icondata::RiHashtagEditor,
             ChannelType::VOICE => icondata::RiVolumeUpMediaFill,
-            ChannelType::ANNOUNCEMENTS => icondata::RiHashtagEditor,
-            ChannelType::RULES => icondata::RiHashtagEditor,
         }
     }
 }
@@ -36,8 +32,6 @@ impl IntoAttribute for ChannelType {
         match self {
             ChannelType::TEXT => leptos::Attribute::String("TEXT".into()),
             ChannelType::VOICE => leptos::Attribute::String("VOICE".into()),
-            ChannelType::ANNOUNCEMENTS => leptos::Attribute::String("ANNOUNCEMENTS".into()),
-            ChannelType::RULES => leptos::Attribute::String("RULES".into()),
         }
     }
 

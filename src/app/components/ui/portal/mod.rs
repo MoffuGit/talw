@@ -6,7 +6,6 @@ pub struct ContextPortal(RwSignal<bool>, String);
 #[component]
 pub fn ProvidePortalContext(children: Children, name: &'static str) -> impl IntoView {
     let signal = create_rw_signal(false);
-    create_effect(move |_| log::info!("change on provide portal {}: {}", name, signal.get()));
 
     provide_context(ContextPortal(signal, name.to_string()));
     children()

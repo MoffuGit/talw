@@ -98,8 +98,7 @@ pub fn Category(category: StoredValue<Category>) -> impl IntoView {
                     move || {
                         channels.and_then(|channels| {
                             channels.iter().map(|channel| {
-                            let channel = store_value(channel.clone());
-                                view! {<Channel channel=channel />}
+                                view! {<Channel channel=channel.clone() />}
                             }).collect_view()
                         })
                     }

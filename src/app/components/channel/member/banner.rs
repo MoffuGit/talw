@@ -1,7 +1,7 @@
-use crate::app::api::server::get_member_about;
-use crate::app::api::server::get_member_roles;
+use crate::app::api::member::get_member_about;
+use crate::app::api::member::get_member_roles;
+use crate::app::api::member::get_user_name_from_member;
 use crate::app::api::server::get_mutual_servers_url;
-use crate::app::api::server::get_user_name_from_member;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::entities::member::Member;
 use leptos::*;

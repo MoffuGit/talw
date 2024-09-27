@@ -16,9 +16,7 @@ pub fn EditChannelModal(
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let open = create_rw_signal(false);
-
     let name = store_value(channel.name.clone());
-    let channel = store_value(channel);
 
     let new_name = create_rw_signal(name.get_value());
     let new_topic = create_rw_signal(String::default());
@@ -50,7 +48,7 @@ pub fn EditChannelModal(
                         <Icon icon=icondata::RiCloseSystemLine class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"/>
                     </ModalClose>
                 </div>
-                <EditChannelModalContent new_topic=new_topic channel=channel open=open new_name=new_name name=name/>
+                <EditChannelModalContent new_topic=new_topic channel=channel.clone() open=open new_name=new_name name=name/>
             </ModalContent>
         </ModalProvider>
     }
@@ -62,9 +60,8 @@ fn EditChannelModalContent(
     new_name: RwSignal<String>,
     name: StoredValue<String>,
     open: RwSignal<bool>,
-    channel: StoredValue<Channel>,
+    channel: Channel,
 ) -> impl IntoView {
-    let channel = channel.get_value();
     let use_channel = use_channel();
     let update_channel = use_channel.update_channel;
     let current_topic = create_resource(
@@ -117,7 +114,7 @@ fn EditChannelModalContent(
                                         None
                                     }
                                 })
-                                ,server_id: channel.id, channel_id:channel.id })
+                                ,server_id: channel.server_id, channel_id:channel.id })
                             };
                             view!{
                                 <div class="px-[16px] w-full">

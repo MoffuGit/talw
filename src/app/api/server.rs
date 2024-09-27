@@ -1,6 +1,5 @@
-use crate::entities::member::AboutMember;
 use crate::entities::role::Role;
-use crate::entities::{member::Member, server::Server};
+use crate::entities::server::Server;
 use cfg_if::cfg_if;
 use leptos::*;
 use server_fn::codec::{MultipartData, MultipartFormData};
@@ -10,6 +9,7 @@ use web_sys::FormData;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use crate::entities::member::Member;
         use multer::bytes::Bytes as MulterBytes;
         use futures::TryStreamExt;
         use crate::uploadthing::UploadThing;
@@ -20,7 +20,6 @@ cfg_if! {
         use http::uri::Scheme;
         use http::Uri;
         use super::auth_user;
-        use super::user_can_edit;
         use super::pool;
 
     }
@@ -85,43 +84,6 @@ pub async fn get_mutual_servers_url(member_id: Uuid) -> Result<Vec<Option<String
     Ok(res?)
 }
 
-#[server(GetMemberAbout)]
-pub async fn get_member_about(member_id: Uuid) -> Result<AboutMember, ServerFnError> {
-    let pool = pool()?;
-    auth_user()?;
-    Ok(Member::get_about(member_id, &pool).await?)
-}
-
-#[server(GetMemberRoles)]
-pub async fn get_member_roles(member_id: Uuid) -> Result<Vec<Role>, ServerFnError> {
-    let pool = pool()?;
-    auth_user()?;
-
-    Ok(Role::get_member_roles(member_id, &pool).await?)
-}
-
-#[server(GetUserNameFromMember)]
-pub async fn get_user_name_from_member(member_id: Uuid) -> Result<String, ServerFnError> {
-    let pool = pool()?;
-    auth_user()?;
-
-    Ok(User::get_user_name_from_member(member_id, &pool).await?)
-}
-
-#[server(GetMembersWithoutRole)]
-pub async fn get_members_without_role(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
-    let pool = pool()?;
-    auth_user()?;
-    Ok(Member::get_members_without_role(server_id, &pool).await?)
-}
-
-#[server(GetMembersFromRole)]
-pub async fn get_members_from_role(role_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
-    let pool = pool()?;
-    auth_user()?;
-    Ok(Member::get_member_from_role(role_id, &pool).await?)
-}
-
 #[server(GetServerRoles)]
 pub async fn get_server_roles(server_id: Uuid) -> Result<Vec<Role>, ServerFnError> {
     let pool = pool()?;
@@ -136,22 +98,6 @@ pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     let user = auth_user()?;
 
     Ok(Server::get_user_servers(user.id, &pool).await?)
-}
-
-#[server(GetUserMembers, "/api")]
-pub async fn get_user_members() -> Result<Vec<Member>, ServerFnError> {
-    let pool = pool()?;
-    let user = auth_user()?;
-
-    Ok(Member::get_user_members(user.id, &pool).await?)
-}
-
-#[server(MemberCanEdit)]
-pub async fn member_can_edit(server_id: Uuid) -> Result<bool, ServerFnError> {
-    let pool = pool()?;
-    let user = auth_user()?;
-
-    user_can_edit(server_id, user.id, &pool).await
 }
 
 #[server(JoinServerWithInvitation, "/api")]

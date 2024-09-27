@@ -1,2 +1,1 @@
-ALTER TABLE channels
-ADD topic varchar(200);
+ALTER TABLE channels ADD topic varchar(200);

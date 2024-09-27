@@ -1,9 +1,11 @@
 use std::str::FromStr;
 
+use crate::app::api::member::get_member;
+use crate::app::api::member::member_can_edit;
 use crate::app::api::server::get_server;
-use crate::app::api::server::member_can_edit;
 use crate::app::api::server::use_server;
 use crate::app::components::navigation::server::sidebar::ServerSideBar;
+use crate::entities::member::Member;
 use leptos::*;
 use leptos_router::use_params_map;
 use leptos_router::Outlet;
@@ -16,6 +18,7 @@ use crate::entities::server::Server as ServerEntitie;
 pub struct CurrentServerContext {
     pub server: ServerEntitie,
     pub member_can_edit: bool,
+    pub member: Member,
 }
 
 pub fn use_current_server_context() -> CurrentServerContext {
@@ -51,15 +54,20 @@ pub fn Server() -> impl IntoView {
                                 move |_| member_can_edit(server_id),
                             );
 
+                            let member = create_resource(move || (
+                                leave_server.version().get()
+                            ), move |_| get_member(server_id));
+
                             view!{
                                 <Transition fallback=move || ()>
                                     {
                                         move || {
-                                            match (server.get(),  member_can_edit.get()) {
-                                                (Some(Ok(server)), Some(Ok(member_can_edit))) => {
+                                            match (server.get(),  member_can_edit.get(), member.get()) {
+                                                (Some(Ok(server)), Some(Ok(member_can_edit)), Some(Ok(member))) => {
                                                     provide_context(CurrentServerContext {
                                                         server,
-                                                        member_can_edit
+                                                        member_can_edit,
+                                                        member
                                                     });
                                                     view! {
                                                         <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
@@ -70,7 +78,7 @@ pub fn Server() -> impl IntoView {
                                                         </div>
                                                     }.into_view()
                                                 },
-                                                (None, _) | (_, None) => {
+                                                (None,_, _) | (_, None, _) | (_, _, None) => {
                                                     view! {
                                                         <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
                                                         </div>

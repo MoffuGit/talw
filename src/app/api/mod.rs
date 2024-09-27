@@ -36,10 +36,7 @@ cfg_if! {
 
         pub async fn user_can_edit (server: Uuid, user: Uuid, pool: &MySqlPool) -> Result<bool, ServerFnError> {
             if Server::get_server_owner(server, pool)
-                .await
-                .or(Err(ServerFnError::new(
-                    SERVER_ERROR
-                )))?
+                .await?
                 == user
             {
                 return Ok(true);
@@ -51,5 +48,6 @@ cfg_if! {
             }
                  Ok(false)
         }
+
     }
 }

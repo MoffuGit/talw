@@ -1,4 +1,4 @@
-use crate::app::api::server::member_can_edit;
+use crate::app::api::member::member_can_edit;
 use crate::app::components::modal::create_category::CreateCategoryModal;
 use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::modal::invite_people::InvitePeopleModal;

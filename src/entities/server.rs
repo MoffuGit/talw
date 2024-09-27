@@ -23,6 +23,17 @@ pub struct Server {
 
 #[cfg(feature = "ssr")]
 impl Server {
+    pub async fn member_exist(
+        server_id: Uuid,
+        user_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<bool, Error> {
+        Ok(sqlx::query_as::<_, (bool,)>("SELECT EXIST(SELECT * FROM servers LEFT JOIN members ON servers.id = members.server_id WHERE members.user_id = ? AND servers.id = ?)")
+                    .bind(user_id)
+                    .bind(server_id)
+                    .fetch_one(pool)
+                    .await?.0)
+    }
     pub async fn get_mutual_servers_url(
         user1: Uuid,
         user2: Uuid,

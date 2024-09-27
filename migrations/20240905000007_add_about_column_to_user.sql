@@ -1,2 +1,1 @@
-ALTER TABLE users
-ADD about varchar(190);
+ALTER TABLE users ADD about varchar(190);

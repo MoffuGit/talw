@@ -27,6 +27,47 @@ pub struct AboutMember(pub Option<String>);
 
 #[cfg(feature = "ssr")]
 impl Member {
+    pub async fn get_member(
+        user_id: Uuid,
+        server_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Member, Error> {
+        Ok(sqlx::query_as::<_, Member>(
+        r#"
+                SELECT members.id, members.name, members.server_id, members.user_id, members.image_url FROM members WHERE members.user_id = ? AND members.server_id = ?
+            "#,
+        )
+        .bind(user_id)
+        .bind(server_id)
+        .fetch_one(pool)
+        .await?)
+    }
+    pub async fn get_name_and_url(
+        member_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<(String, Option<String>), Error> {
+        Ok(sqlx::query_as::<_, (String, Option<String>)>(
+            r#"
+                        SELECT members.name, members.image_url FROM members WHERE members.id = ?
+                    "#,
+        )
+        .bind(member_id)
+        .fetch_one(pool)
+        .await?)
+    }
+
+    pub async fn get_thread_members(
+        thread_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Vec<Member>, Error> {
+        Ok(sqlx::query_as::<_, Member>(
+                    "SELECT members.id, members.name, members.server_id, members.user_id, members.image_url FROM members JOIN threads_members ON members.id = threads_members.member_id JOIN threads ON threads.id = threads_members.thread_id WHERE threads.id = ? LIMIT 5",
+                )
+                .bind(thread_id)
+                .fetch_all(pool)
+                .await?)
+    }
+
     pub async fn get_about(member_id: Uuid, pool: &MySqlPool) -> Result<AboutMember, Error> {
         Ok(sqlx::query_as::<_, AboutMember>(
             r#"
@@ -98,16 +139,20 @@ impl Member {
                     .fetch_all(pool)
                     .await?)
     }
+
     pub async fn get_user_member(
         user_id: Uuid,
         server_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<Member, Error> {
-        Ok(sqlx::query_as::<_, Member>("SELECT members.id, members.user_id, members.server_id, members.name FROM members WHERE members.user_id = ? AND members.server_id = ?")
-                    .bind(user_id)
-                    .bind(server_id)
-                    .fetch_one(pool)
-                    .await?)
+        let res = sqlx::query_as::<_, Member>(
+            "SELECT * FROM members WHERE members.user_id = ? AND members.server_id = ?",
+        )
+        .bind(user_id)
+        .bind(server_id)
+        .fetch_one(pool)
+        .await;
+        Ok(res?)
     }
     pub async fn create(
         user: Uuid,

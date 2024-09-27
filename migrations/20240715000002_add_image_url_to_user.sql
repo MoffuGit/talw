@@ -1,2 +1,1 @@
-ALTER TABLE users
-    ADD image_url varchar(100);
+ALTER TABLE users ADD image_url varchar(100);

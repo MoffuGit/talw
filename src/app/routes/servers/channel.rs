@@ -45,6 +45,7 @@ pub fn ChannelView() -> impl IntoView {
                                                     <div class="w-full h-full flex">
                                                         //NOTE:
                                                         //this is the future chat
+                                                        //NOTE: move this to his own component,
                                                         <div class="flex flex-col h-auto w-full">
                                                             <div class="flex-grow overflow-auto"/>
                                                             <div class="h-20 flex-shrink-0 flex">

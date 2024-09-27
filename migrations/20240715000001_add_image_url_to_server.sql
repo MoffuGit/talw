@@ -1,2 +1,1 @@
-ALTER TABLE servers
-    ADD image_url varchar(100);
+ALTER TABLE servers ADD image_url varchar(100);

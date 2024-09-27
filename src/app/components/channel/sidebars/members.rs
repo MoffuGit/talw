@@ -1,5 +1,5 @@
-use crate::app::api::server::get_members_without_role;
-use crate::app::api::server::{get_members_from_role, get_server_roles};
+use crate::app::api::member::{get_members_from_role, get_members_without_role};
+use crate::app::api::server::get_server_roles;
 use crate::app::components::channel::member::banner::*;
 use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
 use crate::app::components::ui::tool_tip::{

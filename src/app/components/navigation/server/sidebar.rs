@@ -62,8 +62,7 @@ pub fn ServerSideBar() -> impl IntoView {
                                     match channels {
                                         Some(Ok(channels)) => {
                                             channels.iter().map(|channel| {
-                                                let channel = store_value(channel.clone());
-                                                view! {<Channel channel=channel />}
+                                                view! {<Channel channel=channel.clone() />}
                                             }).collect_view()
                                         },
                                         _ => view!{<div/>}.into_view()

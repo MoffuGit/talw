@@ -11,7 +11,6 @@ use leptos::*;
 use leptos_icons::Icon;
 use leptos_router::use_router;
 use leptos_router::Redirect;
-use std::str::FromStr;
 use uuid::Uuid;
 
 #[component]
@@ -21,6 +20,7 @@ pub fn HeaderTitle(channel: Channel) -> impl IntoView {
     let CurrentServerContext {
         server,
         member_can_edit,
+        ..
     } = use_current_server_context();
     let channel_name = channel.name.clone();
     view! {
@@ -83,14 +83,15 @@ pub fn ChannelThread(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
     let current_thread = move || {
         use_router()
             .pathname()
-            .with(|path| path.split('/').nth(4).map(Uuid::from_str))
+            .with(|_path| None::<Result<Uuid, ServerFnError>>)
+        // path.split('/').nth(4).map(Uuid::from_str)
     };
     view! {
         {
             move || {
                 match current_thread() {
                     Some(Ok(thread_id)) => {
-                        let current_thread = create_resource(move || (), move |_| get_thread(thread_id));
+                        let current_thread = create_resource(move || (), move |_| get_thread(thread_id, channel_id));
                         view!{
                             <Transition fallback=move || ()>
                                 {

@@ -1,2 +1,1 @@
-ALTER TABLE members
-ADD about varchar(190);
+ALTER TABLE members ADD about varchar(190);

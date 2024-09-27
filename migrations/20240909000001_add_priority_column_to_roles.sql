@@ -1,2 +1,1 @@
-ALTER TABLE roles
-ADD priority bit(64) NOT NULL;
+ALTER TABLE roles ADD priority bit (64) NOT NULL;

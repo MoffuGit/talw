@@ -1,11 +1,18 @@
 pub mod slide_modal;
 
-use leptos::{html::Dialog, logging::warn, *};
+use leptos::{
+    html::{Dialog, Div},
+    logging::warn,
+    *,
+};
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct ModalProviderContext {
-    pub open: RwSignal<bool>,
+    open: RwSignal<bool>,
     on_close: Option<Signal<()>>,
+    content_ref: NodeRef<Div>,
+    dialog_ref: NodeRef<Dialog>,
+    trigger_ref: NodeRef<Div>,
 }
 
 #[allow(non_snake_case)]
@@ -14,13 +21,17 @@ pub fn ModalProvider(
     children: Children,
     #[prop(optional, into)] on_close: Option<Signal<()>>,
     #[prop(optional)] open: Option<RwSignal<bool>>,
+    #[prop(optional)] trigger_ref: Option<NodeRef<html::Div>>,
+    #[prop(optional)] content_ref: Option<NodeRef<html::Div>>,
+    #[prop(optional)] dialog_ref: Option<NodeRef<html::Dialog>>,
 ) -> impl IntoView {
     let open = open.unwrap_or(create_rw_signal(false));
-
-    // provide_context(ModalProviderContext { open, on_close });
+    let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
+    let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
+    let dialog_ref = dialog_ref.unwrap_or(create_node_ref::<html::Dialog>());
 
     view! {
-        <Provider value=ModalProviderContext{open, on_close}>
+        <Provider value=ModalProviderContext{open, on_close, trigger_ref, content_ref, dialog_ref}>
             {children()}
         </Provider>
     }
@@ -33,9 +44,9 @@ pub fn ModalTrigger(
     #[prop(optional)] class: &'static str,
     #[prop(optional)] on_click: Option<Signal<()>>,
 ) -> impl IntoView {
-    let is_open = use_context::<ModalProviderContext>()
-        .expect("have the context")
-        .open;
+    let context = use_context::<ModalProviderContext>().expect("have the context");
+    let is_open = context.open;
+    let trigger_ref = context.trigger_ref;
 
     view! {
         <div on:click=move |_| {
@@ -44,7 +55,7 @@ pub fn ModalTrigger(
             if let Some(on_click) = on_click {
                 on_click.get();
             }
-        } class=class>
+        } class=class node_ref=trigger_ref>
             {children()}
         </div>
     }
@@ -81,8 +92,8 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
     let modal_context = use_context::<ModalProviderContext>().expect("have context");
     let on_close = modal_context.on_close;
     let is_open = modal_context.open;
-    let dialog_ref = create_node_ref::<Dialog>();
-
+    let dialog_ref = modal_context.dialog_ref;
+    let content_ref = modal_context.content_ref;
     create_effect(move |_| {
         if let Some(dialog) = dialog_ref.get() {
             if is_open.get() {
@@ -104,7 +115,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
                 <dialog class="modal" node_ref=dialog_ref on:close=move |_| {
                     if let Some(on_close) = on_close { on_close.get() }
                 }>
-                    <div class=format!("modal-box {}", class)>
+                    <div class=format!("modal-box {}", class) node_ref=content_ref>
                         {children.clone()}
                     </div>
                     <form method="dialog" class="modal-backdrop">

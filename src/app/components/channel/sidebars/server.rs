@@ -1,23 +1,14 @@
 use crate::app::api::member::{get_members_from_role, get_members_without_role};
 use crate::app::api::server::get_server_roles;
-use crate::app::components::channel::member::banner::*;
+use crate::app::components::channel::member::banner::MemberBanner;
+use crate::app::components::channel::sidebars::SideBarContext;
 use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
-use crate::app::components::ui::tool_tip::{
-    ToolTipSide, TooltipContent, TooltipProvider, TooltipTrigger,
-};
 use crate::entities::member::Member;
 use crate::entities::role::Role;
-use icondata;
 use leptos::*;
-use leptos_icons::Icon;
-use std::time::Duration;
 
-#[derive(Debug, Clone)]
-pub struct SideBarContext(pub RwSignal<bool>);
-
-#[allow(non_snake_case)]
 #[component]
-pub fn MemberSideBar(server_id: uuid::Uuid) -> impl IntoView {
+pub fn ServerMemberSideBar(server_id: uuid::Uuid) -> impl IntoView {
     let open = use_context::<SideBarContext>()
         .expect("should acces to the SideBarContext")
         .0;
@@ -87,21 +78,5 @@ pub fn Member(member: Member) -> impl IntoView {
                 {name}
             </div>
         </MemberBanner>
-    }
-}
-
-#[allow(non_snake_case)]
-#[component]
-pub fn MemberSideBarTrigger() -> impl IntoView {
-    let open = use_context::<SideBarContext>()
-        .expect("should acces to the SideBarContext")
-        .0;
-    view! {
-        <TooltipProvider delay_duration=Duration::new(0, 0)>
-            <TooltipTrigger close_on_click=false on_click=Signal::derive(move || open.update(|open| *open = !*open))>
-                <Icon icon=icondata::RiGroup2UserFacesFill class="w-7 h-7 fill-base-content/40" />
-            </TooltipTrigger>
-            <TooltipContent tooltip_of_side=10.0 tip=Signal::derive(move || match open.get() { true => "Hide Members SideBar".to_string() , false => "Show Members SideBar".to_string()} )  tooltip_side=ToolTipSide::Bottom class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:bottom-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-b-[#dfdfe2] dark:after:border-b-[#0d0d0d]" />
-        </TooltipProvider>
     }
 }

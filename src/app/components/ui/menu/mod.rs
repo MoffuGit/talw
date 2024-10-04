@@ -19,7 +19,7 @@ pub enum TriggerKey {
 
 #[allow(non_snake_case)]
 #[component]
-pub fn ProvideMenu(
+pub fn MenuProvider(
     children: Children,
     #[prop(optional, default = true)] modal: bool,
     #[prop(optional)] open: Option<RwSignal<bool>>,
@@ -31,7 +31,7 @@ pub fn ProvideMenu(
     let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
     let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
     view! {
-        <Provider value=MenuProviderContext{ open, modal, trigger_ref, content_ref, trigger_key }>
+        <Provider value=MenuProviderContext{ open, modal, trigger_ref, content_ref, trigger_key}>
             {   children()}
         </Provider>
     }

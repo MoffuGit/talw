@@ -1,0 +1,43 @@
+use crate::app::api::thread::use_thread;
+use crate::app::components::ui::modal::*;
+use crate::app::ActionForm;
+use leptos::*;
+use uuid::Uuid;
+
+#[component]
+pub fn DeleteThreadModal(
+    thread_id: Uuid,
+    thread_name: String,
+    server_id: Uuid,
+    class: &'static str,
+    #[prop(optional)] children: Option<Children>,
+) -> impl IntoView {
+    let delete_thread = use_thread().delete_thread;
+    let open = create_rw_signal(false);
+    create_effect(move |_| delete_thread.version().with(|_| open.set(false)));
+    view! {
+        <ModalProvider open=open>
+            <ModalTrigger class=class>
+                {children.map(|children| children())}
+            </ModalTrigger>
+            <ModalContent class="w-[440px] rounded p-0 h-auto overflow-hidden flex flex-col items-center">
+                <h2 class="p-4  leading-[24px] text-[20px] font-bold text-start w-full">{
+                    format!("Delete '{}'", thread_name)
+                }</h2>
+                <div class="px-4 pb-10 w-full">{format!("Are you sure you want to delete {}? This cannnot be undone.", thread_name)}</div>
+                <div class="relative p-4 flex justify-end w-full bg-base-300/80">
+                    <ModalClose class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 hover:underline">
+                        "Cancel"
+                    </ModalClose>
+                    <ActionForm action=delete_thread>
+                        <input value=thread_id.to_string() type="hidden" name="thread_id"/>
+                        <input value=server_id.to_string() type="hidden" name="server_id"/>
+                        <button type="submit" class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-error text-error-content" disabled=move || delete_thread.pending().get()>
+                            "Delete Thread"
+                        </button>
+                    </ActionForm>
+                </div>
+            </ModalContent>
+        </ModalProvider>
+    }
+}

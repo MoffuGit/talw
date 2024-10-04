@@ -1,21 +1,19 @@
 use crate::app::api::channel::{get_channel_topic, use_channel};
-use crate::app::api::thread::get_thread;
 use crate::app::components::modal::delete_channel::DeleteChannel;
 use crate::app::components::modal::edit_channel::EditChannelModal;
 use crate::app::components::modal::invite_people::InvitePeopleModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::{use_current_server_context, CurrentServerContext};
 use crate::entities::channel::Channel;
+use crate::entities::thread::Thread;
 use icondata::Icon;
 use leptos::*;
 use leptos_icons::Icon;
-use leptos_router::use_router;
-use leptos_router::Redirect;
 use uuid::Uuid;
 
 #[component]
 #[allow(non_snake_case)]
-pub fn HeaderTitle(channel: Channel) -> impl IntoView {
+pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -> impl IntoView {
     let open = create_rw_signal(false);
     let CurrentServerContext {
         server,
@@ -31,7 +29,11 @@ pub fn HeaderTitle(channel: Channel) -> impl IntoView {
                     {channel_name}
                 </div>
                 <ChannelTopic channel_id=channel.id/>
-                <ChannelThread channel_id=channel.id server_id=channel.server_id/>
+                {
+                    thread.map(|thread| view!{
+                        <ChannelThread thread=thread/>
+                    })
+                }
             </ContextMenuTrigger>
 
             <ContextMenuContent class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40".to_string()>
@@ -79,40 +81,9 @@ pub fn ChannelTopic(channel_id: Uuid) -> impl IntoView {
 }
 
 #[component]
-pub fn ChannelThread(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
-    let current_thread = move || {
-        use_router()
-            .pathname()
-            .with(|_path| None::<Result<Uuid, ServerFnError>>)
-        // path.split('/').nth(4).map(Uuid::from_str)
-    };
+pub fn ChannelThread(thread: Thread) -> impl IntoView {
     view! {
-        {
-            move || {
-                match current_thread() {
-                    Some(Ok(thread_id)) => {
-                        let current_thread = create_resource(move || (), move |_| get_thread(thread_id, channel_id));
-                        view!{
-                            <Transition fallback=move || ()>
-                                {
-                                    move || {
-                                        match current_thread.get() {
-                                            None => ().into_view(),
-                                            Some(Err(_)) => view!{<Redirect path=format!("/servers/{}/{}", server_id, channel_id)/>}.into_view(),
-                                            Some(Ok(thread)) => view!{
-                                                <Icon icon=icondata::RiArrowRightSArrowsLine class="w-4 h-4 mx-2"/>
-                                                <div>{thread.name}</div>
-                                            }.into_view()
-                                        }
-                                    }
-                                }
-                            </Transition>
-                       }.into_view()
-                    },
-                    Some(Err(_)) => view!{<Redirect path=format!("/servers/{}/{}", server_id, channel_id)/>}.into_view(),
-                    None => ().into_view()
-                }
-            }
-        }
+        <Icon icon=icondata::RiArrowRightSArrowsLine class="w-4 h-4 mx-2"/>
+        <div>{thread.name}</div>
     }
 }

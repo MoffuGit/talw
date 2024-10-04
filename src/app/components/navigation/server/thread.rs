@@ -1,0 +1,149 @@
+use crate::app::api::thread::get_thread;
+use crate::app::api::thread::get_threads_for_member;
+use crate::app::api::thread::use_thread;
+use crate::app::components::menu::thread::ThreadMenuContent;
+use crate::app::routes::servers::server::use_current_server_context;
+use leptos::*;
+use leptos_router::A;
+use uuid::Uuid;
+
+use crate::app::components::navigation::server::use_current_thread;
+use crate::app::components::ui::context_menu::*;
+use crate::entities::thread::Thread;
+
+#[component]
+pub fn Thread(channel_id: Uuid) -> impl IntoView {
+    let use_threads = use_thread();
+    let member = use_current_server_context().member;
+    let threads = create_resource(
+        move || {
+            (
+                use_threads.leave_thread.version().get(),
+                use_threads.create_thread.version().get(),
+                use_threads.join_thread.version().get(),
+                use_threads.delete_thread.version().get(),
+            )
+        },
+        move |_| get_threads_for_member(channel_id, member.id),
+    );
+    view! {
+        <Transition fallback=move || ()>
+            {
+                move || {
+                    threads.and_then(|threads| {
+                        if let Some((channel_url, thread_url)) = use_current_thread().get() {
+                            if !threads.iter().any(|thread| thread.id == thread_url) && channel_id == channel_url {
+                                let threads_is_empty = threads.is_empty();
+                                let thread = create_resource(move || (), move |_| get_thread(thread_url, channel_id));
+                                view!{
+                                    <Transition fallback=move || ()>
+                                        {
+                                            move || {
+                                                thread.and_then(|thread| view!{
+                                                    <div class="flex h-auto ml-6 items-center">
+                                                        {
+                                                            if threads_is_empty {
+                                                                view!{
+                                                                    <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
+                                                                        <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
+                                                                    </svg>
+                                                                }.into_view()
+                                                            } else {
+                                                                view!{
+                                                                    <div class="flex flex-col -space-y-1">
+                                                                        <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
+                                                                            <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
+                                                                        </svg>
+                                                                        <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content rotate-90">
+                                                                            <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
+                                                                        </svg>
+                                                                    </div>
+                                                                }.into_view()
+                                                            }
+                                                        }
+                                                        <ThreadMenu thread=thread.clone()/>
+                                                    </div>
+                                                })
+                                            }
+                                        }
+                                    </Transition>
+                                }.into_view()
+                            } else {
+                                ().into_view()
+                            }
+                        } else {
+                            ().into_view()
+                        }
+                    })
+                }
+            }
+        </Transition >
+        <Transition fallback=move || ()>
+            {
+                move || {
+                    threads.and_then(|threads| {
+                        let len = threads.len();
+                        threads.iter().enumerate().map(|(idx, thread)| view!{
+                            <div class="flex h-auto ml-6 items-center">
+                                {
+                                    if idx == len - 1 {
+                                        view!{
+                                                <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
+                                                    <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
+                                                </svg>
+                                        }.into_view()
+                                    } else {
+                                        view!{
+                                            <div class="flex flex-col -space-y-1">
+                                                <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
+                                                    <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
+                                                </svg>
+                                                <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content rotate-90">
+                                                    <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
+                                                </svg>
+                                            </div>
+                                        }.into_view()
+                                    }
+                                }
+                                <ThreadMenu thread=thread.clone()/>
+                            </div>
+                        }).collect_view()
+                    })
+                }
+            }
+        </Transition>
+    }
+}
+
+#[component]
+pub fn ThreadMenu(thread: Thread) -> impl IntoView {
+    let use_current_thread = use_current_thread();
+    let is_current_thread = move || {
+        use_current_thread.with(|url| url.is_some_and(|(_, thread_url)| thread_url == thread.id))
+    };
+    let name = store_value(thread.name.clone());
+    view! {
+        <ContextMenuProvider modal=false>
+            <ContextMenuTrigger class="w-full h-auto">
+                <div class=move || format!("relative py-[1px] transition duration-200 ease-in-out delay-0 group rounded hover:bg-primary/75 mt-0.5 w-full max-h-[32px] {}", match is_current_thread() {
+                    true => "bg-primary/50",
+                    false => "",
+                })>
+                    <A href=move || format!("thread/{}/{}",thread.channel_id.simple(), thread.id.simple()) class="relative box-border flex flex-col cursor-pointer">
+                            <div class="relative flex flex-row group items-center py-[6px] px-2">
+                                <div class=move || format!("whitespace-nowrap overflow-hidden text-ellipsis text-[16px] mr-auto font-bold text-base-content/50 leading-5 flex-auto relative group-hover:text-base-content/75 {}", match is_current_thread() {
+                                    true => "text-base-content/60",
+                                    false => ""
+                                })>
+                                    {name.get_value()}
+                                </div>
+                            </div>
+                    </A>
+                </div>
+            </ContextMenuTrigger>
+            <ContextMenuContent class="z-40".into()>
+                <ThreadMenuContent thread=thread.clone()/>
+            </ContextMenuContent>
+        </ContextMenuProvider>
+    }
+}

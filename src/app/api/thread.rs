@@ -1,5 +1,6 @@
 use uuid::Uuid;
 
+use crate::entities::member::Member;
 use crate::entities::thread::Thread;
 use cfg_if::cfg_if;
 use core::f64;
@@ -7,6 +8,7 @@ use leptos::*;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use super::user_can_edit;
         use super::auth_user;
         use super::pool;
     }
@@ -15,6 +17,9 @@ cfg_if! {
 #[derive(Clone, Copy)]
 pub struct ThreadContext {
     pub create_thread: Action<CreateThread, Result<(), ServerFnError>>,
+    pub join_thread: Action<JoinThread, Result<(), ServerFnError>>,
+    pub leave_thread: Action<LeaveThread, Result<(), ServerFnError>>,
+    pub delete_thread: Action<DeleteThread, Result<(), ServerFnError>>,
 }
 
 pub fn use_thread() -> ThreadContext {
@@ -22,9 +27,57 @@ pub fn use_thread() -> ThreadContext {
 }
 
 pub fn provide_thread_context() {
+    let join_thread = create_server_action::<JoinThread>();
+    let leave_thread = create_server_action::<LeaveThread>();
     let create_thread = create_server_action::<CreateThread>();
+    let delete_thread = create_server_action::<DeleteThread>();
 
-    provide_context(ThreadContext { create_thread })
+    provide_context(ThreadContext {
+        create_thread,
+        join_thread,
+        leave_thread,
+        delete_thread,
+    })
+}
+
+#[server(GetThreadMembersWithoutRole)]
+pub async fn get_thread_members_without_role(
+    thread_id: Uuid,
+) -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(Thread::get_members_witout_role(thread_id, &pool).await?)
+}
+
+#[server(GetThreadMembersWithRole)]
+pub async fn get_thread_members_with_role(
+    role_id: Uuid,
+    thread_id: Uuid,
+) -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(Thread::get_members_with_role(role_id, thread_id, &pool).await?)
+}
+
+#[server(GetThreadsForMember)]
+pub async fn get_threads_for_member(
+    channel_id: Uuid,
+    member_id: Uuid,
+) -> Result<Vec<Thread>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(Thread::get_threads_for_member(channel_id, member_id, &pool).await?)
+}
+
+#[server(CheckMemberOnThread)]
+pub async fn check_member_on_thread(thread_id: Uuid) -> Result<bool, ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+
+    Ok(Thread::check_member(thread_id, user.id, &pool).await?)
 }
 
 #[server(CreateThread)]
@@ -34,26 +87,82 @@ pub async fn create_thread(
     name: String,
 ) -> Result<(), ServerFnError> {
     let pool = pool()?;
-    auth_user()?;
+    let user = auth_user()?;
 
-    let id = Thread::create(name, channel_id, &pool).await?;
-    leptos_axum::redirect(&format!(
-        "/servers/{}/{}/{}",
-        server_id.simple(),
-        channel_id.simple(),
-        id.simple()
-    ));
-    Ok(())
+    if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
+        let id = Thread::create(name, channel_id, member.id, &pool).await?;
+        Thread::add_member(id, member.id, &pool).await?;
+        leptos_axum::redirect(&format!(
+            "/servers/{}/{}/{}",
+            server_id.simple(),
+            channel_id.simple(),
+            id.simple()
+        ));
+        Ok(())
+    } else {
+        Err(ServerFnError::new("You can't create a thread"))
+    }
+}
+
+#[server(JoinThread)]
+pub async fn join_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+    if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
+        Thread::add_member(thread_id, member.id, &pool).await?;
+        Ok(())
+    } else {
+        Err(ServerFnError::new("You join into this thread"))
+    }
+}
+
+#[server(LeaveThread)]
+pub async fn leave_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+    if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
+        Thread::remove_member(thread_id, member.id, &pool).await?;
+        Ok(())
+    } else {
+        Err(ServerFnError::new("You can't leave this thread"))
+    }
+}
+
+#[server(DeleteThread)]
+pub async fn delete_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+
+    if user_can_edit(server_id, user.id, &pool).await? {
+        //add delte from thread_members and then delte
+        Thread::delete_members(thread_id, &pool).await?;
+        Thread::delete(thread_id, &pool).await?;
+        return Ok(());
+    }
+    if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
+        if Thread::get_created_by(thread_id, &pool).await? == member.id {
+            Thread::delete_members(thread_id, &pool).await?;
+            Thread::delete(thread_id, &pool).await?;
+            return Ok(());
+        }
+    }
+    Err(ServerFnError::new("You can't delte this"))
 }
 
 #[server(GetThread)]
-pub async fn get_thread(thread_id: Uuid) -> Result<Thread, ServerFnError> {
+pub async fn get_thread(thread_id: Uuid, channel_id: Uuid) -> Result<Thread, ServerFnError> {
     let pool = pool()?;
     auth_user()?;
 
-    let res = Thread::get_from_id(thread_id, &pool).await;
-    log::info!("{:?}", res);
-    Ok(res?)
+    Ok(Thread::get(thread_id, channel_id, &pool).await?)
+}
+
+#[server(GetThreadsFromChannel)]
+pub async fn get_threads_from_channel(channel_id: Uuid) -> Result<Vec<Thread>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(Thread::get_threads_from_channel(channel_id, &pool).await?)
 }
 
 #[server(ToggleThreadWidth, "/api")]

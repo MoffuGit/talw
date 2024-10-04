@@ -4,6 +4,7 @@ pub mod create_server;
 pub mod create_thread;
 pub mod delete_category;
 pub mod delete_channel;
+pub mod delete_thread;
 pub mod edit_category;
 pub mod edit_channel;
 pub mod invite_people;

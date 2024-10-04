@@ -2,6 +2,7 @@ mod api;
 mod components;
 mod routes;
 
+use crate::app::api::thread::provide_thread_context;
 use api::auth::provide_auth_context;
 use api::channel::provide_channel_context;
 use api::server::provide_server_context;
@@ -18,7 +19,9 @@ use routes::servers::Servers;
 use routes::signup::Signup;
 
 use crate::app::api::category::provide_category_context;
-use crate::app::routes::servers::thread_sidebar::ThreadSidebar;
+use crate::app::routes::servers::thread::ThreadSplit;
+
+use self::routes::servers::thread::ThreadView;
 
 #[allow(non_snake_case)]
 #[component]
@@ -29,15 +32,12 @@ pub fn App() -> impl IntoView {
     provide_auth_context();
     provide_channel_context();
     provide_category_context();
+    provide_thread_context();
 
     //NOTE:
-    //add the thread entity, is like
-    //a channel, same values, not uses for now
-    //update the sidebar with the channels and threads,
-    //add capacity to create a thread
+    //work in the overview for server settings, profile settings and server profile settings,
     //add the entity for Messages, add a table for pinn messages inside a channel
     //add the capacity to send messages
-    //avanzar en la overview server setting and server porifle setting
     //add things to user stuff and search stuff
     //add friends
 
@@ -75,10 +75,10 @@ pub fn App() -> impl IntoView {
                     <Route path="servers" view=|| view!{<Servers/>}>
                         <Route path=":id" view=|| view! {<Server/>} >
                             <Route path=":channel_id" view=|| view!{<ChannelView/>}>
-                                <Route path=":thread_id" view=|| view!{<ThreadSidebar/>}/>
+                                <Route path=":thread_id" view=|| view!{<ThreadSplit/>}/>
                                 <Route path="" view=|| view!{<div/>}/>
                             </Route>
-                            // <Route path="thread/:thread_id" view=|| view!{<div/>}/>
+                            <Route path="thread/:channel_id/:thread_id" view=|| view!{<ThreadView/>}/>
                             <Route path="" view=|| view!{<EmptyServer/>}/>
                         </Route>
                         <Route path="me" view=|| view! {<div>"user stuff"</div>}/>

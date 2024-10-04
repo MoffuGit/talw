@@ -14,28 +14,36 @@ use leptos_icons::Icon;
 use leptos_router::A;
 use std::time::Duration;
 
+use super::thread::Thread;
+
 #[allow(non_snake_case)]
 #[component]
-pub fn Channel(channel: StoredValue<Channel>) -> impl IntoView {
-    let use_current_channel = use_current_channel();
+pub fn Channel(channel: Channel) -> impl IntoView {
+    let Channel { id: channel_id, .. } = channel;
+    view! {
+        <ChannelMenu channel=channel/>
+        <Thread channel_id=channel_id />
+    }
+}
 
-    let Channel {
-        id,
-        name,
-        channel_type,
-        ..
-    } = channel.get_value();
-
-    let name = store_value(name);
-
-    let is_current_channel =
-        move || use_current_channel.with(|current| current.is_some_and(|current| current == id));
-    let open = create_rw_signal(false);
+#[component]
+pub fn ChannelMenu(channel: Channel) -> impl IntoView {
     let CurrentServerContext {
         server,
         member_can_edit,
         ..
     } = use_current_server_context();
+    let Channel {
+        id,
+        name,
+        channel_type,
+        ..
+    } = channel.clone();
+    let open = create_rw_signal(false);
+    let use_current_channel = use_current_channel();
+    let is_current_channel =
+        move || use_current_channel.with(|current| current.is_some_and(|current| current == id));
+    let stored_channel = store_value(channel);
     view! {
         <div class=move || format!("relative py-[1px] ml-2 transition duration-200 ease-in-out delay-0 group rounded hover:bg-primary/75 mt-0.5 {}", match is_current_channel() {
             true => "bg-primary/50",
@@ -49,14 +57,14 @@ pub fn Channel(channel: StoredValue<Channel>) -> impl IntoView {
                             true => "text-base-content/60",
                             false => ""
                         })>
-                            {move || name.get_value()}
+                            {&name.clone()}
                         </div>
                         {
                             move || match (member_can_edit, is_current_channel()) {
                                 (true, true) => view! {
                                 <TooltipProvider delay_duration=Duration::new(0,0)>
                                     <TooltipTrigger class="w-auto h-auto mr-0.5">
-                                        <EditChannelModal channel=channel.get_value() class="w-auto h-auto">
+                                        <EditChannelModal channel=stored_channel.get_value() class="w-auto h-auto">
                                             <Icon icon=icondata::RiSettings5SystemFill class="w-[18px] h-[18px] fill-base-content/50 hover:fill-base-content/75"/>
                                         </EditChannelModal>
                                     </TooltipTrigger>
@@ -64,7 +72,7 @@ pub fn Channel(channel: StoredValue<Channel>) -> impl IntoView {
                                 </TooltipProvider>
                                 <TooltipProvider delay_duration=Duration::new(0,0)>
                                     <TooltipTrigger class="w-auto h-auto mr-0.5">
-                                        <DeleteChannel channel=channel.get_value() server_id=server.id class="w-auto h-auto">
+                                        <DeleteChannel channel=stored_channel.get_value() server_id=server.id class="w-auto h-auto">
                                             <Icon icon=icondata::RiDeleteBinSystemFill class="w-[18px] h-[18px] fill-base-content/50 hover:fill-base-content/75"/>
                                         </DeleteChannel>
                                     </TooltipTrigger>
@@ -74,7 +82,7 @@ pub fn Channel(channel: StoredValue<Channel>) -> impl IntoView {
                                 (true, false) => view! {
                                 <TooltipProvider delay_duration=Duration::new(0,0)>
                                     <TooltipTrigger class="w-auto h-auto mr-0.5">
-                                        <EditChannelModal channel=channel.get_value() class="w-[18px] h-[18px] group-hover:flex hidden">
+                                        <EditChannelModal channel=stored_channel.get_value() class="w-[18px] h-[18px] group-hover:flex hidden">
                                             <Icon icon=icondata::RiSettings5SystemFill class="w-[18px] h-[18px] group-hover:fill-base-content/50"/>
                                         </EditChannelModal>
                                     </TooltipTrigger>
@@ -82,7 +90,7 @@ pub fn Channel(channel: StoredValue<Channel>) -> impl IntoView {
                                 </TooltipProvider>
                                 <TooltipProvider delay_duration=Duration::new(0,0)>
                                     <TooltipTrigger class="w-auto h-auto mr-0.5">
-                                        <DeleteChannel channel=channel.get_value() server_id=server.id class="w-auto h-auto">
+                                        <DeleteChannel channel=stored_channel.get_value() server_id=server.id class="w-auto h-auto">
                                             <Icon icon=icondata::RiDeleteBinSystemFill class="w-[18px] h-[18px] group-hover:block group-hover:fill-base-content/50 hidden"/>
                                         </DeleteChannel>
                                     </TooltipTrigger>
@@ -102,10 +110,10 @@ pub fn Channel(channel: StoredValue<Channel>) -> impl IntoView {
                         {
                             match member_can_edit {
                                 true => view! {
-                                    <EditChannelModal channel=channel.get_value() class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"  on_click=Signal::derive(move || open.set(false))>
+                                    <EditChannelModal channel=stored_channel.get_value() class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"  on_click=Signal::derive(move || open.set(false))>
                                         <div class="group-hover:text-primary-content">"Edit Channel"</div>
                                     </EditChannelModal>
-                                    <DeleteChannel channel=channel.get_value() server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || open.set(false))>
+                                    <DeleteChannel channel=stored_channel.get_value() server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || open.set(false))>
                                         <div class="group-hover:text-primary-content">"Delete Channel"</div>
                                     </DeleteChannel>
                                 }.into_view(),

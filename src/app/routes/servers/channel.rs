@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use crate::app::api::channel::{get_channel, use_channel};
 use crate::app::components::channel::header::ChannelHeader;
-use crate::app::components::channel::sidebars::members::{MemberSideBar, SideBarContext};
+use crate::app::components::channel::sidebars::{MemberSideBar, SideBarContext};
 use crate::app::routes::servers::server::use_current_server_context;
 use leptos::*;
 use leptos_icons::Icon;

@@ -2,7 +2,7 @@ use leptos::*;
 use leptos_use::use_mouse;
 use leptos_use::UseMouseReturn;
 
-use crate::app::components::ui::menu::{MenuContent, MenuTrigger, ProvideMenu, TriggerKey};
+use crate::app::components::ui::menu::{MenuContent, MenuProvider, MenuTrigger, TriggerKey};
 
 #[allow(non_snake_case)]
 #[component]
@@ -10,14 +10,16 @@ pub fn ContextMenuProvider(
     children: Children,
     #[prop(optional)] open: Option<RwSignal<bool>>,
     #[prop(optional, default = true)] modal: bool,
+    #[prop(optional)] trigger_ref: Option<NodeRef<html::Div>>,
+    #[prop(optional)] content_ref: Option<NodeRef<html::Div>>,
 ) -> impl IntoView {
     let open = open.unwrap_or(create_rw_signal(false));
-    let trigger_ref = create_node_ref::<html::Div>();
-    let content_ref = create_node_ref::<html::Div>();
+    let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
+    let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
     view! {
-        <ProvideMenu open=open modal=modal trigger_ref=trigger_ref content_ref=content_ref trigger_key=TriggerKey::Rtl>
+        <MenuProvider open=open modal=modal trigger_ref=trigger_ref content_ref=content_ref trigger_key=TriggerKey::Rtl>
             {children()}
-        </ProvideMenu>
+        </MenuProvider>
     }
 }
 

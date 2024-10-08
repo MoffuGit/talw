@@ -11,7 +11,7 @@ use crate::entities::thread::Thread;
 use leptos_router::A;
 
 #[component]
-pub fn ThreadMenuContent(thread: Thread) -> impl IntoView {
+pub fn ThreadMenuContent(thread: Thread, open: RwSignal<bool>) -> impl IntoView {
     let thread_context = use_thread();
     let join_thread = thread_context.join_thread;
     let leave_thread = thread_context.leave_thread;
@@ -45,7 +45,7 @@ pub fn ThreadMenuContent(thread: Thread) -> impl IntoView {
                     if let Some((channel_url, thread_url)) = use_current_thread().get() {
                         if channel_url != thread.channel_id && thread_url != thread.id {
                             view!{
-                                <A href=move || format!("/servers/{}/thread/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
+                                <A href=move || format!("/servers/{}/thread/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) on:click=move |_| open.set(false) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
                                     "Open Full View"
                                 </A>
                             }.into_view()
@@ -54,7 +54,7 @@ pub fn ThreadMenuContent(thread: Thread) -> impl IntoView {
                         }
                     } else {
                         view!{
-                            <A href=move || format!("/servers/{}/thread/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
+                            <A href=move || format!("/servers/{}/thread/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) on:click=move |_| open.set(false) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
                                 "Open Full View"
                             </A>
                         }.into_view()
@@ -66,7 +66,7 @@ pub fn ThreadMenuContent(thread: Thread) -> impl IntoView {
                     if let (Some(channel_url), Some(thread_url)) = (use_current_channel().get(), use_current_split_thread().get()) {
                         if channel_url != thread.channel_id && thread_url != thread.id {
                             view!{
-                                <A href=move || format!("/servers/{}/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
+                                <A href=move || format!("/servers/{}/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) on:click=move |_| open.set(false) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
                                     "Open Split View"
                                 </A>
                             }.into_view()
@@ -75,7 +75,7 @@ pub fn ThreadMenuContent(thread: Thread) -> impl IntoView {
                         }
                     } else {
                         view!{
-                            <A href=move || format!("/servers/{}/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
+                            <A href=move || format!("/servers/{}/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) on:click=move |_| open.set(false) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
                                 "Open Split View"
                             </A>
                         }.into_view()

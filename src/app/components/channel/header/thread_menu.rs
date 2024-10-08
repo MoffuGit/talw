@@ -112,7 +112,7 @@ pub fn ThreadLink(thread: Thread, open: RwSignal<bool>) -> impl IntoView {
                                     </A>
                                 </ContextMenuTrigger>
                                 <ContextMenuContent  class="z-50".into()>
-                                    <ThreadMenuContent thread=thread.get_value() />
+                                    <ThreadMenuContent thread=thread.get_value() open=open />
                                 </ContextMenuContent>
                             </ContextMenuProvider>
                         }

@@ -9,6 +9,7 @@ use crate::entities::thread::Thread;
 use icondata::Icon;
 use leptos::*;
 use leptos_icons::Icon;
+use leptos_router::A;
 use uuid::Uuid;
 
 #[component]
@@ -21,6 +22,7 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
         ..
     } = use_current_server_context();
     let channel_name = channel.name.clone();
+    let thread = thread.map(store_value);
     view! {
         <ContextMenuProvider modal=false open=open>
             <ContextMenuTrigger class="relative flex flex-row group items-center py-[6px] px-2 text-base">
@@ -31,7 +33,7 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
                 <ChannelTopic channel_id=channel.id/>
                 {
                     thread.map(|thread| view!{
-                        <ChannelThread thread=thread/>
+                        <ChannelThread thread=thread.get_value()/>
                     })
                 }
             </ContextMenuTrigger>
@@ -52,6 +54,16 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
                         }.into_view(),
                         false => view! {}.into_view(),
                     }
+                }
+                {
+                    thread.map(|thread| {
+                        let thread = thread.get_value();
+                        view!{
+                            <A href=move || format!("/servers/{}/{}/{}",server.id.simple(),thread.channel_id.simple(), thread.id.simple()) on:click=move |_| open.set(false) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
+                                "Open Split View"
+                            </A>
+                        }
+                    })
                 }
             </ContextMenuContent>
         </ContextMenuProvider>

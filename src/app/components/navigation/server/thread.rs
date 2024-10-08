@@ -117,13 +117,14 @@ pub fn Thread(channel_id: Uuid) -> impl IntoView {
 
 #[component]
 pub fn ThreadMenu(thread: Thread) -> impl IntoView {
+    let open = create_rw_signal(false);
     let use_current_thread = use_current_thread();
     let is_current_thread = move || {
         use_current_thread.with(|url| url.is_some_and(|(_, thread_url)| thread_url == thread.id))
     };
     let name = store_value(thread.name.clone());
     view! {
-        <ContextMenuProvider modal=false>
+        <ContextMenuProvider modal=false open=open>
             <ContextMenuTrigger class="w-full h-auto">
                 <div class=move || format!("relative py-[1px] transition duration-200 ease-in-out delay-0 group rounded hover:bg-primary/75 mt-0.5 w-full max-h-[32px] {}", match is_current_thread() {
                     true => "bg-primary/50",
@@ -142,7 +143,7 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
                 </div>
             </ContextMenuTrigger>
             <ContextMenuContent class="z-40".into()>
-                <ThreadMenuContent thread=thread.clone()/>
+                <ThreadMenuContent thread=thread.clone() open=open/>
             </ContextMenuContent>
         </ContextMenuProvider>
     }

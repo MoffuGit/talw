@@ -5,6 +5,7 @@ use crate::app::api::server::get_mutual_servers_url;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::entities::member::Member;
 use leptos::*;
+use leptos_use::use_document;
 use uuid::Uuid;
 
 #[component]
@@ -16,13 +17,15 @@ pub fn MemberBanner(
     member: Member,
 ) -> impl IntoView {
     let is_open = create_rw_signal(false);
-
+    let limit_y = use_document()
+        .body()
+        .map(|body| body.get_bounding_client_rect().height() - 320.0);
     view! {
         <DropdownProvider modal=false open=is_open>
             <DropdownTrigger class=class>
                 {children()}
             </DropdownTrigger>
-            <DropdownContent class="w-72 h-auto z-50 rounded-lg bg-base-200" side=side align=align side_of_set=20.0>
+            <DropdownContent class="w-72 h-auto z-50 rounded-lg bg-base-200" side=side align=align side_of_set=20.0 limit_y=limit_y>
                 <div class="relative w-full h-auto ">
                     <div class="w-full h-28 bg-primary rounded-t-lg"/>
                         {

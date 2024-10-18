@@ -183,6 +183,7 @@ pub fn DropdownContent(
     #[prop(optional, default = 0.0)] side_of_set: f64,
     #[prop(optional, default = MenuAlign::Center)] align: MenuAlign,
     #[prop(optional, default = 0.0)] align_of_set: f64,
+    #[prop(default = None)] limit_y: Option<f64>,
 ) -> impl IntoView {
     let context =
         use_context::<DropdownProviderContext>().expect("acces to DropdownProviderContext");
@@ -201,7 +202,15 @@ pub fn DropdownContent(
         align_of_set,
     );
 
-    let position = Signal::derive(move || format!("translate: {}px {}px;", x.get(), y.get()));
+    let y_position = move || {
+        if limit_y.is_some_and(|limit_y| y.get() > limit_y) {
+            limit_y.unwrap()
+        } else {
+            y.get()
+        }
+    };
+
+    let position = Signal::derive(move || format!("translate: {}px {}px;", x.get(), y_position()));
 
     create_effect(move |_| {
         if context.open.get() {

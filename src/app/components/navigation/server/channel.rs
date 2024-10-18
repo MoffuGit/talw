@@ -45,8 +45,8 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
         move || use_current_channel.with(|current| current.is_some_and(|current| current == id));
     let stored_channel = store_value(channel);
     view! {
-        <div class=move || format!("relative py-[1px] ml-2 transition duration-200 ease-in-out delay-0 group rounded hover:bg-primary/75 mt-0.5 {}", match is_current_channel() {
-            true => "bg-primary/50",
+        <div class=move || format!("relative py-[1px] ml-2 transition duration-200 ease-in-out delay-0 group rounded hover:bg-base-content/10 mt-0.5 {}", match is_current_channel() {
+            true => "bg-base-content/20",
             false => "",
         })>
             <A href=move || id.simple().to_string() class="relative box-border flex flex-col cursor-pointer">

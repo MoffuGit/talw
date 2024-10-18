@@ -25,7 +25,7 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
     let thread = thread.map(store_value);
     view! {
         <ContextMenuProvider modal=false open=open>
-            <ContextMenuTrigger class="relative flex flex-row group items-center py-[6px] px-2 text-base">
+            <ContextMenuTrigger class="relative flex flex-row group items-center py-[6px] pr-2 pl-1 text-base">
                 <Icon icon=Icon::from(channel.channel_type) class="w-6 h-6 mx-2"/>
                 <div>
                     {channel_name}

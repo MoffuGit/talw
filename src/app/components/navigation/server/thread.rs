@@ -126,8 +126,8 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
     view! {
         <ContextMenuProvider modal=false open=open>
             <ContextMenuTrigger class="w-full h-auto">
-                <div class=move || format!("relative py-[1px] transition duration-200 ease-in-out delay-0 group rounded hover:bg-primary/75 mt-0.5 w-full max-h-[32px] {}", match is_current_thread() {
-                    true => "bg-primary/50",
+                <div class=move || format!("relative py-[1px] transition duration-200 ease-in-out delay-0 group rounded hover:bg-base-content/10 mt-0.5 w-full max-h-[32px] {}", match is_current_thread() {
+                    true => "bg-base-content/20",
                     false => "",
                 })>
                     <A href=move || format!("thread/{}/{}",thread.channel_id.simple(), thread.id.simple()) class="relative box-border flex flex-col cursor-pointer">

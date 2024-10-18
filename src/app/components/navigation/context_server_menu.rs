@@ -45,8 +45,9 @@ pub fn ContextServerMenu(
                         move || {
                             if let Some(Ok(false)) = member_can_update.get() {
                                 view! {
+                                    <div class="divider relative my-0 mx-1 w-auto"/>
                                     <ServerMenuGuestItems server=server.get_value() on_click=on_click_item/>
-                                }
+                                }.into_view()
                             } else {
                                 ().into_view()
                             }
@@ -73,7 +74,6 @@ fn ServerMenuAdminItems(on_click: Signal<()>, server: Server) -> impl IntoView {
         <CreateCategoryModal on_click=on_click server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
                 <div class="group-hover:text-primary-content">"Create Category"</div>
         </CreateCategoryModal>
-        <div class="divider relative my-0 mx-1 w-auto"/>
     }
 }
 

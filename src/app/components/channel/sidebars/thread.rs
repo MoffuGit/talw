@@ -3,8 +3,10 @@ use crate::app::api::thread::{
     get_thread_members_with_role, get_thread_members_without_role, use_thread,
 };
 use crate::app::components::channel::member::banner::MemberBanner;
+use crate::app::components::channel::sidebars::server::CurrentMember;
 use crate::app::components::channel::sidebars::SideBarContext;
 use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
+use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::member::Member;
 use crate::entities::role::Role;
 use leptos::*;
@@ -41,10 +43,13 @@ pub fn ThreadMemberSideBar(server_id: Uuid, thread_id: Uuid) -> impl IntoView {
                     match (open.get(), roles.get(), members_without_role.get()) {
                         (true, Some(Ok(roles)), Some(Ok(members))) => {
                             view!{
-                                <div class="h-full shrink-0 w-[240px] bg-base-300 flex flex-col overflow-y-scroll overflow-x-hidden items-stretch justify-start">
-                                    {roles.iter().map(|role| view!{<Role role=role.clone() thread_id=thread_id/>}).collect_view()}
-                                    <div class="pt-6 pr-2 pl-4 text-base">{format!("Online - {}", members.len())}</div>
-                                    {members.iter().map(|member| view!{<Member member=member.clone()/>}).collect_view()}
+                                <div class="h-full shrink-0 w-[240px] bg-base-300 flex flex-col items-stretch justify-between">
+                                    <div class="flex flex-col items-stretch overflow-y-scroll overflow-x-hidden">
+                                        {roles.iter().map(|role| view!{<Role role=role.clone() thread_id=thread_id/>}).collect_view()}
+                                        <div class="pt-6 pr-2 pl-4 text-base">{format!("Online - {}", members.len())}</div>
+                                        {members.iter().map(|member| view!{<Member member=member.clone()/>}).collect_view()}
+                                    </div>
+                                    <CurrentMember member=use_current_server_context().member />
                                 </div>
                             }.into_view()
                         }
@@ -81,7 +86,6 @@ pub fn Role(role: Role, thread_id: Uuid) -> impl IntoView {
 
 #[component]
 pub fn Member(member: Member) -> impl IntoView {
-    // let member = store_value(member);
     let image_url = member.image_url.clone();
     let name = member.name.clone();
     view! {

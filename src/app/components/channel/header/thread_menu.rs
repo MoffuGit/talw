@@ -17,7 +17,7 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
     view! {
         <DropdownProvider open=open modal=false >
             <DropdownTrigger>
-                <Icon icon=icondata::RiDiscussCommunicationFill class="w-7 h-7 fill-base-content/40" />
+                <Icon icon=icondata::RiDiscussCommunicationFill class="w-6 h-6 fill-base-content/40" />
             </DropdownTrigger>
             <DropdownContent side=MenuSide::Bottom align=MenuAlign::End class="w-auto h-auto z-40">
                 <div class="w-[510px] h-auto bg-base-200 flex flex-col rounded-md">

@@ -29,11 +29,11 @@ pub fn use_current_server_context() -> CurrentServerContext {
 #[component]
 pub fn Server() -> impl IntoView {
     view! {
-        <div class="h-full w-full relative z-40">
+        <div class="h-full w-full relative z-40 flex">
             {
                 move || {
                     match use_params_map().with(|params| Uuid::from_str(params.get("id").unwrap())) {
-                        Err(_) => view!{<Redirect path="/severs/me"/>}.into_view(),
+                        Err(_) => view!{<Redirect path="/servers/me"/>}.into_view(),
                         Ok(server_id) => {
                             let leave_server = use_server().leave_server;
                             let server = create_resource(
@@ -70,10 +70,8 @@ pub fn Server() -> impl IntoView {
                                                         member
                                                     });
                                                     view! {
-                                                        <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40">
-                                                            <ServerSideBar />
-                                                        </div>
-                                                        <div class="h-full relative overflow-hidden md:pl-[240px] z-30">
+                                                        <ServerSideBar />
+                                                        <div class="h-full grow relative overflow-hidden z-30">
                                                             <Outlet/>
                                                         </div>
                                                     }.into_view()

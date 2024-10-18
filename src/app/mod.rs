@@ -35,11 +35,14 @@ pub fn App() -> impl IntoView {
     provide_thread_context();
 
     //NOTE:
+    //add the member in the member list like in the video
     //work in the overview for server settings, profile settings and server profile settings,
     //add the entity for Messages, add a table for pinn messages inside a channel
     //add the capacity to send messages
-    //add things to user stuff and search stuff
+    //add things to user stuff and search stuff servers stuff
     //add friends
+    //add pinned channels and conversations
+    //add the optin to change the width of the sidebar
 
     //TODO:user_side_bar is waiting the roles and aboout
     //the roles are needed for the sidebar and groups of users
@@ -73,6 +76,9 @@ pub fn App() -> impl IntoView {
                 <Routes>
                     <Route path="" view=|| view!{<Home/>}/>
                     <Route path="servers" view=|| view!{<Servers/>}>
+                        <Route path="me" view=|| view! {<div>"user stuff"</div>}/>
+                        <Route path="discover" view=|| view! {<div>"search servers"</div>}/>
+                        <Route path="" view=|| view!{<div>"list of servers"</div>}/>
                         <Route path=":id" view=|| view! {<Server/>} >
                             <Route path=":channel_id" view=|| view!{<ChannelView/>}>
                                 <Route path=":thread_id" view=|| view!{<ThreadSplit/>}/>
@@ -81,8 +87,6 @@ pub fn App() -> impl IntoView {
                             <Route path="thread/:channel_id/:thread_id" view=|| view!{<ThreadView/>}/>
                             <Route path="" view=|| view!{<EmptyServer/>}/>
                         </Route>
-                        <Route path="me" view=|| view! {<div>"user stuff"</div>}/>
-                        <Route path="search_servers" view=|| view! {<div>"search servers"</div>}/>
                     </Route>
                     <Route path="login" view=move || view!{ <Login />}/>
                     <Route path="signup" view=move || view!{ <Signup />}/>

@@ -12,6 +12,11 @@ use crate::app::routes::servers::server::CurrentServerContext;
 use leptos::*;
 use uuid::Uuid;
 
+#[derive(Clone)]
+struct ServerSideBarContext {
+    open: RwSignal<bool>,
+}
+
 #[allow(non_snake_case)]
 #[component]
 pub fn ServerSideBar() -> impl IntoView {
@@ -49,48 +54,70 @@ pub fn ServerSideBar() -> impl IntoView {
         },
         move |_| get_categories(server.id),
     );
-    view! {
-        <div class="w-full h-full flex flex-col items-center relative bg-base-200 scrollbar-none overflow-y-scroll overflow-x-hidden">
-            <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
-                <ServerMenu />
-                <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
-                    <div class="h-3"/>
-                    <Transition fallback=move || ()>
-                        {
-                            move || {
-                                channels.with(|channels| {
-                                    match channels {
-                                        Some(Ok(channels)) => {
-                                            channels.iter().map(|channel| {
-                                                view! {<Channel channel=channel.clone() />}
-                                            }).collect_view()
-                                        },
-                                        _ => view!{<div/>}.into_view()
+    let open = create_rw_signal(true);
+    provide_context(ServerSideBarContext { open });
+    view!{
+            <div class="flex w-[240px] h-full relative inset-y-0 bg-base-200 z-40" style=move || if open.get() { "" } else { "visibility: collapse;" }>
+                <div class="w-full h-full flex flex-col items-center relative bg-base-200 scrollbar-none overflow-y-scroll overflow-x-hidden">
+                    <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
+                        <ServerMenu />
+                        <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
+                            <div class="h-3"/>
+                            <Transition fallback=move || ()>
+                                {
+                                    move || {
+                                        channels.with(|channels| {
+                                            match channels {
+                                                Some(Ok(channels)) => {
+                                                    channels.iter().map(|channel| {
+                                                        view! {<Channel channel=channel.clone() />}
+                                                    }).collect_view()
+                                                },
+                                                _ => view!{<div/>}.into_view()
+                                            }
+                                        })
                                     }
-                                })
-                            }
-                        }
-                    </Transition>
-                    <Transition fallback=move || ()>
-                        {
-                            move || {
-                                categories.with(|categories| {
-                                    match categories  {
-                                        Some(Ok(categories)) => {
-                                            categories.iter().map(|category| {
-                                                let category = store_value(category.clone());
-                                                view! {<Category category=category />}
-                                            }).collect_view()
-                                        },
-                                        _ => view!{<div/>}.into_view()
+                                }
+                            </Transition>
+                            <Transition fallback=move || ()>
+                                {
+                                    move || {
+                                        categories.with(|categories| {
+                                            match categories  {
+                                                Some(Ok(categories)) => {
+                                                    categories.iter().map(|category| {
+                                                        let category = store_value(category.clone());
+                                                        view! {<Category category=category />}
+                                                    }).collect_view()
+                                                },
+                                                _ => view!{<div/>}.into_view()
+                                            }
+                                        })
                                     }
-                                })
-                            }
-                        }
-                    </Transition>
+                                }
+                            </Transition>
+                        </div>
+                    </div>
+                    <SideBarContextMenu server_id=server.id/>
                 </div>
             </div>
-            <SideBarContextMenu server_id=server.id/>
+        }.into_view()
+}
+
+#[component]
+pub fn ServerSideBarTrigger(
+    #[prop(optional)] class: &'static str,
+    #[prop(optional)] children: Option<Children>,
+) -> impl IntoView {
+    let open = use_context::<ServerSideBarContext>()
+        .expect("shoul get the ServerSideBarContext context")
+        .open;
+
+    view! {
+        <div class=class on:click=move |_| open.update(|open| *open = !*open)>
+            {
+                children.map(|children| children())
+            }
         </div>
     }
 }

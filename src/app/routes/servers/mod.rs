@@ -16,11 +16,11 @@ pub fn Servers() -> impl IntoView {
         <Transition fallback=move || ()>
             {move || {
                 use_auth().auth.get().map(|result| match result {
-                    Ok(Some(_)) => {
+                    Ok(Some(user)) => {
                         view! {
                             <div class="h-full w-full">
                                 <div class="flex w-[72px] h-full z-30 fixed inset-y-0">
-                                    <SideBar/>
+                                    <SideBar user=user/>
                                 </div>
                                 <div class="h-full relative overflow-hidden md:pl-[72px]">
                                     <Outlet/>

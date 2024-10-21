@@ -65,7 +65,7 @@ pub fn CurrentMember(member: Member) -> impl IntoView {
     let image_url = member.image_url.clone();
     let name = member.name.clone();
     view! {
-        <MemberBanner side=MenuSide::Left align=MenuAlign::Start class="p-2 flex items-center bg-gradient-to-l from-bg-base-100" member=member>
+        <MemberBanner side=MenuSide::Left align=MenuAlign::Start class="p-2 flex items-center bg-gradient-to-l from-base-100" member=member>
             {
                 if let Some(url) = image_url {
                     view! {

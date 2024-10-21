@@ -205,33 +205,45 @@ pub fn TooltipContent(
 
     let content_ref = create_node_ref::<html::Div>();
 
-    let visibility = move || {
-        if !is_open.get() {
-            "visibility: hidden"
-        } else {
-            ""
-        }
-    };
-
     let show = create_rw_signal(false);
+    let position = create_rw_signal(("".to_string(), "".to_string()));
+    let position_timer_ref: RwSignal<Option<TimeoutHandle>> = create_rw_signal(None);
 
-    let position = move || {
+    create_effect(move |_| {
         if let (Some(trigger), Some(content), true) =
             (trigger_ref.get(), content_ref.get(), is_open.get())
         {
-            get_tooltip_position(trigger, content, tooltip_side, tooltip_of_side)
+            if let Some(timer) = position_timer_ref.get_untracked() {
+                timer.clear();
+            }
+            position_timer_ref.set_untracked(
+                set_timeout_with_handle(
+                    move || {
+                        position.set(get_tooltip_position(
+                            trigger,
+                            content,
+                            tooltip_side,
+                            tooltip_of_side,
+                        ))
+                    },
+                    Duration::new(0, 5),
+                )
+                .ok(),
+            );
         } else {
-            ("".to_string(), "".to_string())
+            if let Some(timer) = position_timer_ref.get_untracked() {
+                timer.clear();
+            }
+            position.set(("".to_string(), "".to_string()))
         }
-    };
+    });
 
     create_effect(move |_| show.update(|value| *value = true));
 
-    // let tip = store_value(tip);
     view! {
-        <Show when=move || show.get()>
+        <Show when=move || show.get() && is_open.get()>
             <Portal mount=document().get_element_by_id("app").unwrap() clone:tip>
-                <div _ref=content_ref style=move || format!("translate: {}px {}px; {}", position().0, position().1, visibility()) class=format!("absolute z-50 left-0 top-0 animate-tooltip-open {}", class)>
+                <div _ref=content_ref style=move || format!("translate: {}px {}px;", position().0, position().1) class=format!("absolute z-50 left-0 top-0 animate-tooltip-open {}", class)>
                     {tip.clone()}
                 </div>
             </Portal>

@@ -14,6 +14,7 @@ pub fn EditChannelModal(
     class: &'static str,
     #[prop(optional)] on_click: Option<Signal<()>>,
     #[prop(optional)] children: Option<Children>,
+    #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let open = create_rw_signal(false);
     let name = store_value(channel.name.clone());
@@ -25,7 +26,7 @@ pub fn EditChannelModal(
         new_name.set(name.get_value());
     };
     view! {
-        <ModalProvider open=open on_close=Signal::derive(on_close)>
+        <ModalProvider content_ref=content_ref open=open on_close=Signal::derive(on_close)>
             {
                 if let Some(on_click) = on_click {
                     view! {

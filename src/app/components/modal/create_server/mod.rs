@@ -25,7 +25,12 @@ fn use_create_server() -> CreateServerContext {
 
 #[allow(non_snake_case)]
 #[component]
-pub fn CreateServerModal(class: &'static str, children: Children) -> impl IntoView {
+pub fn CreateServerModal(
+    class: &'static str,
+    children: Children,
+    #[prop(optional)] content_ref: NodeRef<html::Div>,
+    #[prop(optional)] on_open: Signal<()>,
+) -> impl IntoView {
     let use_server = use_server();
 
     let is_open = create_rw_signal(false);
@@ -75,8 +80,8 @@ pub fn CreateServerModal(class: &'static str, children: Children) -> impl IntoVi
         join_with_invitation_ref,
     });
     view! {
-        <ModalProvider open=is_open on_close=Signal::derive(on_close)>
-            <ModalTrigger class=class>
+        <ModalProvider content_ref=content_ref open=is_open on_close=Signal::derive(on_close)>
+            <ModalTrigger class=class on_click=on_open>
                 {children()}
             </ModalTrigger>
             <ModalContent class="w-[440px] max-h-[720px] rounded p-0 bg-none min-h-[200px] h-auto overflow-hidden flex items-center" >

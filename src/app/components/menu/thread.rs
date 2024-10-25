@@ -11,7 +11,11 @@ use crate::entities::thread::Thread;
 use leptos_router::A;
 
 #[component]
-pub fn ThreadMenuContent(thread: Thread, open: RwSignal<bool>) -> impl IntoView {
+pub fn ThreadMenuContent(
+    thread: Thread,
+    open: RwSignal<bool>,
+    delete_thread_modal_ref: NodeRef<html::Div>,
+) -> impl IntoView {
     let thread_context = use_thread();
     let join_thread = thread_context.join_thread;
     let leave_thread = thread_context.leave_thread;
@@ -87,7 +91,7 @@ pub fn ThreadMenuContent(thread: Thread, open: RwSignal<bool>) -> impl IntoView 
                     move || {
                         if current_server_context.member_can_edit || current_server_context.member.id == thread.created_by {
                             view!{
-                                <DeleteThreadModal thread_id=thread.id thread_name=thread_name.get_value() server_id=current_server_context.server.id class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
+                                <DeleteThreadModal content_ref=delete_thread_modal_ref thread_id=thread.id thread_name=thread_name.get_value() server_id=current_server_context.server.id class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
                                     "Delete Thread"
                                 </DeleteThreadModal>
                             }

@@ -123,6 +123,7 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
         use_current_thread.with(|url| url.is_some_and(|(_, thread_url)| thread_url == thread.id))
     };
     let name = store_value(thread.name.clone());
+    let delete_thread_modal_ref = create_node_ref::<html::Div>();
     view! {
         <ContextMenuProvider modal=false open=open>
             <ContextMenuTrigger class="w-full h-auto">
@@ -142,8 +143,8 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
                     </A>
                 </div>
             </ContextMenuTrigger>
-            <ContextMenuContent class="z-40".into()>
-                <ThreadMenuContent thread=thread.clone() open=open/>
+            <ContextMenuContent ignore=vec![delete_thread_modal_ref] class="z-40".into()>
+                <ThreadMenuContent delete_thread_modal_ref=delete_thread_modal_ref thread=thread.clone() open=open/>
             </ContextMenuContent>
         </ContextMenuProvider>
     }

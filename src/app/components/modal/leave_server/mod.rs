@@ -10,10 +10,11 @@ pub fn LeaveServer(
     class: &'static str,
     on_click: Signal<()>,
     #[prop(optional)] children: Option<Children>,
+    #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let leave_server = use_server().leave_server;
     view! {
-        <ModalProvider>
+        <ModalProvider content_ref=content_ref>
             <ModalTrigger class=class on_click=on_click>
                 {children.map(|children| children())}
             </ModalTrigger>

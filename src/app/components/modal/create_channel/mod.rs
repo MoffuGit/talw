@@ -16,6 +16,7 @@ pub fn CreateChannelModal(
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] category_id: Option<Uuid>,
     #[prop(optional)] category_name: Option<String>,
+    #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let open = create_rw_signal(false);
     let channel_type = create_rw_signal::<ChannelType>(ChannelType::TEXT);
@@ -37,7 +38,7 @@ pub fn CreateChannelModal(
                 });
             });
             view!{
-                <ModalProvider open=open on_close=Signal::derive(on_close)>
+                <ModalProvider content_ref=content_ref open=open on_close=Signal::derive(on_close)>
                     {
                         match on_click {
                             Some(on_click) => view!{
@@ -119,7 +120,7 @@ pub fn CreateChannelModal(
                 });
             });
             view!{
-                <ModalProvider open=open on_close=Signal::derive(on_close)>
+                <ModalProvider content_ref=content_ref open=open on_close=Signal::derive(on_close)>
                     {
                         match on_click {
                             Some(on_click) => view!{

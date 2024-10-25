@@ -27,9 +27,11 @@ pub fn Servers() -> impl IntoView {
     );
 
     let open = create_rw_signal(false);
+    let hidden = create_rw_signal(false);
+    let create_server_modal_ref = create_node_ref();
 
     view! {
-        <ContextMenuProvider open=open>
+        <ContextMenuProvider open=open hidden=hidden>
             <ContextMenuTrigger>
                 <TooltipProvider delay_duration=Duration::new(0,0)>
                     <TooltipTrigger class="relative my-0.5">
@@ -42,8 +44,8 @@ pub fn Servers() -> impl IntoView {
                     <TooltipContent tip="Servers" class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"/>
                 </TooltipProvider>
             </ContextMenuTrigger>
-            <ContextMenuContent class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded".to_string()>
-                <CreateServerModal class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
+            <ContextMenuContent ignore=vec![create_server_modal_ref] class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded".to_string()>
+                <CreateServerModal on_open=Signal::derive(move || hidden.set(true)) content_ref=create_server_modal_ref class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
                     <div>"Create Server"</div>
                     <Icon icon=icondata::RiAddSystemFill class="w-5 h-5"/>
                 </CreateServerModal>

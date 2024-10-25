@@ -1,10 +1,13 @@
 use leptos::ev::contextmenu;
 use leptos::*;
-use leptos_use::{on_click_outside, use_document, use_event_listener};
+use leptos_use::{
+    on_click_outside_with_options, use_document, use_event_listener, OnClickOutsideOptions,
+};
 
 #[derive(Clone)]
 struct MenuProviderContext {
     open: RwSignal<bool>,
+    hidden: RwSignal<bool>,
     modal: bool,
     trigger_ref: NodeRef<html::Div>,
     content_ref: NodeRef<html::Div>,
@@ -23,15 +26,17 @@ pub fn MenuProvider(
     children: Children,
     #[prop(optional, default = true)] modal: bool,
     #[prop(optional)] open: Option<RwSignal<bool>>,
+    #[prop(optional)] hidden: Option<RwSignal<bool>>,
     #[prop(optional)] trigger_ref: Option<NodeRef<html::Div>>,
     #[prop(optional)] content_ref: Option<NodeRef<html::Div>>,
     trigger_key: TriggerKey,
 ) -> impl IntoView {
     let open = open.unwrap_or(create_rw_signal(false));
+    let hidden = hidden.unwrap_or(create_rw_signal(false));
     let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
     let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
     view! {
-        <Provider value=MenuProviderContext{ open, modal, trigger_ref, content_ref, trigger_key}>
+        <Provider value=MenuProviderContext{ open, modal, hidden, trigger_ref, content_ref, trigger_key}>
             {   children()}
         </Provider>
     }
@@ -45,6 +50,7 @@ pub fn MenuTrigger(
 ) -> impl IntoView {
     let context = use_context::<MenuProviderContext>().expect("acces to menu context");
     let open = context.open;
+    let hidden = context.hidden;
     let trigger_ref = context.trigger_ref;
     match context.trigger_key {
         TriggerKey::Ltr => view! {
@@ -57,6 +63,7 @@ pub fn MenuTrigger(
                 }
                 on:click=move |_| {
                     open.set(true);
+                    hidden.set(false);
                 }
                 node_ref=trigger_ref>
                 {children.map(|children| children())}
@@ -72,6 +79,7 @@ pub fn MenuTrigger(
             on:contextmenu=move |evt| {
                 evt.prevent_default();
                 open.set(true);
+                hidden.set(false);
             }
             node_ref=trigger_ref>
                 {children.map(|children| children())}
@@ -86,6 +94,7 @@ pub fn MenuContent(
     #[prop(optional)] class: String,
     #[prop(optional)] children: Option<ChildrenFn>,
     #[prop(optional)] style: Option<Signal<String>>,
+    #[prop(optional)] ignore: Option<Vec<NodeRef<html::Div>>>,
 ) -> impl IntoView {
     let context = use_context::<MenuProviderContext>().expect("acces to menu context");
     let content_ref = context.content_ref;
@@ -101,33 +110,45 @@ pub fn MenuContent(
             }
         }
     });
-    let _ = on_click_outside(content_ref, move |_| {
-        if context.open.get() {
-            context.open.set(false)
-        }
-    });
-    if context.trigger_key == TriggerKey::Rtl {
-        let _ = use_event_listener(use_document(), contextmenu, move |_| {
+
+    let on_click_outside_options = if let Some(ignore) = ignore {
+        OnClickOutsideOptions::default().ignore(ignore)
+    } else {
+        OnClickOutsideOptions::default()
+    };
+    let _ = on_click_outside_with_options(
+        content_ref,
+        move |_| {
             if context.open.get() {
                 context.open.set(false)
             }
-        });
-    }
+        },
+        on_click_outside_options,
+    );
     let show = create_rw_signal(false);
     create_effect(move |_| {
         show.set(true);
     });
     let class = store_value(class);
     view! {
-        <Provider value=context.clone() clone:children>
-            <Show when=move || show.get()>
+        <Provider value=context.clone() >
+            <Show when=move || show.get() && context.open.get()>
+                {
+                    if context.trigger_key == TriggerKey::Rtl {
+                        let _ = use_event_listener(use_document(), contextmenu, move |_| {
+                            if context.open.get() {
+                                context.open.set(false)
+                            }
+                        });
+                    }
+                }
                 <Portal mount=document().get_element_by_id("app").expect("acces to app") clone:children>
                     <div style=move || if context.open.get() {
                         style.get()
                     } else {"".to_string()}  class=move || format!("{} {}", class.get_value(),
-                        match context.open.get() {
-                            true => "",
-                            false => "hidden"
+                        match context.hidden.get() {
+                            true => "hidden",
+                            false => ""
                         }
                     ) node_ref=content_ref>
                         {children.clone()}

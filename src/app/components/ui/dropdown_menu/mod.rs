@@ -19,17 +19,19 @@ pub fn DropdownProvider(
     #[prop(optional, default = true)] modal: bool,
     #[prop(optional)] trigger_ref: Option<NodeRef<html::Div>>,
     #[prop(optional)] content_ref: Option<NodeRef<html::Div>>,
+    #[prop(optional)] hidden: Option<RwSignal<bool>>,
 ) -> impl IntoView {
     let open = open.unwrap_or(create_rw_signal(false));
     let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
     let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
+    let hidden = hidden.unwrap_or(create_rw_signal(false));
     view! {
         <Provider value=DropdownProviderContext {
         trigger_ref,
         content_ref,
         open
         }>
-            <MenuProvider open=open modal=modal trigger_ref=trigger_ref content_ref=content_ref trigger_key=TriggerKey::Ltr>
+            <MenuProvider hidden=hidden open=open modal=modal trigger_ref=trigger_ref content_ref=content_ref trigger_key=TriggerKey::Ltr>
                 {children()}
             </MenuProvider>
         </Provider>
@@ -184,6 +186,7 @@ pub fn DropdownContent(
     #[prop(optional, default = MenuAlign::Center)] align: MenuAlign,
     #[prop(optional, default = 0.0)] align_of_set: f64,
     #[prop(default = None)] limit_y: Option<f64>,
+    #[prop(optional)] ignore: Vec<NodeRef<html::Div>>,
 ) -> impl IntoView {
     let context =
         use_context::<DropdownProviderContext>().expect("acces to DropdownProviderContext");
@@ -219,7 +222,7 @@ pub fn DropdownContent(
     });
 
     view! {
-        <MenuContent class=format!("absolute left-0 top-0 pointer-events-auto {}", class) style=position>
+        <MenuContent class=format!("absolute left-0 top-0 pointer-events-auto {}", class) ignore=ignore style=position>
             {children.clone()}
         </MenuContent>
     }

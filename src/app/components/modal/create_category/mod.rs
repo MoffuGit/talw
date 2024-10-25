@@ -13,6 +13,7 @@ pub fn CreateCategoryModal(
     on_click: Signal<()>,
     server_id: Uuid,
     #[prop(optional)] children: Option<Children>,
+    #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let open = create_rw_signal(false);
     let create_category = use_category().create_category;
@@ -30,7 +31,7 @@ pub fn CreateCategoryModal(
         });
     });
     view! {
-        <ModalProvider open=open on_close=Signal::derive(on_close)>
+        <ModalProvider content_ref=content_ref open=open on_close=Signal::derive(on_close)>
             <ModalTrigger class=class on_click=on_click>
                 {children.map(|children| children())}
             </ModalTrigger>

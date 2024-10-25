@@ -13,10 +13,11 @@ pub fn DeleteCategoryModal(
     server_id: Uuid,
     on_click: Signal<()>,
     #[prop(optional)] children: Option<Children>,
+    #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let delete_category = use_category().delete_category;
     view! {
-        <ModalProvider>
+        <ModalProvider content_ref=content_ref>
             <ModalTrigger class=class on_click=on_click>
                 {children.map(|children| children())}
             </ModalTrigger>

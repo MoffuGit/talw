@@ -11,6 +11,7 @@ pub fn CreatethreadModal(
     server_id: Uuid,
     class: &'static str,
     #[prop(optional)] children: Option<Children>,
+    #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let open = create_rw_signal(false);
     let create_thread = use_thread().create_thread;
@@ -30,7 +31,7 @@ pub fn CreatethreadModal(
         })
     });
     view! {
-        <ModalProvider open=open on_close=Signal::derive(on_close)>
+        <ModalProvider content_ref=content_ref open=open on_close=Signal::derive(on_close)>
             <ModalTrigger class=class >
                 {children.map(|children| children())}
             </ModalTrigger>

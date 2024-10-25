@@ -13,14 +13,19 @@ use leptos_icons::*;
 #[component]
 pub fn ServerMenu() -> impl IntoView {
     let open = create_rw_signal(false);
-    let on_click_item = Signal::derive(move || open.set(false));
+    let hidden = create_rw_signal(false);
+    let on_click_item = Signal::derive(move || hidden.set(true));
     let CurrentServerContext {
         server,
         member_can_edit,
         ..
     } = use_current_server_context();
+    let invite_people_node = create_node_ref::<html::Div>();
+    let create_channel_node = create_node_ref::<html::Div>();
+    let create_category_node = create_node_ref::<html::Div>();
+    let leave_server_node = create_node_ref::<html::Div>();
     view! {
-        <DropdownProvider open=open modal=false>
+        <DropdownProvider open=open modal=false hidden=hidden>
             <DropdownTrigger class="relative w-full cursor-pointer">
                 <div class="relative font-medium py-3 px-4 shadow shadow-base-300/80">
                     <div class="h-6 flex items-center">
@@ -39,9 +44,14 @@ pub fn ServerMenu() -> impl IntoView {
                     </div>
                 </div>
             </DropdownTrigger>/* transition ease-out */
-            <DropdownContent class=" transition-transform scale-100 origin-top w-[220px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded" side=MenuSide::Bottom side_of_set=12.0>
+            <DropdownContent ignore=vec![
+                invite_people_node,
+                create_channel_node,
+                create_category_node,
+                leave_server_node,
+            ] class=" transition-transform scale-100 origin-top w-[220px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded" side=MenuSide::Bottom side_of_set=12.0>
                 <div class="transition-transform scale-100 origin-top">
-                    <InvitePeopleModal invite_code=server.invite_code class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || open.set(false))>
+                    <InvitePeopleModal content_ref=invite_people_node invite_code=server.invite_code class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || open.set(false))>
                         <div class="group-hover:text-primary-content">"Invite People"</div>
                         <Icon icon=icondata::RiTeamUserFacesFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>
                     </InvitePeopleModal>
@@ -49,7 +59,7 @@ pub fn ServerMenu() -> impl IntoView {
                         if member_can_edit {
                             view! {
                                 <div class="divider relative my-0 mx-1 w-auto"/>
-                                <ServerMenuAdminItems on_click=on_click_item/>
+                                <ServerMenuAdminItems create_channel_node=create_channel_node create_category_node=create_category_node on_click=on_click_item/>
                             }.into_view()
                         } else {
                             ().into_view()
@@ -62,7 +72,7 @@ pub fn ServerMenu() -> impl IntoView {
                     {
                         if !member_can_edit {
                             view! {
-                                <ServerMenuGuestItems on_click=on_click_item/>
+                                <ServerMenuGuestItems leave_server_node=leave_server_node on_click=on_click_item/>
                             }
                         } else {
                             ().into_view()
@@ -76,7 +86,11 @@ pub fn ServerMenu() -> impl IntoView {
 
 #[allow(non_snake_case)]
 #[component]
-fn ServerMenuAdminItems(on_click: Signal<()>) -> impl IntoView {
+fn ServerMenuAdminItems(
+    on_click: Signal<()>,
+    create_channel_node: NodeRef<html::Div>,
+    create_category_node: NodeRef<html::Div>,
+) -> impl IntoView {
     let CurrentServerContext { server, .. } = use_current_server_context();
     view! {
         <div class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
@@ -84,12 +98,12 @@ fn ServerMenuAdminItems(on_click: Signal<()>) -> impl IntoView {
             <Icon icon=icondata::RiSettings5SystemFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>
         </div>
 
-        <CreateChannelModal on_click=on_click server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
+        <CreateChannelModal content_ref=create_channel_node on_click=on_click server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
             <div class="group-hover:text-primary-content">"Create Channel"</div>
             <Icon icon=icondata::RiAddCircleSystemFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>
         </CreateChannelModal>
 
-        <CreateCategoryModal on_click=on_click server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
+        <CreateCategoryModal content_ref=create_category_node on_click=on_click server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
                 <div class="group-hover:text-primary-content">"Create Category"</div>
                 <Icon icon=icondata::RiFolderAddDocumentFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>
         </CreateCategoryModal>
@@ -99,11 +113,14 @@ fn ServerMenuAdminItems(on_click: Signal<()>) -> impl IntoView {
 
 #[allow(non_snake_case)]
 #[component]
-fn ServerMenuGuestItems(on_click: Signal<()>) -> impl IntoView {
+fn ServerMenuGuestItems(
+    on_click: Signal<()>,
+    leave_server_node: NodeRef<html::Div>,
+) -> impl IntoView {
     let CurrentServerContext { server, .. } = use_current_server_context();
     view! {
         <div class="divider relative my-0 mx-1 w-auto"/>
-        <LeaveServer server=server class="flex justify-between text-error hover:text-error-content hover:bg-error items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=on_click>
+        <LeaveServer content_ref=leave_server_node server=server class="flex justify-between text-error hover:text-error-content hover:bg-error items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=on_click>
             <div class="group-hover:text-primary-content">"Leave Server"</div>
             <Icon icon=icondata::RiDoorOpenOthersFill class="w-[18px] h-[18px] ml-2 fill-error group-hover:fill-error-content"/>
         </LeaveServer>

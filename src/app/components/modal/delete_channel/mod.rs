@@ -13,6 +13,7 @@ pub fn DeleteChannel(
     class: &'static str,
     #[prop(optional)] on_click: Signal<()>,
     #[prop(optional)] children: Option<Children>,
+    #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let open = create_rw_signal(false);
     let delete_channel = use_channel().delete_channel;
@@ -24,7 +25,7 @@ pub fn DeleteChannel(
         });
     });
     view! {
-        <ModalProvider open=open>
+        <ModalProvider content_ref=content_ref open=open>
             <ModalTrigger class=class on_click=on_click>
                 {children.map(|children| children())}
             </ModalTrigger>

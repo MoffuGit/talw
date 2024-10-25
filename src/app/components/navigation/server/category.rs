@@ -21,7 +21,7 @@ use crate::entities::category::Category;
 #[component]
 pub fn Category(category: StoredValue<Category>) -> impl IntoView {
     let collapsible_open = create_rw_signal(false);
-    let context_menu_open = create_rw_signal(false);
+    let hidden_context_menu = create_rw_signal(false);
     let delete_category = use_category().delete_category;
     let create_channel_with_category = use_channel().create_channel_with_category;
     let delete_channel = use_channel().delete_channel;
@@ -47,10 +47,14 @@ pub fn Category(category: StoredValue<Category>) -> impl IntoView {
         move |_| get_channels_with_category(server.id, id),
     );
 
+    let create_channel_node = create_node_ref::<html::Div>();
+    let edit_category_node = create_node_ref::<html::Div>();
+    let delete_category_node = create_node_ref::<html::Div>();
+
     view! {
         <CollapsibleProvider open=collapsible_open>
             <CollapsibleTrigger class="relative mt-4 mb-0.5">
-                <ContextMenuProvider modal=false open=context_menu_open>
+                <ContextMenuProvider modal=false hidden=hidden_context_menu>
                     <ContextMenuTrigger class="cursor-pointer box-border pr-2 pl-2 flex items-center justify-between group">
                         <div class="flex flex-auto overflow-hidden items-center">
                             <Icon icon=icondata::RiArrowDownSArrowsLine class=MaybeProp::derive(move || Some(TextProp::from(format!("h-4 w-4 text-base-content/75 group-hover:text-base-content {}", {
@@ -79,14 +83,14 @@ pub fn Category(category: StoredValue<Category>) -> impl IntoView {
                             }
                         </div>
                     </ContextMenuTrigger>
-                    <ContextMenuContent class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40".to_string()>
-                        <CreateChannelModal server_id=server.id category_id=id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" category_name=name.get_value() on_click=Signal::derive(move || context_menu_open.set(false))>
+                    <ContextMenuContent ignore=vec![create_channel_node, edit_category_node, delete_category_node] class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40".to_string()>
+                        <CreateChannelModal content_ref=create_channel_node server_id=server.id category_id=id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" category_name=name.get_value() on_click=Signal::derive(move || hidden_context_menu.set(false))>
                             <div class="group-hover:text-primary-content">"Create Channel"</div>
                         </CreateChannelModal>
-                        <EditCategoryModal category=category.get_value() on_click=Signal::derive(move || context_menu_open.set(false)) class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" >
+                        <EditCategoryModal content_ref=edit_category_node category=category.get_value() on_click=Signal::derive(move || hidden_context_menu.set(false)) class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" >
                             <div class="group-hover:text-primary-content">"Rename Category"</div>
                         </EditCategoryModal>
-                        <DeleteCategoryModal category=category.get_value() server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || context_menu_open.set(false))>
+                        <DeleteCategoryModal content_ref=delete_category_node category=category.get_value() server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || hidden_context_menu.set(false))>
                             <div class="group-hover:text-primary-content">"Delete Category"</div>
                         </DeleteCategoryModal>
                     </ContextMenuContent>

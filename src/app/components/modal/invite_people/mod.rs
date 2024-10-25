@@ -8,10 +8,11 @@ pub fn InvitePeopleModal(
     on_click: Signal<()>,
     invite_code: Uuid,
     #[prop(optional)] children: Option<Children>,
+    #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let invite_ref = create_node_ref::<html::Div>();
     view! {
-        <ModalProvider>
+        <ModalProvider content_ref=content_ref>
             <ModalTrigger class=class on_click=on_click>
                 {children.map(|children| children())}
             </ModalTrigger>

@@ -51,7 +51,7 @@ pub fn ModalTrigger(
     view! {
         <div on:click=move |_| {
             // evt.stop_propagation();
-            is_open.update(|value| *value = !*value);
+            is_open.set(true);
             if let Some(on_click) = on_click {
                 on_click.get();
             }
@@ -77,7 +77,7 @@ pub fn ModalClose(
             {..attrs}
             on:click=move |_| {
                 if let Some(on_click) = on_click { on_click.get() }
-                is_open.update(|value| *value = false);
+                is_open.set(false);
             }
             class=class
         >
@@ -119,7 +119,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
                         {children.clone()}
                     </div>
                     <form method="dialog" class="modal-backdrop">
-                        <button on:click=move |_| is_open.update(|value| *value = false)/>
+                        <button on:click=move |_| is_open.set(false)/>
                     </form>
                 </dialog>
             </Portal>

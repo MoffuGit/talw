@@ -11,12 +11,13 @@ pub fn DeleteThreadModal(
     server_id: Uuid,
     class: &'static str,
     #[prop(optional)] children: Option<Children>,
+    content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let delete_thread = use_thread().delete_thread;
     let open = create_rw_signal(false);
     create_effect(move |_| delete_thread.version().with(|_| open.set(false)));
     view! {
-        <ModalProvider open=open>
+        <ModalProvider content_ref=content_ref open=open>
             <ModalTrigger class=class>
                 {children.map(|children| children())}
             </ModalTrigger>

@@ -13,7 +13,7 @@ pub fn ThreadHeader() -> impl IntoView {
     let server_id = use_current_server_context().server.id;
     let channel_id = move || use_current_channel().get().unwrap();
     view! {
-        <div class="relative shadow shadow-base-300/80 min-h-[48px] max-h-[48px] w-full flex justify-between align-middle p-2">
+        <div class="relative bg-base-300 shadow shadow-base-300/80 min-h-[48px] max-h-[48px] w-full flex justify-between align-middle p-2">
             <ThreadTitle/>
             <div class=" flex items-center space-x-2">
                 <ThreadMenu/>

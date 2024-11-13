@@ -30,21 +30,44 @@ pub struct AboutUser(pub Option<String>);
 
 #[cfg(feature = "ssr")]
 impl User {
-    pub async fn get_user_name_from_member(
-        member_id: Uuid,
+    pub async fn get_name_and_image_url(
+        user_id: Uuid,
         pool: &MySqlPool,
-    ) -> Result<String, Error> {
-        Ok(sqlx::query_as::<_, (String, )>("SELECT users.username FROM users JOIN members ON members.user_id = users.id WHERE members.id = ?")
-                    .bind(member_id)
-                    .fetch_one(pool)
-                    .await?.0)
+    ) -> Result<(String, Option<String>), Error> {
+        Ok(sqlx::query_as::<_, (String, Option<String>)>(
+            "SELECT users.username, users.image_url FROM users WHERE users.id = ?",
+        )
+        .bind(user_id)
+        .fetch_one(pool)
+        .await?)
     }
 
-    pub async fn get_from_member(member_id: Uuid, pool: &MySqlPool) -> Result<User, Error> {
-        Ok(sqlx::query_as::<_, User>("SELECT users.id, users.username, users.password, users.image_url FROM users JOIN members ON members.user_id = users.id WHERE members.id = ?")
-                    .bind(member_id)
-                    .fetch_one(pool)
-                    .await?)
+    pub async fn get_about(user_id: Uuid, pool: &MySqlPool) -> Result<AboutUser, Error> {
+        Ok(
+            sqlx::query_as::<_, AboutUser>("SELECT users.about FROM users WHERE users.id = ?")
+                .bind(user_id)
+                .fetch_one(pool)
+                .await?,
+        )
+    }
+    pub async fn get_user_name(user_id: Uuid, pool: &MySqlPool) -> Result<String, Error> {
+        Ok(
+            sqlx::query_as::<_, (String,)>("SELECT users.username FROM users WHERE users.id = ?")
+                .bind(user_id)
+                .fetch_one(pool)
+                .await?
+                .0,
+        )
+    }
+
+    pub async fn get_image_url(user_id: Uuid, pool: &MySqlPool) -> Result<Option<String>, Error> {
+        Ok(
+            sqlx::query_as::<_, (Option<String>,)>("SELECT image_url FROM users WHERE id = ?")
+                .bind(user_id)
+                .fetch_one(pool)
+                .await?
+                .0,
+        )
     }
     pub async fn get(id: Uuid, pool: &MySqlPool) -> Result<User, Error> {
         Ok(

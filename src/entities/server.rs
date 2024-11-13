@@ -34,7 +34,7 @@ impl Server {
                     .fetch_one(pool)
                     .await?.0)
     }
-    pub async fn get_mutual_servers_url(
+    pub async fn get_mutual_servers_image_url(
         user1: Uuid,
         user2: Uuid,
         pool: &MySqlPool,

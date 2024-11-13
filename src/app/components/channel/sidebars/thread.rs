@@ -2,12 +2,11 @@ use crate::app::api::server::get_server_roles;
 use crate::app::api::thread::{
     get_thread_members_with_role, get_thread_members_without_role, use_thread,
 };
+use crate::app::api::user::get_user_name_and_image_url;
 use crate::app::components::channel::member::banner::MemberBanner;
 use crate::app::components::channel::sidebars::server::CurrentMember;
 use crate::app::components::channel::sidebars::SideBarContext;
 use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
-use crate::app::routes::servers::server::use_current_server_context;
-use crate::entities::member::Member;
 use crate::entities::role::Role;
 use leptos::*;
 use uuid::Uuid;
@@ -47,9 +46,9 @@ pub fn ThreadMemberSideBar(server_id: Uuid, thread_id: Uuid) -> impl IntoView {
                                     <div class="flex flex-col items-stretch overflow-y-scroll overflow-x-hidden">
                                         {roles.iter().map(|role| view!{<Role role=role.clone() thread_id=thread_id/>}).collect_view()}
                                         <div class="pt-6 pr-2 pl-4 text-base">{format!("Online - {}", members.len())}</div>
-                                        {members.iter().map(|member| view!{<Member member=member.clone()/>}).collect_view()}
+                                        {members.iter().map(|member| view!{<Member member_id=member.id user_id=member.user_id/>}).collect_view()}
                                     </div>
-                                    <CurrentMember member=use_current_server_context().member />
+                                    <CurrentMember/>
                                 </div>
                             }.into_view()
                         }
@@ -74,7 +73,7 @@ pub fn Role(role: Role, thread_id: Uuid) -> impl IntoView {
                 Some(Ok(members)) if !members.is_empty() => {
                     view!{
                         <div class="pt-6 pr-2 pl-3 text-base">{format!("{} - {}", role.name, members.len())}</div>
-                        {members.iter().map(|member| view!{<Member member=member.clone()/>}).collect_view()}
+                        {members.iter().map(|member| view!{<Member member_id=member.id user_id=member.user_id/>}).collect_view()}
                     }.into_view()
 
                 },
@@ -85,25 +84,38 @@ pub fn Role(role: Role, thread_id: Uuid) -> impl IntoView {
 }
 
 #[component]
-pub fn Member(member: Member) -> impl IntoView {
-    let image_url = member.image_url.clone();
-    let name = member.name.clone();
+pub fn Member(user_id: Uuid, member_id: Uuid) -> impl IntoView {
+    let image_url_and_name =
+        create_resource(move || (), move |_| get_user_name_and_image_url(user_id));
     view! {
-        <MemberBanner side=MenuSide::Left align=MenuAlign::Start class="hover:bg-base-100/60 rounded mb-0.5 ml-3 mr-2 p-2 flex items-center" member=member>
+        <Transition fallback=move || ()>
             {
-                if let Some(url) = image_url {
-                    view! {
-                        <img class="rounded-full object-cover bg-base-100/80 w-8 h-8 mr-2" src=url/>
-                    }.into_view()
-                } else {
-                    view! {
-                        <div class="rounded-full bg-base-100/80 w-8 h-8 mr-2"/>
-                    }.into_view()
+                move || {
+                    image_url_and_name.and_then(|(name, image_url)| {
+                        let name = store_value(name.clone());
+                        let image_url = image_url.clone();
+                        view!{
+                            <MemberBanner side=MenuSide::Left align=MenuAlign::Start class="hover:bg-base-100/60 rounded mb-0.5 ml-3 mr-2 p-2 flex items-center" member_id=member_id user_id=user_id name=name.get_value() image_url=image_url.clone()>
+                                {
+                                    if let Some(url) = image_url {
+                                        view! {
+                                            <img class="rounded-full object-cover bg-base-100/80 w-9 h-9 mr-2" src=url/>
+                                        }.into_view()
+                                    } else {
+                                        view! {
+                                            <div class="rounded-full bg-base-100/80 w-9 h-9 mr-2"/>
+                                        }.into_view()
+                                    }
+                                }
+                                <div>
+                                    {name}
+                                </div>
+                            </MemberBanner>
+                        }
+                    })
                 }
             }
-            <div>
-                {name}
-            </div>
-        </MemberBanner>
+        </Transition>
+
     }
 }

@@ -15,7 +15,6 @@ cfg_if! {
         use crate::uploadthing::UploadThing;
         use crate::uploadthing::upload_file::FileData;
         use crate::entities::{category::Category, channel::Channel};
-        use crate::entities::user::User;
         use leptos_axum::redirect;
         use http::uri::Scheme;
         use http::Uri;
@@ -73,17 +72,6 @@ pub fn use_server() -> ServerContext {
     use_context::<ServerContext>().expect("have server context")
 }
 
-#[server(GetMutualServers)]
-pub async fn get_mutual_servers_url(member_id: Uuid) -> Result<Vec<Option<String>>, ServerFnError> {
-    let pool = pool()?;
-    let user1 = auth_user()?;
-
-    let user2 = User::get_from_member(member_id, &pool).await?;
-
-    let res = Server::get_mutual_servers_url(user1.id, user2.id, &pool).await;
-    Ok(res?)
-}
-
 #[server(GetServerRoles)]
 pub async fn get_server_roles(server_id: Uuid) -> Result<Vec<Role>, ServerFnError> {
     let pool = pool()?;
@@ -123,9 +111,7 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
     match Member::check_member_from_invitation(user.id, invitation, &pool).await {
         Ok(uuid) => redirect(&format!("/servers/{}", uuid)),
         Err(crate::entities::Error::NotFound) => {
-            match Member::create_member_from_invitation(user.id, invitation, user.username, &pool)
-                .await
-            {
+            match Member::create_member_from_invitation(user.id, invitation, &pool).await {
                 Ok(id) => redirect(&format!("/servers/{}", id)),
                 Err(crate::entities::Error::NotFound) => {
                     return Err(ServerFnError::new("Your invitation is invalid"))
@@ -207,7 +193,7 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
             }
         }
     }
-    Member::create(auth.id, server, auth.username, &pool).await?;
+    Member::create(auth.id, server, &pool).await?;
     Channel::create(
         "general".to_string(),
         crate::entities::channel::ChannelType::TEXT,

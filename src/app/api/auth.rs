@@ -1,3 +1,4 @@
+use super::user::get_user;
 use crate::entities::user::User;
 use cfg_if::cfg_if;
 use leptos::*;
@@ -44,12 +45,6 @@ pub fn provide_auth_context() {
 
 pub fn use_auth() -> AuthContext {
     use_context::<AuthContext>().expect("have auth context")
-}
-
-#[server(GetUser, "/api")]
-pub async fn get_user() -> Result<Option<User>, ServerFnError> {
-    let auth = auth()?;
-    Ok(auth.current_user)
 }
 
 #[server(Login, "/api")]

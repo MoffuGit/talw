@@ -1,5 +1,6 @@
 use crate::app::api::member::{get_member_name_and_url, get_thread_members};
 use crate::app::api::thread::{get_threads_from_channel, use_thread};
+use crate::app::api::user::get_user_image_url;
 use crate::app::components::menu::thread::ThreadMenuContent;
 use crate::app::components::modal::create_thread::CreatethreadModal;
 use crate::app::components::ui::context_menu::*;
@@ -146,10 +147,11 @@ pub fn ThreadMembers(thread_id: Uuid) -> impl IntoView {
                 {
                     move || {
                         thread_members.and_then(|thread_members| {
-                            thread_members.iter().map(|member| {
+                            thread_members.clone().into_iter().map(|member| {
+                                let image_url = create_resource(|| (), move |_| get_user_image_url(member.user_id));
                                 view!{
                                     {
-                                        if let Some(url) = &member.image_url {
+                                        move || if let Some(Ok(Some(url))) = image_url.get() {
                                             view! {
                                                 <img class="w-4 h-4 object-cover rounded-full mr-1" src=url/>
                                             }.into_view()

@@ -5,6 +5,7 @@ pub mod member;
 pub mod server;
 pub mod theme;
 pub mod thread;
+pub mod user;
 
 use cfg_if::cfg_if;
 use leptos::*;

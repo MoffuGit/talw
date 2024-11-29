@@ -12,7 +12,7 @@ use self::ev::MouseEvent;
 pub fn EditChannelModal(
     channel: Channel,
     class: &'static str,
-    #[prop(optional)] on_click: Option<Signal<()>>,
+    #[prop(optional)] on_click: Signal<()>,
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
@@ -27,21 +27,9 @@ pub fn EditChannelModal(
     };
     view! {
         <ModalProvider content_ref=content_ref open=open on_close=Signal::derive(on_close)>
-            {
-                if let Some(on_click) = on_click {
-                    view! {
-                        <ModalTrigger class=class on_click=on_click>
-                            {children.map(|children| children())}
-                        </ModalTrigger>
-                    }.into_view()
-                } else {
-                    view! {
-                        <ModalTrigger class=class>
-                            {children.map(|children| children())}
-                        </ModalTrigger>
-                    }.into_view()
-                }
-            }
+            <ModalTrigger class=class on_click=on_click>
+                {children.map(|children| children())}
+            </ModalTrigger>
             <ModalContent class="w-[440px] max-h-[720px] rounded p-0 h-auto overflow-hidden flex flex-col items-center" >
                 <div class="text-start p-[16px] w-full">
                     <h1 class="font-bold text-[24px] leading-[30px]">"Edit Channel"</h1>

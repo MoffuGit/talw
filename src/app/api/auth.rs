@@ -1,6 +1,7 @@
 use super::user::get_user;
 use crate::entities::user::User;
 use cfg_if::cfg_if;
+use futures::join;
 use leptos::*;
 
 cfg_if! {
@@ -56,7 +57,7 @@ pub async fn login(
     let pool = pool()?;
     let auth = auth()?;
 
-    let user = match User::get_from_username(username, &pool).await {
+    let user = match User::get_from_name(username, &pool).await {
         Ok(user) => user,
         Err(crate::entities::Error::NotFound) => {
             return Err(ServerFnError::new("This user don't exist"))
@@ -108,12 +109,16 @@ pub async fn signup(
         return Err(ServerFnError::new("Your password dont match"));
     }
 
-    let user = User::create(username.clone(), password, &pool)
-        .await
-        .map(|id| async move { User::get(id, &pool).await })?
-        .await?;
+    let user_id = User::create(username.clone(), password, &pool).await?;
 
-    auth.login_user(user.id);
+    let (profile, banner) = join!(
+        User::create_profile(username.clone(), user_id, &pool),
+        User::create_banner(user_id, &pool)
+    );
+    profile?;
+    banner?;
+
+    auth.login_user(user_id);
     auth.remember_user(remember.is_some());
     leptos_axum::redirect("/");
     Ok(())

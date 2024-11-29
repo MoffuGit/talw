@@ -12,7 +12,7 @@ pub fn Home() -> impl IntoView {
             {
                 move || {
                     use_auth().auth.get().map(|user| match user {
-                        Ok(Some(user)) => view! {<div>{user.username}</div>}.into_view(),
+                        Ok(Some(user)) => view! {<div>{user.name}</div>}.into_view(),
                         _ => view! {<div>"error with auth"</div>}.into_view(),
                     })
                 }

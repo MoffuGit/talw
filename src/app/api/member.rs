@@ -1,5 +1,6 @@
 use crate::entities::member::Member;
 use crate::entities::role::Role;
+use crate::entities::user::Profile;
 use cfg_if::cfg_if;
 use leptos::*;
 use uuid::Uuid;
@@ -14,14 +15,12 @@ cfg_if! {
 }
 
 #[server(GetMemberNameAndUrl)]
-pub async fn get_member_name_and_url(
-    member_id: Uuid,
-) -> Result<(String, Option<String>), ServerFnError> {
+pub async fn get_member_profile(member_id: Uuid) -> Result<Option<Profile>, ServerFnError> {
     let pool = pool()?;
     auth_user()?;
     let member = Member::get(member_id, &pool).await?;
 
-    Ok(User::get_name_and_image_url(member.user_id, &pool).await?)
+    Ok(User::get_profile(member.user_id, &pool).await.ok())
 }
 
 #[server(GetMember)]

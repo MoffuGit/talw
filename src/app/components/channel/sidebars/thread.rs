@@ -2,7 +2,7 @@ use crate::app::api::server::get_server_roles;
 use crate::app::api::thread::{
     get_thread_members_with_role, get_thread_members_without_role, use_thread,
 };
-use crate::app::api::user::get_user_name_and_image_url;
+use crate::app::api::user::{get_user_banner, get_user_profile};
 use crate::app::components::channel::member::banner::MemberBanner;
 use crate::app::components::channel::sidebars::server::CurrentMember;
 use crate::app::components::channel::sidebars::SideBarContext;
@@ -85,17 +85,16 @@ pub fn Role(role: Role, thread_id: Uuid) -> impl IntoView {
 
 #[component]
 pub fn Member(user_id: Uuid, member_id: Uuid) -> impl IntoView {
-    let image_url_and_name =
-        create_resource(move || (), move |_| get_user_name_and_image_url(user_id));
+    let profile = create_resource(move || (), move |_| get_user_profile(user_id));
     view! {
         <Transition fallback=move || ()>
             {
                 move || {
-                    image_url_and_name.and_then(|(name, image_url)| {
-                        let name = store_value(name.clone());
-                        let image_url = image_url.clone();
+                    profile.and_then(|profile| {
+                        let image_url = profile.image_url.clone();
+                        let name = profile.name.clone();
                         view!{
-                            <MemberBanner side=MenuSide::Left align=MenuAlign::Start class="hover:bg-base-100/60 rounded mb-0.5 ml-3 mr-2 p-2 flex items-center" member_id=member_id user_id=user_id name=name.get_value() image_url=image_url.clone()>
+                            <MemberBanner side=MenuSide::Left align=MenuAlign::Start class="hover:bg-base-100/60 rounded mb-0.5 ml-3 mr-2 p-2 flex items-center" member_id=member_id user_id=user_id profile=profile.clone() >
                                 {
                                     if let Some(url) = image_url {
                                         view! {

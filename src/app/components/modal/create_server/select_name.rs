@@ -18,12 +18,12 @@ pub fn SelectName() -> impl IntoView {
     let select_name_ref = use_create_server().select_name_ref;
     let user = move || {
         use_auth().auth.get().map(|user| match user {
-            Ok(Some(user)) => format!("{}'s server", user.username),
+            Ok(Some(user)) => format!("{}'s server", user.name),
             _ => "User".to_string(),
         })
     };
     let image_input_ref = create_node_ref::<Input>();
-    let image_preview_url = create_rw_signal::<String>("".into());
+    let image_preview_url = create_rw_signal::<Option<String>>(None);
 
     view! {
             <form on:submit=move |ev: SubmitEvent| {
@@ -33,7 +33,7 @@ pub fn SelectName() -> impl IntoView {
                 create_server.dispatch(form_data);
             }
             on:reset=move |_| {
-                image_preview_url.set("".to_string());
+                image_preview_url.set(None);
             }
             node_ref=select_name_ref
             >
@@ -50,13 +50,13 @@ pub fn SelectName() -> impl IntoView {
                             <input type="file" name="image" accept="image/*" class="absolute top-0 left-0 w-full h-20 opacity-0 z-50" node_ref=image_input_ref on:change=move |_| {
                                 if let Some(node) = image_input_ref.get() {
                                     if let Some(file) = node.files().and_then(|files| files.item(0)) {
-                                        image_preview_url.set(Url::create_object_url_with_blob(&Blob::from(file)).unwrap_or_default())
+                                        image_preview_url.set(Url::create_object_url_with_blob(&Blob::from(file)).ok())
                                     }
                                 }
                             } />
                             {
-                                move || match image_preview_url.get().len() {
-                                    0 => view!{
+                                move || match image_preview_url.get() {
+                                    None => view!{
                                         <div class="indicator w-20 h-20 flex flex-col justify-center items-center rounded-full border-2 border-base-content border-dashed relative z-30">
                                             <span class="indicator-item badge badge-primary translate-x-[11%] translate-y-[20%] w-[20px] h-[20px] p-0">
                                                 <Icon icon=icondata::RiAddSystemFill class="fill-primary-content w-4 h-4"/>
@@ -67,11 +67,14 @@ pub fn SelectName() -> impl IntoView {
                                             </div>
                                         </div>
                                     }.into_view(),
-                                    _ => view!{
-                                        <img class="w-20 h-20 object-cover absolute top-0 left-0 z-40 rounded-full" src=move || image_preview_url.get() on:load=move |_| {
-                                            let _ = Url::revoke_object_url(&image_preview_url.get());
-                                        }/>
-                                    }.into_view()
+                                    Some(url) => {
+                                        let url = store_value(url);
+                                        view!{
+                                            <img class="w-20 h-20 object-cover absolute top-0 left-0 z-40 rounded-full" src=url.get_value() on:load=move |_| {
+                                                let _ = Url::revoke_object_url(&url.get_value());
+                                            }/>
+                                        }.into_view()
+                                    }
                                 }
                             }
                         </div>

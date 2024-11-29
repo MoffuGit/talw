@@ -1,11 +1,12 @@
-use crate::app::api::member::{get_member_name_and_url, get_thread_members};
+use crate::app::api::member::{get_member_profile, get_thread_members};
 use crate::app::api::thread::{get_threads_from_channel, use_thread};
-use crate::app::api::user::get_user_image_url;
+use crate::app::api::user::get_user_profile;
 use crate::app::components::menu::thread::ThreadMenuContent;
 use crate::app::components::modal::create_thread::CreatethreadModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::entities::thread::Thread;
+use crate::entities::user::Profile;
 use icondata;
 use leptos::*;
 use leptos_icons::Icon;
@@ -89,8 +90,7 @@ pub fn ThreadLink(
     context_menu_ref: NodeRef<html::Div>,
     delete_thread_modal_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
-    let created_by_data =
-        create_resource(|| (), move |_| get_member_name_and_url(thread.created_by));
+    let created_by_profile = create_resource(|| (), move |_| get_member_profile(thread.created_by));
     let name = store_value(thread.name.to_string());
     let thread_id = thread.id;
     let thread = store_value(thread);
@@ -98,9 +98,11 @@ pub fn ThreadLink(
         <Transition fallback=move || ()>
             {
                 move || {
-                    created_by_data.and_then(|(created_by, member_url)| {
-                        let created_by = store_value(created_by.clone());
-                        let member_url = store_value(member_url.clone());
+                    created_by_profile.and_then(|profile| {
+                        //NOTE: only for now
+                        let profile = profile.as_ref().expect("should have a profile");
+                        let created_by = store_value(profile.name.clone());
+                        let member_url = store_value(profile.image_url.clone());
                         view!{
                             <ContextMenuProvider modal=false content_ref=context_menu_ref>
                                 <ContextMenuTrigger class="w-full h-auto">
@@ -148,12 +150,12 @@ pub fn ThreadMembers(thread_id: Uuid) -> impl IntoView {
                     move || {
                         thread_members.and_then(|thread_members| {
                             thread_members.clone().into_iter().map(|member| {
-                                let image_url = create_resource(|| (), move |_| get_user_image_url(member.user_id));
+                                let member_profile = create_resource(|| (), move |_| get_user_profile(member.user_id));
                                 view!{
                                     {
-                                        move || if let Some(Ok(Some(url))) = image_url.get() {
+                                        move || if let Some(Ok(Profile { image_url ,..})) = member_profile.get() {
                                             view! {
-                                                <img class="w-4 h-4 object-cover rounded-full mr-1" src=url/>
+                                                <img class="w-4 h-4 object-cover rounded-full mr-1" src=image_url/>
                                             }.into_view()
                                         } else {
                                             view! {

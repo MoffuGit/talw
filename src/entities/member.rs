@@ -153,7 +153,7 @@ impl Member {
     ) -> Result<Uuid, Error> {
         let id = Uuid::new_v4();
         let server_id = Server::get_from_invitation(invitation, pool).await?;
-        sqlx::query("INSERT INTO members (id, user_id, server_id, name) VALUES(?, ?, ?)")
+        sqlx::query("INSERT INTO members (id, user_id, server_id) VALUES(?, ?, ?)")
             .bind(id)
             .bind(user_id)
             .bind(server_id)

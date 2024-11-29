@@ -19,56 +19,48 @@ cfg_if! {
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct User {
     pub id: Uuid,
-    pub username: String,
+    pub name: String,
     pub password: String,
-    pub image_url: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
-pub struct AboutUser(pub Option<String>);
+pub struct Banner {
+    pub id: Uuid,
+    pub image_url: Option<String>,
+    pub primary_color: Option<String>,
+    pub accent_color: Option<String>,
+    pub about: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[cfg_attr(feature = "ssr", derive(FromRow))]
+pub struct Profile {
+    pub id: Uuid,
+    pub name: String,
+    pub image_url: Option<String>,
+}
 
 #[cfg(feature = "ssr")]
 impl User {
-    pub async fn get_name_and_image_url(
-        user_id: Uuid,
-        pool: &MySqlPool,
-    ) -> Result<(String, Option<String>), Error> {
-        Ok(sqlx::query_as::<_, (String, Option<String>)>(
-            "SELECT users.username, users.image_url FROM users WHERE users.id = ?",
-        )
-        .bind(user_id)
-        .fetch_one(pool)
-        .await?)
-    }
-
-    pub async fn get_about(user_id: Uuid, pool: &MySqlPool) -> Result<AboutUser, Error> {
+    pub async fn get_banner(user_id: Uuid, pool: &MySqlPool) -> Result<Banner, Error> {
         Ok(
-            sqlx::query_as::<_, AboutUser>("SELECT users.about FROM users WHERE users.id = ?")
+            sqlx::query_as::<_, Banner>("SELECT * FROM banners WHERE user_id = ?")
                 .bind(user_id)
                 .fetch_one(pool)
                 .await?,
         )
     }
-    pub async fn get_user_name(user_id: Uuid, pool: &MySqlPool) -> Result<String, Error> {
+
+    pub async fn get_profile(user_id: Uuid, pool: &MySqlPool) -> Result<Profile, Error> {
         Ok(
-            sqlx::query_as::<_, (String,)>("SELECT users.username FROM users WHERE users.id = ?")
+            sqlx::query_as::<_, Profile>("SELECT * FROM profiles WHERE user_id = ?")
                 .bind(user_id)
                 .fetch_one(pool)
-                .await?
-                .0,
+                .await?,
         )
     }
 
-    pub async fn get_image_url(user_id: Uuid, pool: &MySqlPool) -> Result<Option<String>, Error> {
-        Ok(
-            sqlx::query_as::<_, (Option<String>,)>("SELECT image_url FROM users WHERE id = ?")
-                .bind(user_id)
-                .fetch_one(pool)
-                .await?
-                .0,
-        )
-    }
     pub async fn get(id: Uuid, pool: &MySqlPool) -> Result<User, Error> {
         Ok(
             sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = ?")
@@ -78,29 +70,50 @@ impl User {
         )
     }
 
-    pub async fn get_from_username(username: String, pool: &MySqlPool) -> Result<User, Error> {
+    pub async fn get_from_name(name: String, pool: &MySqlPool) -> Result<User, Error> {
         Ok(
-            sqlx::query_as::<_, User>("SELECT * FROM users WHERE username = ?")
-                .bind(username)
+            sqlx::query_as::<_, User>("SELECT * FROM users WHERE name = ?")
+                .bind(name)
                 .fetch_one(pool)
                 .await?,
         )
     }
 
-    pub async fn create(
-        username: String,
-        password: String,
-        pool: &MySqlPool,
-    ) -> Result<Uuid, Error> {
+    pub async fn create(name: String, password: String, pool: &MySqlPool) -> Result<Uuid, Error> {
         let password = hash(password, DEFAULT_COST).unwrap();
         let id = Uuid::new_v4();
-        sqlx::query("INSERT INTO users (id, username, password) VALUES (?,?,?)")
+        sqlx::query("INSERT INTO users (id, name, password) VALUES (?,?,?)")
             .bind(id)
-            .bind(username)
+            .bind(name)
             .bind(password)
             .execute(pool)
             .await?;
         Ok(id)
+    }
+
+    pub async fn create_profile(
+        name: String,
+        user_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        let id = Uuid::new_v4();
+        sqlx::query("INSERT INTO profiles (id, name, user_id) VALUES (?,?,?)")
+            .bind(id)
+            .bind(name)
+            .bind(user_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn create_banner(user_id: Uuid, pool: &MySqlPool) -> Result<(), Error> {
+        let id = Uuid::new_v4();
+        sqlx::query("INSERT INTO banners (id,user_id) VALUES (?,?)")
+            .bind(id)
+            .bind(user_id)
+            .execute(pool)
+            .await?;
+        Ok(())
     }
 }
 

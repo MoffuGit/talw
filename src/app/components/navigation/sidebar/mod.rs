@@ -4,7 +4,6 @@ mod search;
 mod servers;
 use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
 use crate::app::components::ui::tool_tip::*;
-use crate::entities::user::User;
 use icondata;
 use leptos::*;
 use leptos_icons::*;
@@ -18,7 +17,7 @@ use self::servers::Servers;
 
 #[allow(non_snake_case)]
 #[component]
-pub fn SideBar(user: User) -> impl IntoView {
+pub fn SideBar() -> impl IntoView {
     view! {
         <div class="w-full h-full flex flex-col items-center py-2.5 bg-base-300 justify-between">
             <div class="flex w-full grow flex-col items-center scrollbar-none overflow-y-scroll overflow-x-hidden">
@@ -48,7 +47,7 @@ pub fn SideBar(user: User) -> impl IntoView {
                     <TooltipContent tip="Toggle Theme" class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"/>
                 </TooltipProvider>
             </div>
-            <Profile user=user/>
+            <Profile/>
         </div>
     }
 }

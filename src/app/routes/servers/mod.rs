@@ -4,7 +4,9 @@ pub mod server;
 pub mod thread;
 
 use crate::app::api::auth::use_auth;
+use crate::app::api::user::provide_user_context;
 use crate::app::components::navigation::sidebar::SideBar;
+use crate::app::components::overview::user::UserOverview;
 use leptos::*;
 use leptos_router::Outlet;
 use leptos_router::Redirect;
@@ -17,17 +19,18 @@ pub fn Servers() -> impl IntoView {
             {move || {
                 use_auth().auth.get().map(|result| match result {
                     Ok(Some(user)) => {
+                        provide_user_context(user.id);
                         view! {
-                            <div class="h-full w-full">
-                                <div class="flex w-[72px] h-full z-30 fixed inset-y-0">
-                                    <SideBar user=user/>
+                            <UserOverview >
+                                <div class="h-full w-full">
+                                    <div class="flex w-[72px] h-full z-30 fixed inset-y-0">
+                                        <SideBar />
+                                    </div>
+                                    <div class="h-full relative overflow-hidden md:pl-[72px]">
+                                        <Outlet/>
+                                    </div>
                                 </div>
-                                <div class="h-full relative overflow-hidden md:pl-[72px]">
-                                    <Outlet/>
-                                </div>
-                            </div>
-                            // <div id="float_container" class="absolute bg-transparent top-0 left-0 right-0 bottom-0">
-                            // </div>
+                            </UserOverview>
                         }.into_view()
                     },
                     _ => {

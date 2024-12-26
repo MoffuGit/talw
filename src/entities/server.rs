@@ -93,14 +93,18 @@ impl Server {
 
     pub async fn set_image_url(
         url: String,
+        key: String,
         server_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<(), Error> {
-        sqlx::query("UPDATE servers SET servers.image_url = ? WHERE servers.id = ?")
-            .bind(url)
-            .bind(server_id)
-            .execute(pool)
-            .await?;
+        sqlx::query(
+            "UPDATE servers SET servers.image_url = ?, servers.image_key = ? WHERE servers.id = ?",
+        )
+        .bind(url)
+        .bind(key)
+        .bind(server_id)
+        .execute(pool)
+        .await?;
         Ok(())
     }
 

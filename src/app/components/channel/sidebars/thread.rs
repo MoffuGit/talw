@@ -2,7 +2,7 @@ use crate::app::api::server::get_server_roles;
 use crate::app::api::thread::{
     get_thread_members_with_role, get_thread_members_without_role, use_thread,
 };
-use crate::app::api::user::{get_user_banner, get_user_profile};
+use crate::app::api::user::get_user_profile;
 use crate::app::components::channel::member::banner::MemberBanner;
 use crate::app::components::channel::sidebars::server::CurrentMember;
 use crate::app::components::channel::sidebars::SideBarContext;

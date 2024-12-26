@@ -115,6 +115,92 @@ impl User {
             .await?;
         Ok(())
     }
+
+    pub async fn get_banner_image_key(
+        user_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Option<String>, Error> {
+        Ok(sqlx::query_as::<_, (Option<String>,)>(
+            "SELECT banners.image_key FROM banners WHERE banners.user_id = ?",
+        )
+        .bind(user_id)
+        .fetch_one(pool)
+        .await?
+        .0)
+    }
+
+    pub async fn get_profile_image_key(
+        user_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Option<String>, Error> {
+        Ok(sqlx::query_as::<_, (Option<String>,)>(
+            "SELECT profiles.image_key FROM profiles WHERE profiles.user_id = ?",
+        )
+        .bind(user_id)
+        .fetch_one(pool)
+        .await?
+        .0)
+    }
+
+    pub async fn set_image_banner_url(
+        url: String,
+        key: String,
+        user_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        sqlx::query(
+            "UPDATE banners SET banners.image_url = ?, banners.image_key = ? WHERE banners.user_id = ?",
+        )
+        .bind(url)
+        .bind(key)
+        .bind(user_id)
+        .execute(pool)
+        .await?;
+        Ok(())
+    }
+
+    pub async fn set_image_profile_url(
+        url: String,
+        key: String,
+        user_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        let res = sqlx::query(
+            "UPDATE profiles SET profiles.image_url = ?, profiles.image_key = ? WHERE profiles.user_id = ?",
+        )
+        .bind(url)
+        .bind(key)
+        .bind(user_id)
+        .execute(pool)
+        .await;
+        println!("{res:?}");
+        Ok(())
+    }
+
+    pub async fn set_profile_name(
+        user_id: Uuid,
+        new_name: String,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        sqlx::query("UPDATE profiles SET profiles.name = ? WHERE profiles.user_id = ?")
+            .bind(new_name)
+            .bind(user_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+    pub async fn set_banner_about(
+        user_id: Uuid,
+        new_about: String,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        sqlx::query("UPDATE banners SET banners.about = ? WHERE banners.user_id = ?")
+            .bind(new_about)
+            .bind(user_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
 }
 
 #[async_trait]

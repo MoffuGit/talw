@@ -1,7 +1,7 @@
 use crate::app::api::member::get_member_roles;
 use crate::app::api::user::{get_mutual_servers_image_url, get_user_banner};
 use crate::app::components::ui::dropdown_menu::*;
-use crate::entities::user::{Banner, Profile};
+use crate::entities::user::Profile;
 use leptos::*;
 use leptos_use::use_document;
 use uuid::Uuid;

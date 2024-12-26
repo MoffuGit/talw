@@ -35,14 +35,21 @@ pub fn App() -> impl IntoView {
     provide_thread_context();
 
     //NOTE:
-    //add the member in the member list like in the video
-    //work in the overview for server settings, profile settings and server profile settings,
-    //add the entity for Messages, add a table for pinn messages inside a channel
-    //add the capacity to send messages
+    //keep working in the profile settings
+    //then go to appareance and move the theme
+    //select in there,
+    //work in the overview for server settings
+    //add the capacity to send messages and pin messages
     //add things to user stuff and search stuff servers stuff
+    //add notifications
     //add friends
     //add pinned channels and conversations
     //add the optin to change the width of the sidebar
+    //add the option to edit the theme of the app, give some default options and more complex
+    //settings
+    //add the email and phone number to the user, give the posibility of change the password
+    //add the voice channel, stream sound and meaby video
+    //check tauri for creating a desktop app and cellphone app
 
     //TODO:user_side_bar is waiting the roles and aboout
     //the roles are needed for the sidebar and groups of users
@@ -58,12 +65,6 @@ pub fn App() -> impl IntoView {
     //add the banner for your self, button for opening the settings
     //add the send message
     //add as friend and invite to server
-
-    //TODO:
-    //the topbar is missing the threads, the pinned messages and search
-    //the thread is part of the title and the group of threads
-    //the messages is for the gruop of pinned messages
-    //search is for latter, i want to add all the part before adding the capacity to search
 
     view! {
         <Stylesheet id="leptos" href="/pkg/TALW.css"/>

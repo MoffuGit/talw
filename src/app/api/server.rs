@@ -189,7 +189,7 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
                 )
                 .await
             {
-                Server::set_image_url(res.url, server, &pool).await?;
+                Server::set_image_url(res.url, res.key, server, &pool).await?;
             }
         }
     }

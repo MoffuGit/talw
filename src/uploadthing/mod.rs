@@ -79,6 +79,17 @@ impl UploadThing {
         }
     }
 
+    pub async fn delete_files(&self, files_key: Vec<String>) -> Result<(), Error> {
+        self.send_request(
+            "v6/deleteFiles",
+            &json!({
+                "fileKeys": files_key
+            }),
+        )
+        .await?;
+        Ok(())
+    }
+
     pub async fn list_files(&self) -> Result<ListFiles, Error> {
         self.list_files_with_options(ListFilesOpts::default()).await
     }

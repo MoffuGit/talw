@@ -110,7 +110,8 @@ pub fn TooltipTrigger(
     let trigger_ref = provider_context.trigger_ref;
 
     view! {
-        <div class=class
+        <div
+            class=class
             _ref=trigger_ref
             on:pointermove=move |evt: PointerEvent| {
                 if evt.pointer_type() == "touch" {
@@ -141,7 +142,7 @@ pub fn TooltipTrigger(
                 provider_context.on_open.get_untracked();
             }
         >
-        {children()}
+            {children()}
         </div>
     }
 }
@@ -243,7 +244,11 @@ pub fn TooltipContent(
     view! {
         <Show when=move || show.get() && is_open.get()>
             <Portal mount=document().get_element_by_id("app").unwrap() clone:tip>
-                <div _ref=content_ref style=move || format!("translate: {}px {}px;", position().0, position().1) class=format!("absolute z-50 left-0 top-0 animate-tooltip-open {}", class)>
+                <div
+                    _ref=content_ref
+                    style=move || format!("translate: {}px {}px;", position().0, position().1)
+                    class=format!("absolute z-50 left-0 top-0 animate-tooltip-open {}", class)
+                >
                     {tip.clone()}
                 </div>
             </Portal>

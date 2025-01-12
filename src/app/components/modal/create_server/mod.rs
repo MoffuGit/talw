@@ -84,17 +84,30 @@ pub fn CreateServerModal(
             <ModalTrigger class=class on_click=on_open>
                 {children()}
             </ModalTrigger>
-            <ModalContent class="w-[440px] max-h-[720px] rounded p-0 bg-none min-h-[200px] h-auto overflow-hidden flex items-center" >
-                <SlideProvider initial_value=inital_value slides=slides on_slide=Signal::derive(on_slide)>
+            <ModalContent class="w-[440px] max-h-[720px] rounded p-0 bg-none min-h-[200px] h-auto overflow-hidden flex items-center">
+                <SlideProvider
+                    initial_value=inital_value
+                    slides=slides
+                    on_slide=Signal::derive(on_slide)
+                >
                     <SlideViewport class="transition-height duration-400 ease-out overflow-hidden">
-                        <SlideContent value=0 class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 ">
-                            <SelectTemplate/>
+                        <SlideContent
+                            value=0
+                            class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 "
+                        >
+                            <SelectTemplate />
                         </SlideContent>
-                        <SlideContent value=1 class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 ">
-                            <JoinWithInvitation/>
+                        <SlideContent
+                            value=1
+                            class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 "
+                        >
+                            <JoinWithInvitation />
                         </SlideContent>
-                        <SlideContent value=2 class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 ">
-                            <SelectName/>
+                        <SlideContent
+                            value=2
+                            class="absolute flex-col items-center h-min duration-400 ease-in transition w-[440px] inset-0 "
+                        >
+                            <SelectName />
                         </SlideContent>
                     </SlideViewport>
                 </SlideProvider>

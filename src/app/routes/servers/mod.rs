@@ -17,26 +17,28 @@ pub fn Servers() -> impl IntoView {
     view! {
         <Transition fallback=move || ()>
             {move || {
-                use_auth().auth.get().map(|result| match result {
-                    Ok(Some(user)) => {
-                        provide_user_context(user.id);
-                        view! {
-                            <UserOverview >
-                                <div class="h-full w-full">
-                                    <div class="flex w-[72px] h-full z-30 fixed inset-y-0">
-                                        <SideBar />
+                use_auth()
+                    .auth
+                    .get()
+                    .map(|result| match result {
+                        Ok(Some(user)) => {
+                            provide_user_context(user.id);
+                            view! {
+                                <UserOverview>
+                                    <div class="h-full w-full">
+                                        <div class="flex w-[72px] h-full z-30 fixed inset-y-0">
+                                            <SideBar />
+                                        </div>
+                                        <div class="h-full relative overflow-hidden md:pl-[72px]">
+                                            <Outlet />
+                                        </div>
                                     </div>
-                                    <div class="h-full relative overflow-hidden md:pl-[72px]">
-                                        <Outlet/>
-                                    </div>
-                                </div>
-                            </UserOverview>
-                        }.into_view()
-                    },
-                    _ => {
-                        view!{<Redirect path="/"/>}.into_view()
-                    }
-                })
+                                </UserOverview>
+                            }
+                                .into_view()
+                        }
+                        _ => view! { <Redirect path="/" /> }.into_view(),
+                    })
             }}
         </Transition>
     }

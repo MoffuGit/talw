@@ -7,16 +7,17 @@ use crate::app::components::navigation::navbar::Navbar;
 #[component]
 pub fn Home() -> impl IntoView {
     view! {
-        <Navbar/>
+        <Navbar />
         <Suspense fallback=move || ()>
-            {
-                move || {
-                    use_auth().auth.get().map(|user| match user {
-                        Ok(Some(user)) => view! {<div>{user.name}</div>}.into_view(),
-                        _ => view! {<div>"error with auth"</div>}.into_view(),
+            {move || {
+                use_auth()
+                    .auth
+                    .get()
+                    .map(|user| match user {
+                        Ok(Some(user)) => view! { <div>{user.name}</div> }.into_view(),
+                        _ => view! { <div>"error with auth"</div> }.into_view(),
                     })
-                }
-            }
+            }}
         </Suspense>
     }
 }

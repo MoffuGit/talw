@@ -36,10 +36,14 @@ pub fn UserOverview(children: Children) -> impl IntoView {
     provide_context(UserOverviewContext { open, settings });
     view! {
         {children()}
-        <OverviewContent on_close=Signal::derive(move || {
-            settings.set(UserSettings::Account);
-        }) open=open class="w-full h-full flex items-center">
-            <UserSettingsSideBar/>
+        <OverviewContent
+            on_close=Signal::derive(move || {
+                settings.set(UserSettings::Account);
+            })
+            open=open
+            class="w-full h-full flex items-center"
+        >
+            <UserSettingsSideBar />
             <UserSettigsContent />
         </OverviewContent>
     }
@@ -56,11 +60,15 @@ pub fn UserOverviewTrigger(
     let open = context.open;
     let settings = context.settings;
     view! {
-        <OverviewTrigger on_click=Signal::derive(move || {
+        <OverviewTrigger
+            on_click=Signal::derive(move || {
                 if let Some(select_setting) = select_setting {
                     settings.set(select_setting)
                 }
-            }) open=open class=class>
+            })
+            open=open
+            class=class
+        >
             {children()}
         </OverviewTrigger>
     }

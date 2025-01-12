@@ -44,11 +44,11 @@ pub fn App() -> impl IntoView {
     //add notifications
     //add friends
     //add pinned channels and conversations
+    //add the voice channel, stream sound and meaby video
     //add the optin to change the width of the sidebar
     //add the option to edit the theme of the app, give some default options and more complex
     //settings
     //add the email and phone number to the user, give the posibility of change the password
-    //add the voice channel, stream sound and meaby video
     //check tauri for creating a desktop app and cellphone app
 
     //TODO:user_side_bar is waiting the roles and aboout
@@ -67,30 +67,33 @@ pub fn App() -> impl IntoView {
     //add as friend and invite to server
 
     view! {
-        <Stylesheet id="leptos" href="/pkg/TALW.css"/>
+        <Stylesheet id="leptos" href="/pkg/TALW.css" />
 
-        <Title text="Welcome to Leptos"/>
+        <Title text="Welcome to Leptos" />
 
-        <Theme/>
+        <Theme />
         <main id="app" class="w-full h-full overflow-hidden">
             <Router>
                 <Routes>
-                    <Route path="" view=|| view!{<Home/>}/>
-                    <Route path="servers" view=|| view!{<Servers/>}>
-                        <Route path="me" view=|| view! {<div>"user stuff"</div>}/>
-                        <Route path="discover" view=|| view! {<div>"search servers"</div>}/>
-                        <Route path="" view=|| view!{<div>"list of servers"</div>}/>
-                        <Route path=":id" view=|| view! {<Server/>} >
-                            <Route path=":channel_id" view=|| view!{<ChannelView/>}>
-                                <Route path=":thread_id" view=|| view!{<ThreadSplit/>}/>
-                                <Route path="" view=|| view!{<div/>}/>
+                    <Route path="" view=|| view! { <Home /> } />
+                    <Route path="servers" view=|| view! { <Servers /> }>
+                        <Route path="me" view=|| view! { <div>"user stuff"</div> } />
+                        <Route path="discover" view=|| view! { <div>"search servers"</div> } />
+                        <Route path="" view=|| view! { <div>"list of servers"</div> } />
+                        <Route path=":id" view=|| view! { <Server /> }>
+                            <Route path=":channel_id" view=|| view! { <ChannelView /> }>
+                                <Route path=":thread_id" view=|| view! { <ThreadSplit /> } />
+                                <Route path="" view=|| view! { <div /> } />
                             </Route>
-                            <Route path="thread/:channel_id/:thread_id" view=|| view!{<ThreadView/>}/>
-                            <Route path="" view=|| view!{<EmptyServer/>}/>
+                            <Route
+                                path="thread/:channel_id/:thread_id"
+                                view=|| view! { <ThreadView /> }
+                            />
+                            <Route path="" view=|| view! { <EmptyServer /> } />
                         </Route>
                     </Route>
-                    <Route path="login" view=move || view!{ <Login />}/>
-                    <Route path="signup" view=move || view!{ <Signup />}/>
+                    <Route path="login" view=move || view! { <Login /> } />
+                    <Route path="signup" view=move || view! { <Signup /> } />
                 </Routes>
             </Router>
         </main>

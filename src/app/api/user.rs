@@ -22,10 +22,11 @@ cfg_if! {
 pub struct UserContext {
     pub edit_banner_image: Action<FormData, Result<(), ServerFnError>>,
     pub edit_profile_image: Action<FormData, Result<(), ServerFnError>>,
-    pub banner: Resource<(usize, usize), Result<Banner, ServerFnError>>,
-    pub profile: Resource<(usize, usize), Result<Profile, ServerFnError>>,
+    pub banner: Resource<(usize, usize, usize), Result<Banner, ServerFnError>>,
+    pub profile: Resource<(usize, usize, usize), Result<Profile, ServerFnError>>,
     pub edit_profile_name: Action<EditUserName, Result<(), ServerFnError>>,
     pub edit_banner_about: Action<EditUserAbout, Result<(), ServerFnError>>,
+    pub edit_user_data: Action<EditUserData, Result<(), ServerFnError>>,
 }
 
 pub fn provide_user_context(user_id: Uuid) {
@@ -39,11 +40,13 @@ pub fn provide_user_context(user_id: Uuid) {
         edit_profile_image(data.into())
     });
     let edit_profile_name = create_server_action::<EditUserName>();
+    let edit_user_data = create_server_action::<EditUserData>();
     let banner = create_resource(
         move || {
             (
                 edit_banner_image.version().get(),
                 edit_banner_about.version().get(),
+                edit_user_data.version().get(),
             )
         },
         move |_| get_user_banner(user_id),
@@ -53,6 +56,7 @@ pub fn provide_user_context(user_id: Uuid) {
             (
                 edit_profile_image.version().get(),
                 edit_profile_name.version().get(),
+                edit_user_data.version().get(),
             )
         },
         move |_| get_user_profile(user_id),
@@ -65,6 +69,7 @@ pub fn provide_user_context(user_id: Uuid) {
         edit_banner_image,
         banner,
         profile,
+        edit_user_data,
     });
 }
 
@@ -72,6 +77,10 @@ pub fn provide_user_context(user_id: Uuid) {
 pub async fn edit_user_name(new_name: String) -> Result<(), ServerFnError> {
     let pool = pool()?;
     let auth = auth_user()?;
+
+    if new_name.is_empty() {
+        return Ok(());
+    }
 
     Ok(User::set_profile_name(auth.id, new_name, &pool).await?)
 }
@@ -81,7 +90,28 @@ pub async fn edit_user_about(new_about: String) -> Result<(), ServerFnError> {
     let pool = pool()?;
     let auth = auth_user()?;
 
+    if new_about.is_empty() {
+        return Ok(());
+    }
+
     Ok(User::set_banner_about(auth.id, new_about, &pool).await?)
+}
+
+#[server(EditUserData)]
+pub async fn edit_user_data(new_name: String, new_about: String) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    let auth = auth_user()?;
+
+    if new_name.is_empty() {
+        return Ok(());
+    }
+    User::set_profile_name(auth.id, new_name, &pool).await?;
+
+    if new_about.is_empty() {
+        return Ok(());
+    }
+    User::set_banner_about(auth.id, new_about, &pool).await?;
+    Ok(())
 }
 
 #[server(name = EditImageBanner, prefix = "/api", input = MultipartFormData)]

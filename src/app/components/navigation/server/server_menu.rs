@@ -29,55 +29,84 @@ pub fn ServerMenu() -> impl IntoView {
             <DropdownTrigger class="relative w-full cursor-pointer">
                 <div class="relative font-medium py-3 px-4 shadow shadow-base-300/80">
                     <div class="h-6 flex items-center">
-                        <div class="mr-2"/>
+                        <div class="mr-2" />
                         <p class="block mr-auto text-base overflow-hidden font-bold text-ellipsis whitespace-nowrap min-w-0">
                             {server.name}
                         </p>
-                        {
-                            move || {
-                                match open.get() {
-                                    true => view! { <Icon icon=icondata::RiCloseSystemLine class="relative"/> },
-                                    false => view! { <Icon icon=icondata::RiArrowDownSArrowsLine class="relative"/> }
+                        {move || {
+                            match open.get() {
+                                true => {
+                                    view! {
+                                        <Icon icon=icondata::RiCloseSystemLine class="relative" />
+                                    }
+                                }
+                                false => {
+                                    view! {
+                                        <Icon
+                                            icon=icondata::RiArrowDownSArrowsLine
+                                            class="relative"
+                                        />
+                                    }
                                 }
                             }
-                        }
+                        }}
                     </div>
                 </div>
-            </DropdownTrigger>/* transition ease-out */
-            <DropdownContent ignore=vec![
-                invite_people_node,
-                create_channel_node,
-                create_category_node,
-                leave_server_node,
-            ] class=" transition-transform scale-100 origin-top w-[220px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded" side=MenuSide::Bottom side_of_set=12.0>
+            </DropdownTrigger>
+            <DropdownContent
+                ignore=vec![
+                    invite_people_node,
+                    create_channel_node,
+                    create_category_node,
+                    leave_server_node,
+                ]
+                class=" transition-transform scale-100 origin-top w-[220px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded"
+                side=MenuSide::Bottom
+                side_of_set=12.0
+            >
                 <div class="transition-transform scale-100 origin-top">
-                    <InvitePeopleModal content_ref=invite_people_node invite_code=server.invite_code class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || open.set(false))>
+                    <InvitePeopleModal
+                        content_ref=invite_people_node
+                        invite_code=server.invite_code
+                        class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                        on_click=Signal::derive(move || open.set(false))
+                    >
                         <div class="group-hover:text-primary-content">"Invite People"</div>
-                        <Icon icon=icondata::RiTeamUserFacesFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>
+                        <Icon
+                            icon=icondata::RiTeamUserFacesFill
+                            class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"
+                        />
                     </InvitePeopleModal>
-                    {
-                        if member_can_edit {
-                            view! {
-                                <div class="divider relative my-0 mx-1 w-auto"/>
-                                <ServerMenuAdminItems create_channel_node=create_channel_node create_category_node=create_category_node on_click=on_click_item/>
-                            }.into_view()
-                        } else {
-                            ().into_view()
+                    {if member_can_edit {
+                        view! {
+                            <div class="divider relative my-0 mx-1 w-auto" />
+                            <ServerMenuAdminItems
+                                create_channel_node=create_channel_node
+                                create_category_node=create_category_node
+                                on_click=on_click_item
+                            />
                         }
-                    }
+                            .into_view()
+                    } else {
+                        ().into_view()
+                    }}
                     <div class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
                         <div class="group-hover:text-primary-content">"Edit Server Profile"</div>
-                        <Icon icon=icondata::RiPencilDesignFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>
+                        <Icon
+                            icon=icondata::RiPencilDesignFill
+                            class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"
+                        />
                     </div>
-                    {
-                        if !member_can_edit {
-                            view! {
-                                <ServerMenuGuestItems leave_server_node=leave_server_node on_click=on_click_item/>
-                            }
-                        } else {
-                            ().into_view()
+                    {if !member_can_edit {
+                        view! {
+                            <ServerMenuGuestItems
+                                leave_server_node=leave_server_node
+                                on_click=on_click_item
+                            />
                         }
-                    }
+                    } else {
+                        ().into_view()
+                    }}
                 </div>
             </DropdownContent>
         </DropdownProvider>
@@ -95,19 +124,38 @@ fn ServerMenuAdminItems(
     view! {
         <div class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
             <div class="group-hover:text-primary-content">"Server Settings"</div>
-            <Icon icon=icondata::RiSettings5SystemFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>
+            <Icon
+                icon=icondata::RiSettings5SystemFill
+                class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"
+            />
         </div>
 
-        <CreateChannelModal content_ref=create_channel_node on_click=on_click server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
+        <CreateChannelModal
+            content_ref=create_channel_node
+            on_click=on_click
+            server_id=server.id
+            class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+        >
             <div class="group-hover:text-primary-content">"Create Channel"</div>
-            <Icon icon=icondata::RiAddCircleSystemFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>
+            <Icon
+                icon=icondata::RiAddCircleSystemFill
+                class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"
+            />
         </CreateChannelModal>
 
-        <CreateCategoryModal content_ref=create_category_node on_click=on_click server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
-                <div class="group-hover:text-primary-content">"Create Category"</div>
-                <Icon icon=icondata::RiFolderAddDocumentFill class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"/>
+        <CreateCategoryModal
+            content_ref=create_category_node
+            on_click=on_click
+            server_id=server.id
+            class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+        >
+            <div class="group-hover:text-primary-content">"Create Category"</div>
+            <Icon
+                icon=icondata::RiFolderAddDocumentFill
+                class="w-[18px] h-[18px] ml-2 group-hover:fill-primary-content"
+            />
         </CreateCategoryModal>
-        <div class="divider relative my-0 mx-1 w-auto"/>
+        <div class="divider relative my-0 mx-1 w-auto" />
     }
 }
 
@@ -119,10 +167,18 @@ fn ServerMenuGuestItems(
 ) -> impl IntoView {
     let CurrentServerContext { server, .. } = use_current_server_context();
     view! {
-        <div class="divider relative my-0 mx-1 w-auto"/>
-        <LeaveServer content_ref=leave_server_node server=server class="flex justify-between text-error hover:text-error-content hover:bg-error items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=on_click>
+        <div class="divider relative my-0 mx-1 w-auto" />
+        <LeaveServer
+            content_ref=leave_server_node
+            server=server
+            class="flex justify-between text-error hover:text-error-content hover:bg-error items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+            on_click=on_click
+        >
             <div class="group-hover:text-primary-content">"Leave Server"</div>
-            <Icon icon=icondata::RiDoorOpenOthersFill class="w-[18px] h-[18px] ml-2 fill-error group-hover:fill-error-content"/>
+            <Icon
+                icon=icondata::RiDoorOpenOthersFill
+                class="w-[18px] h-[18px] ml-2 fill-error group-hover:fill-error-content"
+            />
         </LeaveServer>
     }
 }

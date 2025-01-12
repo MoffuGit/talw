@@ -15,7 +15,14 @@ pub fn ContextMenuProvider(
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     view! {
-        <MenuProvider hidden=hidden open=open modal=modal trigger_ref=trigger_ref content_ref=content_ref trigger_key=TriggerKey::Rtl>
+        <MenuProvider
+            hidden=hidden
+            open=open
+            modal=modal
+            trigger_ref=trigger_ref
+            content_ref=content_ref
+            trigger_key=TriggerKey::Rtl
+        >
             {children()}
         </MenuProvider>
     }
@@ -27,11 +34,7 @@ pub fn ContextMenuTrigger(
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] class: &'static str,
 ) -> impl IntoView {
-    view! {
-        <MenuTrigger class=class>
-            {children.map(|children| children())}
-        </MenuTrigger>
-    }
+    view! { <MenuTrigger class=class>{children.map(|children| children())}</MenuTrigger> }
 }
 
 #[allow(non_snake_case)]
@@ -52,7 +55,11 @@ pub fn ContextMenuContent(
     });
 
     view! {
-        <MenuContent class=format!("absolute left-0 top-0 pointer-events-auto {}", class) ignore=ignore style=position>
+        <MenuContent
+            class=format!("absolute left-0 top-0 pointer-events-auto {}", class)
+            ignore=ignore
+            style=position
+        >
             {children.clone()}
         </MenuContent>
     }

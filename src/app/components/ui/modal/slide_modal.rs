@@ -58,7 +58,11 @@ pub fn SlideForward(
         .slides;
 
     view! {
-        <button {..attrs} on:click=move |_| slides.update(move |slides| slides.push(value))  class=class>
+        <button
+            {..attrs}
+            on:click=move |_| slides.update(move |slides| slides.push(value))
+            class=class
+        >
             {children()}
         </button>
     }
@@ -75,7 +79,16 @@ pub fn SlideBack(
         .slides;
 
     view! {
-        <button {..attrs} on:click=move |_| slides.update(|slides| {slides.pop();}) class=class>
+        <button
+            {..attrs}
+            on:click=move |_| {
+                slides
+                    .update(|slides| {
+                        slides.pop();
+                    })
+            }
+            class=class
+        >
             {children()}
         </button>
     }
@@ -120,7 +133,7 @@ pub fn SlideContent(
     };
 
     view! {
-        <div _ref=content_ref class=class style= position>
+        <div _ref=content_ref class=class style=position>
             {children()}
         </div>
     }

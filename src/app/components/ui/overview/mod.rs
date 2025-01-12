@@ -11,13 +11,15 @@ pub fn OverviewTrigger(
     #[prop(optional)] open: RwSignal<bool>,
 ) -> impl IntoView {
     view! {
-        <div on:click=move |_| {
-            // evt.stop_propagation();
-            open.set(true);
-            if let Some(on_click) = on_click {
-                on_click.get();
+        <div
+            on:click=move |_| {
+                open.set(true);
+                if let Some(on_click) = on_click {
+                    on_click.get();
+                }
             }
-        } class=class>
+            class=class
+        >
             {children()}
         </div>
     }
@@ -35,7 +37,9 @@ pub fn OverviewClose(
         <button
             {..attrs}
             on:click=move |_| {
-                if let Some(on_click) = on_click { on_click.get() }
+                if let Some(on_click) = on_click {
+                    on_click.get()
+                }
                 open.set(false);
             }
             class=class
@@ -61,17 +65,22 @@ pub fn OverviewContent(
     });
     view! {
         <Show when=move || open.get()>
-            <Portal mount=document().get_element_by_id("app").expect("acces to the app") clone:children>
+            <Portal
+                mount=document().get_element_by_id("app").expect("acces to the app")
+                clone:children
+            >
                 {
-                    let _ = use_event_listener(use_document(), keydown, move |evt: KeyboardEvent| {
-                        if evt.key() == "Escape" {
-                            open.set(false)
-                        }
-                    });
+                    let _ = use_event_listener(
+                        use_document(),
+                        keydown,
+                        move |evt: KeyboardEvent| {
+                            if evt.key() == "Escape" {
+                                open.set(false)
+                            }
+                        },
+                    );
                 }
-                <div class=format!("z-[999] absolute inset-0 {}", class)>
-                    {children.clone()}
-                </div>
+                <div class=format!("z-[999] absolute inset-0 {}", class)>{children.clone()}</div>
             </Portal>
         </Show>
     }

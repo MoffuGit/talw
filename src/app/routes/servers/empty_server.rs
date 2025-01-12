@@ -23,9 +23,12 @@ pub fn EmptyServer() -> impl IntoView {
         <Transition fallback=move || ()>
             {move || match channels.get() {
                 None => view! {}.into_view(),
-                Some(Ok(channels)) if !channels.is_empty() => view! {<Redirect path=format!("{}", channels.first().unwrap().id.simple())/>}.into_view(),
-                Some(Ok(_)) => view! {<div>"Empty"</div>}.into_view(),
-                Some(Err(_)) => view! {<Redirect path="/servers/me"/>}.into_view()
+                Some(Ok(channels)) if !channels.is_empty() => {
+                    view! { <Redirect path=format!("{}", channels.first().unwrap().id.simple()) /> }
+                        .into_view()
+                }
+                Some(Ok(_)) => view! { <div>"Empty"</div> }.into_view(),
+                Some(Err(_)) => view! { <Redirect path="/servers/me" /> }.into_view(),
             }}
         </Transition>
     }

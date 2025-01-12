@@ -9,8 +9,8 @@ use profile::ProfilesSettings;
 pub fn AccountSettings() -> impl IntoView {
     view! {
         <div class="relative w-full h-full flex flex-col items-start">
-            <ProfilesSettings/>
-            <AuthenticationSettings/>
+            <ProfilesSettings />
+            <AuthenticationSettings />
         </div>
     }
 }

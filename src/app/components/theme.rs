@@ -22,18 +22,14 @@ pub fn Toggle_Theme(
 
     view! {
         <ActionForm action=toggle_theme class=class>
-            <input
-                type="hidden"
-                name="theme"
-                value=move || (!prefers_theme.get()).to_string()
-            />
+            <input type="hidden" name="theme" value=move || (!prefers_theme.get()).to_string() />
             <button type="submit" class="w-full h-full flex items-center justify-center">
-                {
-                    icons.clone().map(|icons| move || match prefers_theme.get() {
-                        true => view! {<Icon icon=icons.dark class=icons.class/>},
-                        false => view! {<Icon icon=icons.light class=icons.class/>}
-                    })
-                }
+                {icons
+                    .clone()
+                    .map(|icons| move || match prefers_theme.get() {
+                        true => view! { <Icon icon=icons.dark class=icons.class /> },
+                        false => view! { <Icon icon=icons.light class=icons.class /> },
+                    })}
             </button>
         </ActionForm>
     }

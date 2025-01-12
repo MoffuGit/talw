@@ -88,7 +88,7 @@ pub fn Theme() -> impl IntoView {
     };
 
     view! {
-        <Body class={move || format!("w-full h-screen font-satoshi {}", theme())}/>
+        <Body class=move || format!("w-full h-screen font-satoshi {}", theme()) />
         <Html attr:data-theme=theme />
     }
 }

@@ -37,9 +37,5 @@ pub fn CollapsibleContent(children: ChildrenFn) -> impl IntoView {
     let context = use_context::<CollapsibleProviderContext>().expect("have collapsible context");
     let is_open = context.is_open;
 
-    view! {
-        <Show when=move || is_open.get() >
-            {children()}
-        </Show>
-    }
+    view! { <Show when=move || is_open.get()>{children()}</Show> }
 }

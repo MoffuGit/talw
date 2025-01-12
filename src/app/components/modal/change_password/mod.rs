@@ -13,27 +13,13 @@ pub fn ChangePasswordModal(
     let _new_password = create_rw_signal(String::new());
     view! {
         <ModalProvider open=open content_ref=content_ref>
-            <ModalTrigger class=class>
-                {
-                    children.map(|children|children())
-                }
-            </ModalTrigger>
+            <ModalTrigger class=class>{children.map(|children| children())}</ModalTrigger>
             <ModalContent class="w-[440px] max-h-[720px] rounded p-0 h-auto overflow-hidden flex flex-col items-center">
-                <div>
-                    "Update your password"
-                </div>
-                <div>
-                    "Enter you current password and the new password"
-                </div>
-                <div>
-                    "old"
-                </div>
-                <div>
-                    "new"
-                </div>
-                <div>
-                    "confirm new"
-                </div>
+                <div>"Update your password"</div>
+                <div>"Enter you current password and the new password"</div>
+                <div>"old"</div>
+                <div>"new"</div>
+                <div>"confirm new"</div>
             </ModalContent>
         </ModalProvider>
     }

@@ -17,12 +17,10 @@ pub fn UserSettigsContent() -> impl IntoView {
     view! {
         <div class="relative h-full w-full bg-base-100 pt-8 pl-8">
             <div class="max-w-[740px] relative w-full h-full overflow-scroll flex flex-col items-start">
-                {
-                    move || match settings.get() {
-                        UserSettings::Account => AccountSettings.into_view(),
-                        UserSettings::Appearance => AppareanceSettings.into_view(),
-                    }
-                }
+                {move || match settings.get() {
+                    UserSettings::Account => AccountSettings.into_view(),
+                    UserSettings::Appearance => AppareanceSettings.into_view(),
+                }}
             </div>
         </div>
     }

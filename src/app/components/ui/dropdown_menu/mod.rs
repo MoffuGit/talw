@@ -27,11 +27,18 @@ pub fn DropdownProvider(
     let hidden = hidden.unwrap_or(create_rw_signal(false));
     view! {
         <Provider value=DropdownProviderContext {
-        trigger_ref,
-        content_ref,
-        open
+            trigger_ref,
+            content_ref,
+            open,
         }>
-            <MenuProvider hidden=hidden open=open modal=modal trigger_ref=trigger_ref content_ref=content_ref trigger_key=TriggerKey::Ltr>
+            <MenuProvider
+                hidden=hidden
+                open=open
+                modal=modal
+                trigger_ref=trigger_ref
+                content_ref=content_ref
+                trigger_key=TriggerKey::Ltr
+            >
                 {children()}
             </MenuProvider>
         </Provider>
@@ -44,11 +51,7 @@ pub fn DropdownTrigger(
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] class: &'static str,
 ) -> impl IntoView {
-    view! {
-        <MenuTrigger class=class>
-            {children.map(|children| children())}
-        </MenuTrigger>
-    }
+    view! { <MenuTrigger class=class>{children.map(|children| children())}</MenuTrigger> }
 }
 
 #[allow(dead_code)]
@@ -222,7 +225,11 @@ pub fn DropdownContent(
     });
 
     view! {
-        <MenuContent class=format!("absolute left-0 top-0 pointer-events-auto {}", class) ignore=ignore style=position>
+        <MenuContent
+            class=format!("absolute left-0 top-0 pointer-events-auto {}", class)
+            ignore=ignore
+            style=position
+        >
             {children.clone()}
         </MenuContent>
     }

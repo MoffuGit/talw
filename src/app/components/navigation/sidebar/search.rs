@@ -7,15 +7,18 @@ use std::time::Duration;
 #[component]
 pub fn Search() -> impl IntoView {
     view! {
-        <TooltipProvider delay_duration=Duration::new(0,0)>
+        <TooltipProvider delay_duration=Duration::new(0, 0)>
             <TooltipTrigger class="relative my-0.5">
                 <div class="flex relative items-center">
                     <div class="flex mx-3 my-1 transition-all items-center justify-center text-base-content w-[48px]">
-                        <Icon icon=icondata::RiSearchSystemLine class="h-6 w-6 fill-primary"/>
+                        <Icon icon=icondata::RiSearchSystemLine class="h-6 w-6 fill-primary" />
                     </div>
                 </div>
             </TooltipTrigger>
-            <TooltipContent tip="Search" class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"/>
+            <TooltipContent
+                tip="Search"
+                class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"
+            />
         </TooltipProvider>
     }
 }

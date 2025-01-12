@@ -16,7 +16,10 @@ pub fn PortalTrigger(class: &'static str) -> impl IntoView {
     let signal = use_context::<ContextPortal>().expect("signal").0;
 
     view! {
-        <button class=format!("w-10 h-5 {}", class) on:click=move |_| signal.update(|value| *value = true)/>
+        <button
+            class=format!("w-10 h-5 {}", class)
+            on:click=move |_| signal.update(|value| *value = true)
+        />
     }
 }
 
@@ -24,7 +27,10 @@ pub fn PortalTrigger(class: &'static str) -> impl IntoView {
 pub fn ClosePortal(#[prop(optional)] class: &'static str) -> impl IntoView {
     let context = use_context::<ContextPortal>().expect("signal");
     view! {
-        <button class=format!("w-10 h-5 {}", class) on:click=move |_| context.0.update(|value| *value=false)>
+        <button
+            class=format!("w-10 h-5 {}", class)
+            on:click=move |_| context.0.update(|value| *value = false)
+        >
             {context.1}
         </button>
     }
@@ -38,11 +44,9 @@ pub fn PortalContent(children: ChildrenFn, #[prop(optional)] class: &'static str
     view! {
         <Show when=move || signal.get()>
             <Provider value=context.clone() clone:children>
-            <Portal mount=document().get_element_by_id("app").expect("acces to the app") >
-                <div class=class>
-                     {children.clone()}
-                </div>
-            </Portal>
+                <Portal mount=document().get_element_by_id("app").expect("acces to the app")>
+                    <div class=class>{children.clone()}</div>
+                </Portal>
             </Provider>
         </Show>
     }

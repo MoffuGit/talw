@@ -28,46 +28,55 @@ pub fn Thread(channel_id: Uuid) -> impl IntoView {
     );
     view! {
         <Transition fallback=move || ()>
-            {
-                move || {
-                    threads.and_then(|threads| {
+            {move || {
+                threads
+                    .and_then(|threads| {
                         if let Some((channel_url, thread_url)) = use_current_thread().get() {
-                            if !threads.iter().any(|thread| thread.id == thread_url) && channel_id == channel_url {
+                            if !threads.iter().any(|thread| thread.id == thread_url)
+                                && channel_id == channel_url
+                            {
                                 let threads_is_empty = threads.is_empty();
-                                let thread = create_resource(move || (), move |_| get_thread(thread_url, channel_id));
-                                view!{
+                                let thread = create_resource(
+                                    move || (),
+                                    move |_| get_thread(thread_url, channel_id),
+                                );
+                                view! {
                                     <Transition fallback=move || ()>
-                                        {
-                                            move || {
-                                                thread.and_then(|thread| view!{
-                                                    <div class="flex h-auto ml-6 items-center">
-                                                        {
-                                                            if threads_is_empty {
-                                                                view!{
+                                        {move || {
+                                            thread
+                                                .and_then(|thread| {
+                                                    view! {
+                                                        <div class="flex h-auto ml-6 items-center">
+                                                            {if threads_is_empty {
+                                                                view! {
                                                                     <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
-                                                                        <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
+                                                                        <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
                                                                     </svg>
-                                                                }.into_view()
+                                                                }
+                                                                    .into_view()
                                                             } else {
-                                                                view!{
+                                                                view! {
                                                                     <div class="flex flex-col -space-y-1">
                                                                         <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
-                                                                            <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
+                                                                            <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
                                                                         </svg>
-                                                                        <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content rotate-90">
-                                                                            <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
+                                                                        <svg
+                                                                            viewBox="0 0 12 11"
+                                                                            class="h-[12px] fill-base-content rotate-90"
+                                                                        >
+                                                                            <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
                                                                         </svg>
                                                                     </div>
-                                                                }.into_view()
-                                                            }
-                                                        }
-                                                        <ThreadMenu thread=thread.clone()/>
-                                                    </div>
+                                                                }
+                                                                    .into_view()
+                                                            }} <ThreadMenu thread=thread.clone() />
+                                                        </div>
+                                                    }
                                                 })
-                                            }
-                                        }
+                                        }}
                                     </Transition>
-                                }.into_view()
+                                }
+                                    .into_view()
                             } else {
                                 ().into_view()
                             }
@@ -75,42 +84,48 @@ pub fn Thread(channel_id: Uuid) -> impl IntoView {
                             ().into_view()
                         }
                     })
-                }
-            }
-        </Transition >
+            }}
+        </Transition>
         <Transition fallback=move || ()>
-            {
-                move || {
-                    threads.and_then(|threads| {
+            {move || {
+                threads
+                    .and_then(|threads| {
                         let len = threads.len();
-                        threads.iter().enumerate().map(|(idx, thread)| view!{
-                            <div class="flex h-auto ml-6 items-center">
-                                {
-                                    if idx == len - 1 {
-                                        view!{
+                        threads
+                            .iter()
+                            .enumerate()
+                            .map(|(idx, thread)| {
+                                view! {
+                                    <div class="flex h-auto ml-6 items-center">
+                                        {if idx == len - 1 {
+                                            view! {
                                                 <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
-                                                    <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
+                                                    <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
                                                 </svg>
-                                        }.into_view()
-                                    } else {
-                                        view!{
-                                            <div class="flex flex-col -space-y-1">
-                                                <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
-                                                    <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
-                                                </svg>
-                                                <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content rotate-90">
-                                                    <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z"/>
-                                                </svg>
-                                            </div>
-                                        }.into_view()
-                                    }
+                                            }
+                                                .into_view()
+                                        } else {
+                                            view! {
+                                                <div class="flex flex-col -space-y-1">
+                                                    <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
+                                                        <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
+                                                    </svg>
+                                                    <svg
+                                                        viewBox="0 0 12 11"
+                                                        class="h-[12px] fill-base-content rotate-90"
+                                                    >
+                                                        <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
+                                                    </svg>
+                                                </div>
+                                            }
+                                                .into_view()
+                                        }} <ThreadMenu thread=thread.clone() />
+                                    </div>
                                 }
-                                <ThreadMenu thread=thread.clone()/>
-                            </div>
-                        }).collect_view()
+                            })
+                            .collect_view()
                     })
-                }
-            }
+            }}
         </Transition>
     }
 }
@@ -127,24 +142,41 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
     view! {
         <ContextMenuProvider modal=false open=open>
             <ContextMenuTrigger class="w-full h-auto">
-                <div class=move || format!("relative py-[1px] transition duration-200 ease-in-out delay-0 group rounded hover:bg-base-content/10 mt-0.5 w-full max-h-[32px] {}", match is_current_thread() {
-                    true => "bg-base-content/20",
-                    false => "",
-                })>
-                    <A href=move || format!("thread/{}/{}",thread.channel_id.simple(), thread.id.simple()) class="relative box-border flex flex-col cursor-pointer">
-                            <div class="relative flex flex-row group items-center py-[6px] px-2">
-                                <div class=move || format!("whitespace-nowrap overflow-hidden text-ellipsis text-[16px] mr-auto font-bold text-base-content/50 leading-5 flex-auto relative group-hover:text-base-content/75 {}", match is_current_thread() {
-                                    true => "text-base-content/60",
-                                    false => ""
-                                })>
-                                    {name.get_value()}
-                                </div>
-                            </div>
+                <div class=move || {
+                    format!(
+                        "relative py-[1px] transition duration-200 ease-in-out delay-0 group rounded hover:bg-base-content/10 mt-0.5 w-full max-h-[32px] {}",
+                        match is_current_thread() {
+                            true => "bg-base-content/20",
+                            false => "",
+                        },
+                    )
+                }>
+                    <A
+                        href=move || {
+                            format!("thread/{}/{}", thread.channel_id.simple(), thread.id.simple())
+                        }
+                        class="relative box-border flex flex-col cursor-pointer"
+                    >
+                        <div class="relative flex flex-row group items-center py-[6px] px-2">
+                            <div class=move || {
+                                format!(
+                                    "whitespace-nowrap overflow-hidden text-ellipsis text-[16px] mr-auto font-bold text-base-content/50 leading-5 flex-auto relative group-hover:text-base-content/75 {}",
+                                    match is_current_thread() {
+                                        true => "text-base-content/60",
+                                        false => "",
+                                    },
+                                )
+                            }>{name.get_value()}</div>
+                        </div>
                     </A>
                 </div>
             </ContextMenuTrigger>
             <ContextMenuContent ignore=vec![delete_thread_modal_ref] class="z-40".into()>
-                <ThreadMenuContent delete_thread_modal_ref=delete_thread_modal_ref thread=thread.clone() open=open/>
+                <ThreadMenuContent
+                    delete_thread_modal_ref=delete_thread_modal_ref
+                    thread=thread.clone()
+                    open=open
+                />
             </ContextMenuContent>
         </ContextMenuProvider>
     }

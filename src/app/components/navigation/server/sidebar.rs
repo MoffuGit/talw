@@ -56,52 +56,59 @@ pub fn ServerSideBar() -> impl IntoView {
     );
     let open = create_rw_signal(true);
     provide_context(ServerSideBarContext { open });
-    view!{
-            <div class="flex w-[240px] h-full relative inset-y-0 bg-base-200 z-40" style=move || if open.get() { "" } else { "visibility: collapse;" }>
-                <div class="w-full h-full flex flex-col items-center relative bg-base-200 scrollbar-none overflow-y-scroll overflow-x-hidden">
-                    <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
-                        <ServerMenu />
-                        <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
-                            <div class="h-3"/>
-                            <Transition fallback=move || ()>
-                                {
-                                    move || {
-                                        channels.with(|channels| {
-                                            match channels {
-                                                Some(Ok(channels)) => {
-                                                    channels.iter().map(|channel| {
-                                                        view! {<Channel channel=channel.clone() />}
-                                                    }).collect_view()
-                                                },
-                                                _ => view!{<div/>}.into_view()
+    view! {
+        <div
+            class="flex w-[240px] h-full relative inset-y-0 bg-base-200 z-40"
+            style=move || if open.get() { "" } else { "visibility: collapse;" }
+        >
+            <div class="w-full h-full flex flex-col items-center relative bg-base-200 scrollbar-none overflow-y-scroll overflow-x-hidden">
+                <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
+                    <ServerMenu />
+                    <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
+                        <div class="h-3" />
+                        <Transition fallback=move || ()>
+                            {move || {
+                                channels
+                                    .with(|channels| {
+                                        match channels {
+                                            Some(Ok(channels)) => {
+                                                channels
+                                                    .iter()
+                                                    .map(|channel| {
+                                                        view! { <Channel channel=channel.clone() /> }
+                                                    })
+                                                    .collect_view()
                                             }
-                                        })
-                                    }
-                                }
-                            </Transition>
-                            <Transition fallback=move || ()>
-                                {
-                                    move || {
-                                        categories.with(|categories| {
-                                            match categories  {
-                                                Some(Ok(categories)) => {
-                                                    categories.iter().map(|category| {
+                                            _ => view! { <div /> }.into_view(),
+                                        }
+                                    })
+                            }}
+                        </Transition>
+                        <Transition fallback=move || ()>
+                            {move || {
+                                categories
+                                    .with(|categories| {
+                                        match categories {
+                                            Some(Ok(categories)) => {
+                                                categories
+                                                    .iter()
+                                                    .map(|category| {
                                                         let category = store_value(category.clone());
-                                                        view! {<Category category=category />}
-                                                    }).collect_view()
-                                                },
-                                                _ => view!{<div/>}.into_view()
+                                                        view! { <Category category=category /> }
+                                                    })
+                                                    .collect_view()
                                             }
-                                        })
-                                    }
-                                }
-                            </Transition>
-                        </div>
+                                            _ => view! { <div /> }.into_view(),
+                                        }
+                                    })
+                            }}
+                        </Transition>
                     </div>
-                    <SideBarContextMenu server_id=server.id/>
                 </div>
+                <SideBarContextMenu server_id=server.id />
             </div>
-        }.into_view()
+        </div>
+    }.into_view()
 }
 
 #[component]
@@ -115,9 +122,7 @@ pub fn ServerSideBarTrigger(
 
     view! {
         <div class=class on:click=move |_| open.update(|open| *open = !*open)>
-            {
-                children.map(|children| children())
-            }
+            {children.map(|children| children())}
         </div>
     }
 }
@@ -128,13 +133,27 @@ fn SideBarContextMenu(server_id: Uuid) -> impl IntoView {
     let create_channel_node = create_node_ref();
     let create_category_node = create_node_ref();
     view! {
-        <ContextMenuProvider modal=false hidden=hidden >
-            <ContextMenuTrigger class="h-full w-full bg-none"/>
-            <ContextMenuContent ignore=vec![create_channel_node, create_category_node] class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40".to_string()>
-                <CreateChannelModal content_ref=create_channel_node server_id=server_id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || hidden.set(false))>
+        <ContextMenuProvider modal=false hidden=hidden>
+            <ContextMenuTrigger class="h-full w-full bg-none" />
+            <ContextMenuContent
+                ignore=vec![create_channel_node, create_category_node]
+                class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40"
+                    .to_string()
+            >
+                <CreateChannelModal
+                    content_ref=create_channel_node
+                    server_id=server_id
+                    class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                    on_click=Signal::derive(move || hidden.set(false))
+                >
                     <div class="group-hover:text-primary-content">"Create Channel"</div>
                 </CreateChannelModal>
-                <CreateCategoryModal content_ref=create_category_node server_id=server_id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || hidden.set(false))>
+                <CreateCategoryModal
+                    content_ref=create_category_node
+                    server_id=server_id
+                    class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                    on_click=Signal::derive(move || hidden.set(false))
+                >
                     <div class="group-hover:text-primary-content">"Create Category"</div>
                 </CreateCategoryModal>
             </ContextMenuContent>

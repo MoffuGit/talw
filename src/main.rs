@@ -66,7 +66,7 @@ async fn main() {
                 provide_context(app_state.uploadthing.clone());
                 provide_context(auth_session.clone())
             },
-            || view! {<App/>},
+            || view! { <App /> },
         );
         handler(req).await.into_response()
     }

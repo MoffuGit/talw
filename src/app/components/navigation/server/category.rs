@@ -57,57 +57,105 @@ pub fn Category(category: StoredValue<Category>) -> impl IntoView {
                 <ContextMenuProvider modal=false hidden=hidden_context_menu>
                     <ContextMenuTrigger class="cursor-pointer box-border pr-2 pl-2 flex items-center justify-between group">
                         <div class="flex flex-auto overflow-hidden items-center">
-                            <Icon icon=icondata::RiArrowDownSArrowsLine class=MaybeProp::derive(move || Some(TextProp::from(format!("h-4 w-4 text-base-content/75 group-hover:text-base-content {}", {
-                                match collapsible_open.get() {
-                                    true => "",
-                                    false =>"-rotate-90"
-                                }
-                            }))))/>
+                            <Icon
+                                icon=icondata::RiArrowDownSArrowsLine
+                                class=MaybeProp::derive(move || Some(
+                                    TextProp::from(
+                                        format!(
+                                            "h-4 w-4 text-base-content/75 group-hover:text-base-content {}",
+                                            {
+                                                match collapsible_open.get() {
+                                                    true => "",
+                                                    false => "-rotate-90",
+                                                }
+                                            },
+                                        ),
+                                    ),
+                                ))
+                            />
                             <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-bold tracking-wide text-base-content/75 group-hover:text-base-content mr-auto">
                                 {name.get_value()}
                             </div>
-                            {
-                                match member_can_edit {
-                                    true => view!{
-                                        <TooltipProvider delay_duration=Duration::new(0,5)>
+                            {match member_can_edit {
+                                true => {
+                                    view! {
+                                        <TooltipProvider delay_duration=Duration::new(0, 5)>
                                             <TooltipTrigger class="w-auto h-auto">
-                                                <CreateChannelModal server_id=server.id category_id=id class="w-auto h-auto" category_name=name.get_value()>
-                                                    <Icon icon=icondata::RiAddSystemFill class="w-4 h-4 fill-base-content/75 group-hover:text-base-content"/>
+                                                <CreateChannelModal
+                                                    server_id=server.id
+                                                    category_id=id
+                                                    class="w-auto h-auto"
+                                                    category_name=name.get_value()
+                                                >
+                                                    <Icon
+                                                        icon=icondata::RiAddSystemFill
+                                                        class="w-4 h-4 fill-base-content/75 group-hover:text-base-content"
+                                                    />
                                                 </CreateChannelModal>
                                             </TooltipTrigger>
-                                            <TooltipContent tip="Add Channel".to_string() tooltip_side=ToolTipSide::Top tooltip_of_side=22.0 class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-t-[#dfdfe2] dark:after:border-t-[#0d0d0d]" />
+                                            <TooltipContent
+                                                tip="Add Channel".to_string()
+                                                tooltip_side=ToolTipSide::Top
+                                                tooltip_of_side=22.0
+                                                class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-t-[#dfdfe2] dark:after:border-t-[#0d0d0d]"
+                                            />
                                         </TooltipProvider>
-                                    }.into_view(),
-                                    _ =>  view! {}.into_view()
+                                    }
+                                        .into_view()
                                 }
-                            }
+                                _ => view! {}.into_view(),
+                            }}
                         </div>
                     </ContextMenuTrigger>
-                    <ContextMenuContent ignore=vec![create_channel_node, edit_category_node, delete_category_node] class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40".to_string()>
-                        <CreateChannelModal content_ref=create_channel_node server_id=server.id category_id=id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" category_name=name.get_value() on_click=Signal::derive(move || hidden_context_menu.set(false))>
+                    <ContextMenuContent
+                        ignore=vec![create_channel_node, edit_category_node, delete_category_node]
+                        class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40"
+                            .to_string()
+                    >
+                        <CreateChannelModal
+                            content_ref=create_channel_node
+                            server_id=server.id
+                            category_id=id
+                            class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                            category_name=name.get_value()
+                            on_click=Signal::derive(move || hidden_context_menu.set(false))
+                        >
                             <div class="group-hover:text-primary-content">"Create Channel"</div>
                         </CreateChannelModal>
-                        <EditCategoryModal content_ref=edit_category_node category=category.get_value() on_click=Signal::derive(move || hidden_context_menu.set(false)) class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" >
+                        <EditCategoryModal
+                            content_ref=edit_category_node
+                            category=category.get_value()
+                            on_click=Signal::derive(move || hidden_context_menu.set(false))
+                            class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                        >
                             <div class="group-hover:text-primary-content">"Rename Category"</div>
                         </EditCategoryModal>
-                        <DeleteCategoryModal content_ref=delete_category_node category=category.get_value() server_id=server.id class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded" on_click=Signal::derive(move || hidden_context_menu.set(false))>
+                        <DeleteCategoryModal
+                            content_ref=delete_category_node
+                            category=category.get_value()
+                            server_id=server.id
+                            class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                            on_click=Signal::derive(move || hidden_context_menu.set(false))
+                        >
                             <div class="group-hover:text-primary-content">"Delete Category"</div>
                         </DeleteCategoryModal>
                     </ContextMenuContent>
                 </ContextMenuProvider>
             </CollapsibleTrigger>
             <CollapsibleContent>
-            <Transition fallback=move || ()>
-                {
-                    move || {
-                        channels.and_then(|channels| {
-                            channels.iter().map(|channel| {
-                                view! {<Channel channel=channel.clone() />}
-                            }).collect_view()
-                        })
-                    }
-                }
-            </Transition>
+                <Transition fallback=move || ()>
+                    {move || {
+                        channels
+                            .and_then(|channels| {
+                                channels
+                                    .iter()
+                                    .map(|channel| {
+                                        view! { <Channel channel=channel.clone() /> }
+                                    })
+                                    .collect_view()
+                            })
+                    }}
+                </Transition>
             </CollapsibleContent>
         </CollapsibleProvider>
     }

@@ -36,9 +36,14 @@ pub fn MenuProvider(
     let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
     let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
     view! {
-        <Provider value=MenuProviderContext{ open, modal, hidden, trigger_ref, content_ref, trigger_key}>
-            {   children()}
-        </Provider>
+        <Provider value=MenuProviderContext {
+            open,
+            modal,
+            hidden,
+            trigger_ref,
+            content_ref,
+            trigger_key,
+        }>{children()}</Provider>
     }
 }
 
@@ -56,34 +61,45 @@ pub fn MenuTrigger(
         TriggerKey::Ltr => view! {
             <div
                 class=move || {
-                    format!("{} {}", class, match open.get() {
-                        true => "pointer-events-none",
-                        false => ""
-                    })
+                    format!(
+                        "{} {}",
+                        class,
+                        match open.get() {
+                            true => "pointer-events-none",
+                            false => "",
+                        },
+                    )
                 }
                 on:click=move |_| {
                     open.set(true);
                     hidden.set(false);
                 }
-                node_ref=trigger_ref>
+                node_ref=trigger_ref
+            >
                 {children.map(|children| children())}
             </div>
         },
         TriggerKey::Rtl => view! {
-        <div class=move || {
-            format!("{} {}", class, match open.get() {
+            <div
+                class=move || {
+                    format!(
+                        "{} {}",
+                        class,
+                        match open.get() {
                             true => "pointer-events-auto",
-                            false => ""
-                            })
-            }
-            on:contextmenu=move |evt| {
-                evt.prevent_default();
-                open.set(true);
-                hidden.set(false);
-            }
-            node_ref=trigger_ref>
+                            false => "",
+                        },
+                    )
+                }
+                on:contextmenu=move |evt| {
+                    evt.prevent_default();
+                    open.set(true);
+                    hidden.set(false);
+                }
+                node_ref=trigger_ref
+            >
                 {children.map(|children| children())}
-        </div>
+            </div>
         },
     }
 }
@@ -131,26 +147,39 @@ pub fn MenuContent(
     });
     let class = store_value(class);
     view! {
-        <Provider value=context.clone() >
-            <Show when=move || show.get() && context.open.get()>
-                {
-                    if context.trigger_key == TriggerKey::Rtl {
-                        let _ = use_event_listener(use_document(), contextmenu, move |_| {
+        <Provider value=context.clone()>
+            <Show when=move || {
+                show.get() && context.open.get()
+            }>
+                {if context.trigger_key == TriggerKey::Rtl {
+                    let _ = use_event_listener(
+                        use_document(),
+                        contextmenu,
+                        move |_| {
                             if context.open.get() {
                                 context.open.set(false)
                             }
-                        });
-                    }
-                }
-                <Portal mount=document().get_element_by_id("app").expect("acces to app") clone:children>
-                    <div style=move || if context.open.get() {
-                        style.get()
-                    } else {"".to_string()}  class=move || format!("{} {}", class.get_value(),
-                        match context.hidden.get() {
-                            true => "hidden",
-                            false => ""
+                        },
+                    );
+                }}
+                <Portal
+                    mount=document().get_element_by_id("app").expect("acces to app")
+                    clone:children
+                >
+                    <div
+                        style=move || if context.open.get() { style.get() } else { "".to_string() }
+                        class=move || {
+                            format!(
+                                "{} {}",
+                                class.get_value(),
+                                match context.hidden.get() {
+                                    true => "hidden",
+                                    false => "",
+                                },
+                            )
                         }
-                    ) node_ref=content_ref>
+                        node_ref=content_ref
+                    >
                         {children.clone()}
                     </div>
                 </Portal>

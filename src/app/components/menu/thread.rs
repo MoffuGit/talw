@@ -27,80 +27,141 @@ pub fn ThreadMenuContent(
     );
     view! {
         <div class="w-[188px] h-auto bg-base-200 rounded-md flex flex-col items-center space-y-1 p-2">
-            <Transition fallback=move || () >
-                {
-                    move || {
-                        check_member_on_thread.and_then(|exist| {
+            <Transition fallback=move || ()>
+                {move || {
+                    check_member_on_thread
+                        .and_then(|exist| {
                             if *exist {
-                                view!{
-                                    <LeaveThread  thread_id=thread.id server_id=current_server_context.server.id class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"/>
-                                }.into_view()
+                                view! {
+                                    <LeaveThread
+                                        thread_id=thread.id
+                                        server_id=current_server_context.server.id
+                                        class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                                    />
+                                }
+                                    .into_view()
                             } else {
-                                view!{
-                                    <JoinThread  thread_id=thread.id server_id=current_server_context.server.id class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"/>
+                                view! {
+                                    <JoinThread
+                                        thread_id=thread.id
+                                        server_id=current_server_context.server.id
+                                        class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                                    />
                                 }
                             }
                         })
-                    }
-                }
+                }}
             </Transition>
-            {
-                move || {
-                    if let Some((channel_url, thread_url)) = use_current_thread().get() {
-                        if channel_url != thread.channel_id && thread_url != thread.id {
-                            view!{
-                                <A href=move || format!("/servers/{}/thread/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) on:click=move |_| open.set(false) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
-                                    "Open Full View"
-                                </A>
-                            }.into_view()
-                        } else {
-                            ().into_view()
-                        }
-                    } else {
-                        view!{
-                            <A href=move || format!("/servers/{}/thread/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) on:click=move |_| open.set(false) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
+            {move || {
+                if let Some((channel_url, thread_url)) = use_current_thread().get() {
+                    if channel_url != thread.channel_id && thread_url != thread.id {
+                        view! {
+                            <A
+                                href=move || {
+                                    format!(
+                                        "/servers/{}/thread/{}/{}",
+                                        current_server_context.server.id.simple(),
+                                        thread.channel_id.simple(),
+                                        thread.id.simple(),
+                                    )
+                                }
+                                on:click=move |_| open.set(false)
+                                class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                            >
                                 "Open Full View"
                             </A>
-                        }.into_view()
-                    }
-                }
-            }
-            {
-                move || {
-                    if let (Some(channel_url), Some(thread_url)) = (use_current_channel().get(), use_current_split_thread().get()) {
-                        if channel_url != thread.channel_id && thread_url != thread.id {
-                            view!{
-                                <A href=move || format!("/servers/{}/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) on:click=move |_| open.set(false) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
-                                    "Open Split View"
-                                </A>
-                            }.into_view()
-                        } else {
-                            ().into_view()
                         }
+                            .into_view()
                     } else {
-                        view!{
-                            <A href=move || format!("/servers/{}/{}/{}",current_server_context.server.id.simple(),thread.channel_id.simple(), thread.id.simple()) on:click=move |_| open.set(false) class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
+                        ().into_view()
+                    }
+                } else {
+                    view! {
+                        <A
+                            href=move || {
+                                format!(
+                                    "/servers/{}/thread/{}/{}",
+                                    current_server_context.server.id.simple(),
+                                    thread.channel_id.simple(),
+                                    thread.id.simple(),
+                                )
+                            }
+                            on:click=move |_| open.set(false)
+                            class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                        >
+                            "Open Full View"
+                        </A>
+                    }
+                        .into_view()
+                }
+            }}
+            {move || {
+                if let (Some(channel_url), Some(thread_url)) = (
+                    use_current_channel().get(),
+                    use_current_split_thread().get(),
+                ) {
+                    if channel_url != thread.channel_id && thread_url != thread.id {
+                        view! {
+                            <A
+                                href=move || {
+                                    format!(
+                                        "/servers/{}/{}/{}",
+                                        current_server_context.server.id.simple(),
+                                        thread.channel_id.simple(),
+                                        thread.id.simple(),
+                                    )
+                                }
+                                on:click=move |_| open.set(false)
+                                class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                            >
                                 "Open Split View"
                             </A>
-                        }.into_view()
-                    }
-                }
-            }
-            <Transition fallback=move || () >
-                {
-                    move || {
-                        if current_server_context.member_can_edit || current_server_context.member.id == thread.created_by {
-                            view!{
-                                <DeleteThreadModal content_ref=delete_thread_modal_ref thread_id=thread.id thread_name=thread_name.get_value() server_id=current_server_context.server.id class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2">
-                                    "Delete Thread"
-                                </DeleteThreadModal>
-                            }
-                        } else {
-                            ().into_view()
                         }
+                            .into_view()
+                    } else {
+                        ().into_view()
                     }
+                } else {
+                    view! {
+                        <A
+                            href=move || {
+                                format!(
+                                    "/servers/{}/{}/{}",
+                                    current_server_context.server.id.simple(),
+                                    thread.channel_id.simple(),
+                                    thread.id.simple(),
+                                )
+                            }
+                            on:click=move |_| open.set(false)
+                            class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                        >
+                            "Open Split View"
+                        </A>
+                    }
+                        .into_view()
                 }
-            </Transition >
+            }}
+            <Transition fallback=move || ()>
+                {move || {
+                    if current_server_context.member_can_edit
+                        || current_server_context.member.id == thread.created_by
+                    {
+                        view! {
+                            <DeleteThreadModal
+                                content_ref=delete_thread_modal_ref
+                                thread_id=thread.id
+                                thread_name=thread_name.get_value()
+                                server_id=current_server_context.server.id
+                                class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                            >
+                                "Delete Thread"
+                            </DeleteThreadModal>
+                        }
+                    } else {
+                        ().into_view()
+                    }
+                }}
+            </Transition>
         </div>
     }
 }

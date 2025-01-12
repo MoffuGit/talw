@@ -22,21 +22,22 @@ pub fn InvitePeopleModal(
                     <div class="mt-2 p-1 rounded bg-base-300/50 w-full h-8"></div>
                 </div>
                 <div class="w-full p-4 flex-col bg-base-200">
-                    <div class="font-bold text-[12px] mb-1 leading-[30px] uppercase">"or, send a server invite link to a friend"</div>
+                    <div class="font-bold text-[12px] mb-1 leading-[30px] uppercase">
+                        "or, send a server invite link to a friend"
+                    </div>
                     <div class="text-base w-full rounded h-[40px] bg-base-300 flex items-center justify-between">
                         <div class="p-2" node_ref=invite_ref>
                             {invite_code.simple().to_string()}
                         </div>
-                        <div class="btn-primary text-primary-content w-[75px] h-[32px] rounded m-1"
+                        <div class="btn-primary text-primary-content w-[75px] h-[32px] rounded m-1">
                             // on:click=move |_| {
-                            //     invite_ref.get().map(|node| {
-                            //         let text = node.inner_text();
-                            //         let window = use_window();
-                            //         let navigator = window.navigator();
-                            //         navigator.map(|navigator| navigator.clipboard().map(|clip| clip.write_text(text)));
-                            //     });
+                            // invite_ref.get().map(|node| {
+                            // let text = node.inner_text();
+                            // let window = use_window();
+                            // let navigator = window.navigator();
+                            // navigator.map(|navigator| navigator.clipboard().map(|clip| clip.write_text(text)));
+                            // });
                             // }
-                        >
                             "Copy"
                         </div>
                     </div>

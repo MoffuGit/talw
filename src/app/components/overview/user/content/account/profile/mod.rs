@@ -5,6 +5,7 @@ mod user_name;
 
 use banner_image::ImageBanner;
 use leptos::*;
+use leptos_router::ActionForm;
 use user_image::UserImage;
 
 use crate::app::api::user::use_user;
@@ -17,6 +18,7 @@ use self::user_name::UserName;
 pub struct ProfilesSettingsContext {
     profile: Profile,
     banner: Banner,
+    user_data_change: RwSignal<bool>,
 }
 
 #[component]
@@ -27,18 +29,14 @@ pub fn ProfilesSettings() -> impl IntoView {
     view! {
         <div class="font-bold text-xl mb-2">"My Profile"</div>
         <Transition fallback=move || ()>
-            {
-                move || {
-                    match (profile.get(), banner.get()) {
-                        (Some(Ok(profile)), Some(Ok(banner))) => {
-                            view!{
-                                <UserBanner banner=banner profile=profile/>
-                            }.into_view()
-                    },
-                        _ => view!{}.into_view()
+            {move || {
+                match (profile.get(), banner.get()) {
+                    (Some(Ok(profile)), Some(Ok(banner))) => {
+                        view! { <UserBanner banner=banner profile=profile /> }.into_view()
                     }
+                    _ => view! {}.into_view(),
                 }
-            }
+            }}
         </Transition>
     }
 }
@@ -46,15 +44,64 @@ pub fn ProfilesSettings() -> impl IntoView {
 #[component]
 fn UserBanner(banner: Banner, profile: Profile) -> impl IntoView {
     let primary_color_preview = create_rw_signal(banner.primary_color.clone());
-    provide_context(ProfilesSettingsContext { profile, banner });
+    let accent_color_preview = create_rw_signal(banner.accent_color.clone());
+    let user_data_change = create_rw_signal(false);
+    provide_context(ProfilesSettingsContext {
+        user_data_change,
+        profile,
+        banner,
+    });
+
+    let banner_style = move || {
+        let from = format!(
+            "--tw-gradient-from: {} var(--tw-gradient-from-position);",
+            primary_color_preview
+                .get()
+                .unwrap_or("hsl(var(--b2)/1)".into())
+        );
+        let to = format!(
+            "--tw-gradient-to: {} var(--tw-gradient-to-position);",
+            accent_color_preview
+                .get()
+                .unwrap_or("hsl(var(--b2) / 1)".into())
+        );
+        format!("{from} {to} --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);")
+    };
     view! {
-        <div class="relative w-full h-fit flex flex-col bg-base-200 rounded">
-            <ImageBanner primary_color_preview=primary_color_preview/>
+        <div
+            class="relative w-[600px] flex flex-col rounded-lg p-1.5 bg-gradient-to-b"
+            style=banner_style
+        >
+            <ImageBanner primary_color_preview=primary_color_preview />
             <UserImage />
-            <UserName/>
-            <UserAbout/>
-            <div class="">"Profile theme"</div>
-            <div>"You cant change the profile theme for now"</div>
+            <ActionForm
+                action=use_user().edit_user_data
+                class="flex flex-col items-start w-full relative pb-16"
+            >
+                <UserName />
+                <UserAbout />
+                <button
+                    type="submit"
+                    class=move || {
+                        format!(
+                            "absolute btn btn-primary rounded-md w-18 h-8 min-h-0 btn-sm bottom-4 right-8 {}",
+                            { if user_data_change.get() { "visible" } else { "invisible" } },
+                        )
+                    }
+                >
+                    "Save"
+                </button>
+                <input
+                    type="color"
+                    class="w-10 h-10"
+                    on:input=move |evt| primary_color_preview.set(Some(event_target_value(&evt)))
+                />
+                <input
+                    type="color"
+                    class="w-10 h-10"
+                    on:input=move |evt| accent_color_preview.set(Some(event_target_value(&evt)))
+                />
+            </ActionForm>
         </div>
     }
 }

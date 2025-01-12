@@ -31,9 +31,13 @@ pub fn ModalProvider(
     let dialog_ref = dialog_ref.unwrap_or(create_node_ref::<html::Dialog>());
 
     view! {
-        <Provider value=ModalProviderContext{open, on_close, trigger_ref, content_ref, dialog_ref}>
-            {children()}
-        </Provider>
+        <Provider value=ModalProviderContext {
+            open,
+            on_close,
+            trigger_ref,
+            content_ref,
+            dialog_ref,
+        }>{children()}</Provider>
     }
 }
 
@@ -49,13 +53,16 @@ pub fn ModalTrigger(
     let trigger_ref = context.trigger_ref;
 
     view! {
-        <div on:click=move |_| {
-            // evt.stop_propagation();
-            is_open.set(true);
-            if let Some(on_click) = on_click {
-                on_click.get();
+        <div
+            on:click=move |_| {
+                is_open.set(true);
+                if let Some(on_click) = on_click {
+                    on_click.get();
+                }
             }
-        } class=class node_ref=trigger_ref>
+            class=class
+            node_ref=trigger_ref
+        >
             {children()}
         </div>
     }
@@ -76,7 +83,9 @@ pub fn ModalClose(
         <button
             {..attrs}
             on:click=move |_| {
-                if let Some(on_click) = on_click { on_click.get() }
+                if let Some(on_click) = on_click {
+                    on_click.get()
+                }
                 is_open.set(false);
             }
             class=class
@@ -111,15 +120,24 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
     create_effect(move |_| show.update(|value| *value = true));
     view! {
         <Show when=move || show.get()>
-            <Portal mount=document().get_element_by_id("app").expect("acces to the app") clone:children>
-                <dialog class="modal" node_ref=dialog_ref on:close=move |_| {
-                    if let Some(on_close) = on_close { on_close.get() }
-                }>
+            <Portal
+                mount=document().get_element_by_id("app").expect("acces to the app")
+                clone:children
+            >
+                <dialog
+                    class="modal"
+                    node_ref=dialog_ref
+                    on:close=move |_| {
+                        if let Some(on_close) = on_close {
+                            on_close.get()
+                        }
+                    }
+                >
                     <div class=format!("modal-box {}", class) node_ref=content_ref>
                         {children.clone()}
                     </div>
                     <form method="dialog" class="modal-backdrop">
-                        <button on:click=move |_| is_open.set(false)/>
+                        <button on:click=move |_| is_open.set(false) />
                     </form>
                 </dialog>
             </Portal>

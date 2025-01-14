@@ -169,13 +169,13 @@ pub fn get_tooltip_position(
     let (x, width) = (trigger_values.x(), trigger.offset_width());
     match tooltip_side {
         ToolTipSide::Bottom => {
-            let y = y + f64::from(width) + tooltip_of_side;
+            let y = y + f64::from(height) + tooltip_of_side;
             let x = x + (f64::from(width) / 2.0) - (f64::from(content_width) / 2.0);
             (x.to_string(), y.to_string())
         }
         ToolTipSide::Left => {
             let y = y + (f64::from(height) / 2.0) - (f64::from(content_height) / 2.0);
-            let x = x - f64::from(width) - tooltip_of_side;
+            let x = x - f64::from(content_width) - tooltip_of_side;
             (x.to_string(), y.to_string())
         }
         ToolTipSide::Right => {
@@ -184,7 +184,7 @@ pub fn get_tooltip_position(
             (x.to_string(), y.to_string())
         }
         ToolTipSide::Top => {
-            let y = y - f64::from(width) - tooltip_of_side;
+            let y = y - f64::from(content_height) - tooltip_of_side;
             let x = x + (f64::from(width) / 2.0) - (f64::from(content_width) / 2.0);
             (x.to_string(), y.to_string())
         }

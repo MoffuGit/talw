@@ -1,6 +1,8 @@
 use cfg_if::cfg_if;
 use leptos::*;
-use leptos_meta::{Body, Html};
+use leptos_meta::{Body, Html, Script};
+
+use self::html::Head;
 
 #[server(ToggleTheme, "/api")]
 pub async fn toggle_theme(theme: bool) -> Result<bool, ServerFnError> {
@@ -88,7 +90,12 @@ pub fn Theme() -> impl IntoView {
     };
 
     view! {
-        <Body class=move || format!("w-full h-screen font-satoshi {}", theme()) />
         <Html attr:data-theme=theme />
+        <head>
+            <link rel="preconnect" href="https://fonts.googleapis.com"/>
+            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+            <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet"/>
+        </head>
+        <Body class=move || format!("w-full h-screen font-geist {}", theme()) />
     }
 }

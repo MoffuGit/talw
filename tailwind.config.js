@@ -12,6 +12,7 @@ module.exports = {
     },
     extend: {
       fontFamily: {
+        geist: ["Geist", "sans-serif"],
         satoshi: ["Satoshi", "sans-serif"],
       },
       transitionProperty: {

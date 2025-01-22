@@ -33,25 +33,25 @@ pub fn ServerMemberSideBar(server_id: uuid::Uuid) -> impl IntoView {
                                         .iter()
                                         .map(|role| view! { <Role role=role.clone() /> })
                                         .collect_view()} <CollapsibleProvider open=open>
-                                        <CollapsibleTrigger class="pt-6 pr-2 pl-3 text-base cursor-pointer box-border flex items-center justify-between group">
-                                            <div class="flex flex-auto overflow-hidden items-center">
+                                        <CollapsibleTrigger class="pt-6 px-2 select-none text-base cursor-pointer box-border flex items-center justify-between">
+                                            <div class="flex flex-auto overflow-hidden items-center p-2 rounded-lg hover:bg-base-content/5">
                                                 <Icon
-                                                    icon=icondata::RiArrowDownSArrowsLine
+                                                    icon=icondata::LuChevronRight
                                                     class=MaybeProp::derive(move || Some(
                                                         TextProp::from(
                                                             format!(
-                                                                "h-4 w-4 text-base-content/75 group-hover:text-base-content {}",
+                                                                "h-4 w-4 {}",
                                                                 {
                                                                     match open.get() {
-                                                                        true => "",
-                                                                        false => "-rotate-90",
+                                                                        true => "rotate-90",
+                                                                        false => "",
                                                                     }
                                                                 },
                                                             ),
                                                         ),
                                                     ))
                                                 />
-                                                <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-bold tracking-wide text-base-content/75 group-hover:text-base-content mr-auto">
+                                                <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-semibold tracking-wide mr-auto">
                                                     {format!("Online - {}", member_count)}
                                                 </div>
                                             </div>
@@ -100,26 +100,28 @@ pub fn CurrentMember() -> impl IntoView {
                             <MemberBanner
                                 side=MenuSide::Left
                                 align=MenuAlign::Start
-                                class="p-2 flex items-center bg-gradient-to-l from-base-100"
+                                class="p-2 relative flex items-center border-0 border-t border-t-base-100"
                                 user_id=user_id
                                 member_id=member_id
                                 profile=profile.clone()
                             >
-                                {if let Some(url) = image_url {
-                                    view! {
-                                        <img
-                                            class="rounded-full object-cover bg-base-100/80 w-9 h-9 mr-2"
-                                            src=url
-                                        />
-                                    }
-                                        .into_view()
-                                } else {
-                                    view! {
-                                        <div class="rounded-full bg-base-100/80 w-9 h-9 mr-2" />
-                                    }
-                                        .into_view()
-                                }}
-                                <div>{name.get_value()}</div>
+                                <div class="p-1 hover:bg-base-content/5 rounded-lg flex items-center relative cursor-pointer select-none grow">
+                                    {if let Some(url) = image_url {
+                                        view! {
+                                            <img
+                                                class="rounded-full object-cover w-9 h-9 mr-2"
+                                                src=url
+                                            />
+                                        }
+                                            .into_view()
+                                    } else {
+                                        view! {
+                                            <div class="rounded-full bg-base-content/10 w-9 h-9 mr-2" />
+                                        }
+                                            .into_view()
+                                    }}
+                                    <div>{name.get_value()}</div>
+                                </div>
                             </MemberBanner>
                         }
                             .into_view()
@@ -141,7 +143,7 @@ pub fn Role(role: Role) -> impl IntoView {
                 let member_count = members.len();
                 view! {
                     <CollapsibleProvider open=open>
-                        <CollapsibleTrigger class="pt-6 pr-2 pl-3 text-base cursor-pointer box-border flex items-center justify-between group">
+                        <CollapsibleTrigger class="pt-6 pr-2 pl-3 text-base cursor-pointer box-border flex items-center justify-between">
                             <div class="flex flex-auto overflow-hidden items-center">
                                 <Icon
                                     icon=icondata::RiArrowDownSArrowsLine
@@ -195,7 +197,7 @@ pub fn Member(user_id: Uuid, member_id: Uuid) -> impl IntoView {
                             <MemberBanner
                                 side=MenuSide::Left
                                 align=MenuAlign::Start
-                                class="hover:bg-base-100/60 rounded mb-0.5 ml-3 mr-2 p-2 flex items-center"
+                                class="hover:bg-base-content/5 rounded-lg mb-0.5 ml-3 mr-2 p-2 flex items-center select-none cursor-pointer"
                                 member_id=member_id
                                 user_id=user_id
                                 profile=profile.clone()
@@ -203,14 +205,14 @@ pub fn Member(user_id: Uuid, member_id: Uuid) -> impl IntoView {
                                 {if let Some(url) = image_url {
                                     view! {
                                         <img
-                                            class="rounded-full object-cover bg-base-100/80 w-9 h-9 mr-2"
+                                            class="rounded-full object-cover w-9 h-9 mr-2"
                                             src=url
                                         />
                                     }
                                         .into_view()
                                 } else {
                                     view! {
-                                        <div class="rounded-full bg-base-100/80 w-9 h-9 mr-2" />
+                                        <div class="rounded-full bg-base-content/10 w-9 h-9 mr-2" />
                                     }
                                         .into_view()
                                 }}

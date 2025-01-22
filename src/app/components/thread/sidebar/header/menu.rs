@@ -17,15 +17,15 @@ pub fn ThreadMenu() -> impl IntoView {
         <DropdownProvider modal=false open=open>
             <TooltipProvider delay_duration=Duration::new(0, 0)>
                 <TooltipTrigger>
-                    <DropdownTrigger>
-                        <Icon icon=icondata::RiMoreSystemLine class="w-6 h-6 " />
+                    <DropdownTrigger class="p-1 rounded-lg hover:bg-base-content/5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                     </DropdownTrigger>
                 </TooltipTrigger>
                 <TooltipContent
-                    tip="More"
+                    tip="Options"
                     tooltip_side=ToolTipSide::Bottom
                     tooltip_of_side=10.0
-                    class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:bottom-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-b-[#dfdfe2] dark:after:border-b-[#0d0d0d]"
+                    class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-400 border-base-400"
                 />
             </TooltipProvider>
             <DropdownContent

@@ -46,7 +46,7 @@ pub fn ChannelView() -> impl IntoView {
                                             let name = channel.name.clone();
                                             view! {
                                                 <ChannelHeader channel=channel />
-                                                <div class="w-full h-full flex">
+                                                <div class="w-full h-full flex bg-base-200">
                                                     // NOTE:
                                                     // this is the future chat
                                                     // NOTE: move this to his own component,

@@ -142,33 +142,35 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
     view! {
         <ContextMenuProvider modal=false open=open>
             <ContextMenuTrigger class="w-full h-auto">
-                <div class=move || {
-                    format!(
-                        "relative py-[1px] transition duration-200 ease-in-out delay-0 group rounded hover:bg-base-content/10 mt-0.5 w-full max-h-[32px] {}",
-                        match is_current_thread() {
-                            true => "bg-base-content/20",
-                            false => "",
-                        },
-                    )
-                }>
+                <div class="relative py-[1px] rounded mt-0.5 w-full max-h-[32px] group">
                     <A
                         href=move || {
                             format!("thread/{}/{}", thread.channel_id.simple(), thread.id.simple())
                         }
-                        class="relative box-border flex flex-col cursor-pointer"
+                        class="relative box-border flex flex-col cursor-pointer hover:bg-base-content/5"
                     >
                         <div class="relative flex flex-row group items-center py-[6px] px-2">
-                            <div class=move || {
-                                format!(
-                                    "whitespace-nowrap overflow-hidden text-ellipsis text-[16px] mr-auto font-bold text-base-content/50 leading-5 flex-auto relative group-hover:text-base-content/75 {}",
-                                    match is_current_thread() {
-                                        true => "text-base-content/60",
-                                        false => "",
-                                    },
-                                )
-                            }>{name.get_value()}</div>
+                            <div
+                                class="whitespace-nowrap overflow-hidden text-ellipsis text-[16px] mr-auto font-bold text-base-content/50 leading-5 flex-auto relative"
+                            >
+                                {name.get_value()}
+                            </div>
                         </div>
                     </A>
+                    <div
+                        on:click=move |_| {
+                            open.set(true);
+                        }
+                        class=move || {
+                            format!("absolute right-1 top-1.5 p-0.5 hover:bg-base-content/5 rounded {}", if is_current_thread() {
+                                "opacity-100"
+                            }else {
+                                "opacity-0 group-hover:opacity-100"
+                            })
+                        }
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </div>
                 </div>
             </ContextMenuTrigger>
             <ContextMenuContent ignore=vec![delete_thread_modal_ref] class="z-40".into()>

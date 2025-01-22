@@ -50,98 +50,73 @@ pub fn Category(category: StoredValue<Category>) -> impl IntoView {
     let create_channel_node = create_node_ref::<html::Div>();
     let edit_category_node = create_node_ref::<html::Div>();
     let delete_category_node = create_node_ref::<html::Div>();
+    let menu_open = create_rw_signal(false);
 
     view! {
         <CollapsibleProvider open=collapsible_open>
-            <CollapsibleTrigger class="relative mt-4 mb-0.5">
-                <ContextMenuProvider modal=false hidden=hidden_context_menu>
-                    <ContextMenuTrigger class="cursor-pointer box-border pr-2 pl-2 flex items-center justify-between group">
-                        <div class="flex flex-auto overflow-hidden items-center">
-                            <Icon
-                                icon=icondata::RiArrowDownSArrowsLine
-                                class=MaybeProp::derive(move || Some(
-                                    TextProp::from(
-                                        format!(
-                                            "h-4 w-4 text-base-content/75 group-hover:text-base-content {}",
-                                            {
-                                                match collapsible_open.get() {
-                                                    true => "",
-                                                    false => "-rotate-90",
-                                                }
-                                            },
-                                        ),
-                                    ),
-                                ))
-                            />
-                            <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-bold tracking-wide text-base-content/75 group-hover:text-base-content mr-auto">
+            <ContextMenuProvider modal=false hidden=hidden_context_menu open=menu_open>
+                <ContextMenuTrigger class="relative mt-0.5 ml-2 py-px group">
+                    <CollapsibleTrigger class="cursor-pointer box-border flex items-center justify-between">
+                        <div class="flex flex-auto overflow-hidden items-center py-1.5 px-2 hover:bg-base-content/5 rounded-lg h-8">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=move || format!(
+                                "h-4 w-4 text-base-content/75 group-hover:text-base-content mr-1.5 {}",
+                                {
+                                    match collapsible_open.get() {
+                                        true => "rotate-90",
+                                        false => "",
+                                    }
+                                },
+                            )>
+                                <path d="m9 18 6-6-6-6"/>
+                            </svg>
+                            <div class="box-border ml-0.5 text-ellipsis text-sm whitespace-nowrap overflow-hidden leading-4 tracking-wide mr-auto">
                                 {name.get_value()}
                             </div>
-                            {match member_can_edit {
-                                true => {
-                                    view! {
-                                        <TooltipProvider delay_duration=Duration::new(0, 5)>
-                                            <TooltipTrigger class="w-auto h-auto">
-                                                <CreateChannelModal
-                                                    server_id=server.id
-                                                    category_id=id
-                                                    class="w-auto h-auto"
-                                                    category_name=name.get_value()
-                                                >
-                                                    <Icon
-                                                        icon=icondata::RiAddSystemFill
-                                                        class="w-4 h-4 fill-base-content/75 group-hover:text-base-content"
-                                                    />
-                                                </CreateChannelModal>
-                                            </TooltipTrigger>
-                                            <TooltipContent
-                                                tip="Add Channel".to_string()
-                                                tooltip_side=ToolTipSide::Top
-                                                tooltip_of_side=22.0
-                                                class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-t-[#dfdfe2] dark:after:border-t-[#0d0d0d]"
-                                            />
-                                        </TooltipProvider>
-                                    }
-                                        .into_view()
-                                }
-                                _ => view! {}.into_view(),
-                            }}
                         </div>
-                    </ContextMenuTrigger>
-                    <ContextMenuContent
-                        ignore=vec![create_channel_node, edit_category_node, delete_category_node]
-                        class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40"
-                            .to_string()
+                    </CollapsibleTrigger>
+                    <div
+                        on:click=move |_| {
+                            menu_open.set(true);
+                        }
+                        class="absolute right-1 top-1.5 p-0.5 hover:bg-base-content/5 rounded opacity-0 group-hover:opacity-100"
                     >
-                        <CreateChannelModal
-                            content_ref=create_channel_node
-                            server_id=server.id
-                            category_id=id
-                            class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
-                            category_name=name.get_value()
-                            on_click=Signal::derive(move || hidden_context_menu.set(false))
-                        >
-                            <div class="group-hover:text-primary-content">"Create Channel"</div>
-                        </CreateChannelModal>
-                        <EditCategoryModal
-                            content_ref=edit_category_node
-                            category=category.get_value()
-                            on_click=Signal::derive(move || hidden_context_menu.set(false))
-                            class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
-                        >
-                            <div class="group-hover:text-primary-content">"Rename Category"</div>
-                        </EditCategoryModal>
-                        <DeleteCategoryModal
-                            content_ref=delete_category_node
-                            category=category.get_value()
-                            server_id=server.id
-                            class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
-                            on_click=Signal::derive(move || hidden_context_menu.set(false))
-                        >
-                            <div class="group-hover:text-primary-content">"Delete Category"</div>
-                        </DeleteCategoryModal>
-                    </ContextMenuContent>
-                </ContextMenuProvider>
-            </CollapsibleTrigger>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                    </div>
+                </ContextMenuTrigger>
+                <ContextMenuContent
+                    ignore=vec![create_channel_node, edit_category_node, delete_category_node]
+                    class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
+                        .to_string()
+                >
+                    <CreateChannelModal
+                        content_ref=create_channel_node
+                        server_id=server.id
+                        category_id=id
+                        class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                        category_name=name.get_value()
+                        on_click=Signal::derive(move || hidden_context_menu.set(false))
+                    >
+                        <div>"Create Channel"</div>
+                    </CreateChannelModal>
+                    <EditCategoryModal
+                        content_ref=edit_category_node
+                        category=category.get_value()
+                        on_click=Signal::derive(move || hidden_context_menu.set(false))
+                        class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                    >
+                        <div >"Rename Category"</div>
+                    </EditCategoryModal>
+                    <DeleteCategoryModal
+                        content_ref=delete_category_node
+                        category=category.get_value()
+                        server_id=server.id
+                        class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                        on_click=Signal::derive(move || hidden_context_menu.set(false))
+                    >
+                        <div>"Delete Category"</div>
+                    </DeleteCategoryModal>
+                </ContextMenuContent>
+            </ContextMenuProvider>
             <CollapsibleContent>
                 <Transition fallback=move || ()>
                     {move || {

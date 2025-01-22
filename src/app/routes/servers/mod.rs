@@ -26,10 +26,10 @@ pub fn Servers() -> impl IntoView {
                             view! {
                                 <UserOverview>
                                     <div class="h-full w-full">
-                                        <div class="flex w-[72px] h-full z-30 fixed inset-y-0">
+                                        <div class="flex w-12 h-full z-30 fixed inset-y-0">
                                             <SideBar />
                                         </div>
-                                        <div class="h-full relative overflow-hidden md:pl-[72px]">
+                                        <div class="h-full relative overflow-hidden md:pl-12">
                                             <Outlet />
                                         </div>
                                     </div>

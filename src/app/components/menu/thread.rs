@@ -26,8 +26,8 @@ pub fn ThreadMenuContent(
         move |_| check_member_on_thread(thread.id),
     );
     view! {
-        <div class="w-[188px] h-auto bg-base-200 rounded-md flex flex-col items-center space-y-1 p-2">
-            <Transition fallback=move || ()>
+        <Transition fallback=move || ()>
+            <div class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100">
                 {move || {
                     check_member_on_thread
                         .and_then(|exist| {
@@ -36,7 +36,7 @@ pub fn ThreadMenuContent(
                                     <LeaveThread
                                         thread_id=thread.id
                                         server_id=current_server_context.server.id
-                                        class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                                        class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                                     />
                                 }
                                     .into_view()
@@ -45,13 +45,12 @@ pub fn ThreadMenuContent(
                                     <JoinThread
                                         thread_id=thread.id
                                         server_id=current_server_context.server.id
-                                        class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                                        class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                                     />
-                                }
+                                }.into_view()
                             }
                         })
                 }}
-            </Transition>
             {move || {
                 if let Some((channel_url, thread_url)) = use_current_thread().get() {
                     if channel_url != thread.channel_id && thread_url != thread.id {
@@ -66,7 +65,7 @@ pub fn ThreadMenuContent(
                                     )
                                 }
                                 on:click=move |_| open.set(false)
-                                class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                                class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                             >
                                 "Open Full View"
                             </A>
@@ -87,7 +86,7 @@ pub fn ThreadMenuContent(
                                 )
                             }
                             on:click=move |_| open.set(false)
-                            class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                         >
                             "Open Full View"
                         </A>
@@ -112,7 +111,7 @@ pub fn ThreadMenuContent(
                                     )
                                 }
                                 on:click=move |_| open.set(false)
-                                class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                                class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                             >
                                 "Open Split View"
                             </A>
@@ -133,7 +132,7 @@ pub fn ThreadMenuContent(
                                 )
                             }
                             on:click=move |_| open.set(false)
-                            class="flex inline-block justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                         >
                             "Open Split View"
                         </A>
@@ -141,7 +140,6 @@ pub fn ThreadMenuContent(
                         .into_view()
                 }
             }}
-            <Transition fallback=move || ()>
                 {move || {
                     if current_server_context.member_can_edit
                         || current_server_context.member.id == thread.created_by
@@ -152,7 +150,7 @@ pub fn ThreadMenuContent(
                                 thread_id=thread.id
                                 thread_name=thread_name.get_value()
                                 server_id=current_server_context.server.id
-                                class="flex justify-between hover:bg-primary items-center w-full text-sm rounded py-[6px] px-2"
+                                class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                             >
                                 "Delete Thread"
                             </DeleteThreadModal>
@@ -161,7 +159,7 @@ pub fn ThreadMenuContent(
                         ().into_view()
                     }
                 }}
-            </Transition>
-        </div>
+            </div>
+        </Transition>
     }
 }

@@ -58,14 +58,14 @@ pub fn ServerSideBar() -> impl IntoView {
     provide_context(ServerSideBarContext { open });
     view! {
         <div
-            class="flex w-[240px] h-full relative inset-y-0 bg-base-200 z-40"
+            class="flex w-[240px] h-full relative inset-y-0 bg-base-300 z-40 border-l-base-100 border-l border-0"
             style=move || if open.get() { "" } else { "visibility: collapse;" }
         >
-            <div class="w-full h-full flex flex-col items-center relative bg-base-200 scrollbar-none overflow-y-scroll overflow-x-hidden">
+            <div class="w-full h-full flex flex-col items-center relative scrollbar-none overflow-y-scroll overflow-x-hidden">
                 <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
                     <ServerMenu />
                     <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
-                        <div class="h-3" />
+                        // <div class="h-3" />
                         <Transition fallback=move || ()>
                             {move || {
                                 channels
@@ -137,24 +137,24 @@ fn SideBarContextMenu(server_id: Uuid) -> impl IntoView {
             <ContextMenuTrigger class="h-full w-full bg-none" />
             <ContextMenuContent
                 ignore=vec![create_channel_node, create_category_node]
-                class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] rounded z-40"
+                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
                     .to_string()
             >
                 <CreateChannelModal
                     content_ref=create_channel_node
                     server_id=server_id
-                    class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                     on_click=Signal::derive(move || hidden.set(false))
                 >
-                    <div class="group-hover:text-primary-content">"Create Channel"</div>
+                    <div>"Create Channel"</div>
                 </CreateChannelModal>
                 <CreateCategoryModal
                     content_ref=create_category_node
                     server_id=server_id
-                    class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                     on_click=Signal::derive(move || hidden.set(false))
                 >
-                    <div class="group-hover:text-primary-content">"Create Category"</div>
+                    <div>"Create Category"</div>
                 </CreateCategoryModal>
             </ContextMenuContent>
         </ContextMenuProvider>

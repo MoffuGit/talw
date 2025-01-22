@@ -36,36 +36,38 @@ pub fn Servers() -> impl IntoView {
                 <TooltipProvider delay_duration=Duration::new(0, 0)>
                     <TooltipTrigger class="relative my-0.5">
                         <A href="" class=" flex relative items-center">
-                            <div class="flex mx-3 h-[48px] transition-all items-center justify-center  text-base-content   w-[48px]">
+                            <div class="flex transition-all items-center justify-center text-base-content w-8 h-8">
                                 <Icon
-                                    icon=icondata::RiAppsSystemLine
-                                    class="h-6 w-6 fill-primary"
+                                    icon=icondata::LuCommand
+                                    class="h-5 w-5 stroke-base-content"
                                 />
                             </div>
                         </A>
                     </TooltipTrigger>
                     <TooltipContent
                         tip="Servers"
-                        class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"
+                        tooltip_of_side=10.0
+                        arrow=true
+                        class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-400 border-base-400"
                     />
                 </TooltipProvider>
             </ContextMenuTrigger>
             <ContextMenuContent
                 ignore=vec![create_server_modal_ref]
-                class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded"
+                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
                     .to_string()
             >
                 <CreateServerModal
                     on_open=Signal::derive(move || hidden.set(true))
                     content_ref=create_server_modal_ref
-                    class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                 >
                     <div>"Create Server"</div>
                     <Icon icon=icondata::RiAddSystemFill class="w-5 h-5" />
                 </CreateServerModal>
                 <A
                     href="discover"
-                    class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                     on:click=move |_| open.set(false)
                 >
                     <div>"Discover Servers"</div>
@@ -73,7 +75,7 @@ pub fn Servers() -> impl IntoView {
                 </A>
                 <A
                     href=""
-                    class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                     on:click=move |_| open.set(false)
                 >
                     <div>"Show Servers"</div>
@@ -111,39 +113,41 @@ pub fn ServerNavigation(server: Server) -> impl IntoView {
     let image_url = store_value(server.image_url.clone());
     let name = server.name.clone();
     view! {
-        <TooltipProvider delay_duration=Duration::new(0, 0)>
-            <TooltipTrigger class="relative my-0.5">
-                <A href=server.id.simple().to_string() class="group flex relative items-center">
-                    <div class=move || {
-                        format!(
-                            "absolute left-0 bg-white rounded-r-full transition-all w-[4px] {}",
-                            {
-                                match current_server()
-                                    .is_some_and(|current| {
-                                        current == server.id.simple().to_string()
-                                    })
-                                {
-                                    false => "group-hover:h-[20px] h-[8px]",
-                                    true => "h-[36px]",
+        <div class="group flex relative items-center justify-center w-full my-0.5">
+            <div class=move || {
+                format!(
+                    "absolute left-0 bg-white rounded-r-full transition-all duration-100 ease-linear w-0.5 {}",
+                    {
+                        match current_server()
+                            .is_some_and(|current| { current == server.id.simple().to_string() })
+                        {
+                            false => "group-hover:h-3 h-1",
+                            true => "h-6",
+                        }
+                    },
+                )
+            } />
+            <TooltipProvider delay_duration=Duration::new(0, 0)>
+                <TooltipTrigger class="relative my-0.5">
+                    <A href=server.id.simple().to_string() class="group flex relative items-center">
+                        <ContextServerMenu server=server>
+                            {move || match image_url.get_value() {
+                                None => ().into_view(),
+                                Some(url) => {
+                                    view! { <img class="w-full h-full object-cover " src=url /> }
+                                        .into_view()
                                 }
-                            },
-                        )
-                    } />
-                    <ContextServerMenu server=server>
-                        {move || match image_url.get_value() {
-                            None => ().into_view(),
-                            Some(url) => {
-                                view! { <img class="w-full h-full object-cover " src=url /> }
-                                    .into_view()
-                            }
-                        }}
-                    </ContextServerMenu>
-                </A>
-            </TooltipTrigger>
-            <TooltipContent
-                tip=name
-                class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[50%] after:right-[100%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-[#dfdfe2] dark:after:border-r-[#0d0d0d]"
-            />
-        </TooltipProvider>
+                            }}
+                        </ContextServerMenu>
+                    </A>
+                </TooltipTrigger>
+                <TooltipContent
+                    tip=name
+                    tooltip_of_side=10.0
+                    arrow=true
+                    class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-400 border-base-400"
+                />
+            </TooltipProvider>
+        </div>
     }
 }

@@ -26,7 +26,7 @@ pub fn ContextServerMenu(
 
     view! {
         <ContextMenuProvider open=open modal=false hidden=hidden>
-            <ContextMenuTrigger class="flex overflow-hidden mx-3 h-[48px] transition-all items-center justify-center bg-base-100 text-base-content rounded-[24px] group-hover:bg-primary group-hover:rounded-[16px] w-[48px]">
+            <ContextMenuTrigger class="flex overflow-hidden w-8 h-8 transition-all items-center justify-center bg-base-100 text-base-content rounded-full group-hover:bg-primary group-hover:rounded-lg">
                 {children.map(|children| children())}
             </ContextMenuTrigger>
             <ContextMenuContent
@@ -36,22 +36,22 @@ pub fn ContextServerMenu(
                     create_category_node,
                     invite_people_node,
                 ]
-                class="transition-all ease-out w-[188px] flex flex-col h-auto py-[6px] px-2 bg-[#dfdfe2] dark:bg-[#0d0d0d] z-40 rounded"
+                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
                     .to_string()
             >
                 <InvitePeopleModal
                     content_ref=invite_people_node
                     invite_code=invite_code
-                    class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+                    class="flex justify-between hover:bg-base-content/5 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                     on_click=on_click_item
                 >
-                    <div class="group-hover:text-primary-content">"Invite People"</div>
+                    <div class="">"Invite People"</div>
                 </InvitePeopleModal>
                 <Transition fallback=move || ()>
                     {move || {
                         if let Some(Ok(true)) = member_can_update.get() {
                             view! {
-                                <div class="divider relative my-0 mx-1 w-auto" />
+                                <div class="bg-base-100 h-px my-1 -mx-1" />
                                 <ServerMenuAdminItems
                                     nodes=ServerMenuNodes {
                                         create_channel_node,
@@ -69,7 +69,7 @@ pub fn ContextServerMenu(
                     {move || {
                         if let Some(Ok(false)) = member_can_update.get() {
                             view! {
-                                <div class="divider relative my-0 mx-1 w-auto" />
+                                <div class="bg-base-100 h-px my-1 -mx-1" />
                                 <ServerMenuGuestItems
                                     leave_server_node=leave_server_node
                                     server=server.get_value()
@@ -105,26 +105,26 @@ fn ServerMenuAdminItems(
         create_category_node,
     } = nodes;
     view! {
-        <div class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded">
-            <div class="group-hover:text-primary-content">"Server Settings"</div>
+        <div class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
+            <div class="">"Server Settings"</div>
         </div>
 
         <CreateChannelModal
             content_ref=create_channel_node
             on_click=on_click
             server_id=server.id
-            class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
         >
-            <div class="group-hover:text-primary-content">"Create Channel"</div>
+            <div class="">"Create Channel"</div>
         </CreateChannelModal>
 
         <CreateCategoryModal
             content_ref=create_category_node
             on_click=on_click
             server_id=server.id
-            class="flex justify-between hover:bg-primary items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
         >
-            <div class="group-hover:text-primary-content">"Create Category"</div>
+            <div class="">"Create Category"</div>
         </CreateCategoryModal>
     }
 }
@@ -137,11 +137,11 @@ fn ServerMenuGuestItems(
     leave_server_node: NodeRef<html::Div>,
 ) -> impl IntoView {
     view! {
-        <div class="divider relative my-0 mx-1 w-auto" />
+        <div class="bg-base-100 h-px my-1 -mx-1" />
         <LeaveServer
             content_ref=leave_server_node
             server=server
-            class="flex justify-between text-error hover:text-error-content hover:bg-error items-center w-full text-sm py-[6px] px-2 my-0.5 group rounded"
+            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
             on_click=on_click
         >
             <div class="group-hover:text-primary-content">"Leave Server"</div>

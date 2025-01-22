@@ -21,8 +21,8 @@ pub enum ChannelType {
 impl From<ChannelType> for Icon {
     fn from(value: ChannelType) -> Self {
         match value {
-            ChannelType::TEXT => icondata::RiHashtagEditor,
-            ChannelType::VOICE => icondata::RiVolumeUpMediaFill,
+            ChannelType::TEXT => icondata::LuHash,
+            ChannelType::VOICE => icondata::LuVolume2,
         }
     }
 }

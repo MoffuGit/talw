@@ -16,7 +16,7 @@ struct TooltipProviderContext {
 #[component]
 pub fn TooltipProvider(
     children: Children,
-    #[prop(default = Duration::new(3,0))] delay_duration: Duration,
+    #[prop(default = Duration::new(0,0))] delay_duration: Duration,
 ) -> impl IntoView {
     let was_open_delayed_ref = create_rw_signal(false);
     let is_open = create_rw_signal(false);

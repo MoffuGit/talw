@@ -21,11 +21,8 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
     let delete_thread_modal_ref = create_node_ref::<html::Div>();
     view! {
         <DropdownProvider open=open modal=false>
-            <DropdownTrigger>
-                <Icon
-                    icon=icondata::RiDiscussCommunicationFill
-                    class="w-6 h-6 fill-base-content/40"
-                />
+            <DropdownTrigger class="hover:bg-base-content/5 rounded-lg p-1 cursor-pointer select-none p-1">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-tree"><path d="M21 12h-8"/><path d="M21 6H8"/><path d="M21 18h-8"/><path d="M3 6v4c0 1.1.9 2 2 2h3"/><path d="M3 10v6c0 1.1.9 2 2 2h3"/></svg>
             </DropdownTrigger>
             <DropdownContent
                 ignore=vec![context_menu_ref, create_thread_node, delete_thread_modal_ref]
@@ -33,36 +30,32 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
                 align=MenuAlign::End
                 class="w-auto h-auto z-40"
             >
-                <div class="w-[510px] h-auto bg-base-200 flex flex-col rounded-md">
-                    <div class="w-full h-[48px] bg-base-300 flex items-center px-2 rounded-t-md">
-                        <Icon
-                            icon=icondata::RiDiscussCommunicationFill
-                            class="w-7 h-7 fill-base-content/40 mr-2"
-                        />
-                        <div class="font-bold test-base-content/40">"Threads"</div>
-                        <div class="divider divider-horizontal h-6 mx-2 my-auto"></div>
-                        <div class="h-6 w-[200px] mr-auto bg-base-100/60 rounded-md flex items-center">
-                            <div class="ml-1 text-base-content/60">"Search For Thread Name"</div>
+                <div class="w-[510px] h-auto bg-base-400 flex flex-col rounded-md border border-base-100 p-2">
+                    <div class="w-full h-auto flex items-center rounded-t-md mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-tree mr-2">
+                            <path d="M21 12h-8"/>
+                            <path d="M21 6H8"/>
+                            <path d="M21 18h-8"/>
+                            <path d="M3 6v4c0 1.1.9 2 2 2h3"/>
+                            <path d="M3 10v6c0 1.1.9 2 2 2h3"/>
+                        </svg>
+                        <div class="font-semibold text-lg mr-auto">"Threads"</div>
+                        <div class="hover:bg-base-content/10 rounded-md p-1 fill-base-content ml-[10px]">
+                            <Icon
+                                icon=icondata::LuX
+                                class="w-5 h-5"
+                                on:click=move |_| open.set(false)
+                            />
                         </div>
-                        <CreatethreadModal
-                            content_ref=create_thread_node
-                            channel_id=channel_id
-                            server_id=server_id
-                            class="w-auto h-6 rounded-md bg-primary px-2 flex items-center"
-                        >
-                            <div class="my-auto text-primary-content">"Create"</div>
-                        </CreatethreadModal>
-                        <Icon
-                            icon=icondata::RiCloseSystemLine
-                            class="w-7 h-7 fill-base-content ml-[10px]"
-                            on:click=move |_| open.set(false)
-                        />
                     </div>
+                    <div class="bg-base-100 h-px -mx-1" />
                     <ActiveThreads
                         channel_id=channel_id
+                        server_id=server_id
                         open=open
                         context_menu_ref=context_menu_ref
                         delete_thread_modal_ref=delete_thread_modal_ref
+                        create_thread_node=create_thread_node
                     />
                 </div>
             </DropdownContent>
@@ -76,6 +69,8 @@ pub fn ActiveThreads(
     open: RwSignal<bool>,
     context_menu_ref: NodeRef<html::Div>,
     delete_thread_modal_ref: NodeRef<html::Div>,
+    create_thread_node: NodeRef<html::Div>,
+    server_id: Uuid,
 ) -> impl IntoView {
     let thread_context = use_thread();
     let delete_thread = thread_context.delete_thread;
@@ -89,8 +84,21 @@ pub fn ActiveThreads(
         move |_| get_threads_from_channel(channel_id),
     );
     view! {
-        <div class="w-full h-auto px-4">
-            <div class="font-bold text my-3 text-base-content/80">"More Active Threads"</div>
+        <div class="w-full h-auto relative">
+            <div class="flex w-full justify-between items-center my-2">
+                <div class="h-6 w-[200px] border border-base-100 rounded p-1.5 flex items-center justify-between">
+                    "Search"
+                    <Icon icon=icondata::LuSearch class="h-4 w-4 stroke-base-content" />
+                </div>
+                <CreatethreadModal
+                    content_ref=create_thread_node
+                    channel_id=channel_id
+                    server_id=server_id
+                    class="w-auto h-6 rounded bg-base-content/10 hover:bg-base-content/20 px-2 flex items-center"
+                >
+                    "Create"
+                </CreatethreadModal>
+            </div>
             <div class="w-full min-h-[342px] w-full max-h-[720px] overflow-y-scroll overflow-x-hidden space-y-2">
                 <Transition fallback=move || ()>
                     {move || {
@@ -136,29 +144,28 @@ pub fn ThreadLink(
                         let profile = profile.as_ref().expect("should have a profile");
                         let created_by = store_value(profile.name.clone());
                         let member_url = store_value(profile.image_url.clone());
-                        // NOTE: only for now
                         view! {
                             <ContextMenuProvider modal=false content_ref=context_menu_ref>
                                 <ContextMenuTrigger class="w-full h-auto">
                                     <A
                                         on:click=move |_| open.set(false)
                                         href=format!("{}", thread_id.simple())
-                                        class="w-full h-20 bg-base-300 rounded-md inline-block flex justify-between items-center px-2"
+                                        class="w-full h-20 hover:bg-base-content/10 rounded-md inline-block flex justify-between items-center px-2"
                                     >
                                         <div class="flex flex-col w-auto h-auto">
-                                            <div class="font-bold">{name.get_value()}</div>
-                                            <div class="flex items-center">
+                                            <div class="font-semibold text-lg">{name.get_value()}</div>
+                                            <div class="flex items-center text-sm">
                                                 {if let Some(url) = member_url.get_value() {
                                                     view! {
                                                         <img
-                                                            class="w-4 h-4 object-cover rounded-full mr-1"
+                                                            class="w-5 h-5 object-cover rounded-full mr-1"
                                                             src=url
                                                         />
                                                     }
                                                         .into_view()
                                                 } else {
                                                     view! {
-                                                        <div class="w-4 h-4 rounded-full bg-white border-base-200 mr-1" />
+                                                        <div class="w-5 h-5 rounded-full bg-white border-base-200 mr-1" />
                                                     }
                                                         .into_view()
                                                 }} {format!("Started by {}", created_by.get_value())}

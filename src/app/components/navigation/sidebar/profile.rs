@@ -16,14 +16,14 @@ pub fn Profile() -> impl IntoView {
                                 {if let Some(url) = &profile.image_url {
                                     view! {
                                         <img
-                                            class="w-[48px] h-[48px] rounded-full object-cover mx-2.5"
+                                            class="w-8 h-8 rounded-full cursor-pointer object-cover"
                                             src=url
                                         />
                                     }
                                         .into_view()
                                 } else {
                                     view! {
-                                        <div class="w-[48px] h-[48px] rounded-full bg-base-100/40 mx-2.5"></div>
+                                        <div class="w-8 h-8 rounded-full cursor-pointer bg-base-100/40"/>
                                     }
                                         .into_view()
                                 }}

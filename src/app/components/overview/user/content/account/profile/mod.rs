@@ -46,6 +46,8 @@ fn UserBanner(banner: Banner, profile: Profile) -> impl IntoView {
     let primary_color_preview = create_rw_signal(banner.primary_color.clone());
     let accent_color_preview = create_rw_signal(banner.accent_color.clone());
     let user_data_change = create_rw_signal(false);
+    //NOTE: Move the colors preview to its own component, this should wrapp the others and create
+    //two components to select the color, one for primary, another for accent
     provide_context(ProfilesSettingsContext {
         user_data_change,
         profile,
@@ -69,8 +71,8 @@ fn UserBanner(banner: Banner, profile: Profile) -> impl IntoView {
     };
     view! {
         <div
-            class="relative w-[600px] flex flex-col rounded-lg p-1.5 bg-gradient-to-b"
-            style=banner_style
+            class="relative w-[600px] bg-base-300 flex flex-col rounded-lg p-1.5 bg-gradient-to-b"
+            // style=banner_style
         >
             <ImageBanner primary_color_preview=primary_color_preview />
             <UserImage />
@@ -91,16 +93,16 @@ fn UserBanner(banner: Banner, profile: Profile) -> impl IntoView {
                 >
                     "Save"
                 </button>
-                <input
-                    type="color"
-                    class="w-10 h-10"
-                    on:input=move |evt| primary_color_preview.set(Some(event_target_value(&evt)))
-                />
-                <input
-                    type="color"
-                    class="w-10 h-10"
-                    on:input=move |evt| accent_color_preview.set(Some(event_target_value(&evt)))
-                />
+            // <input
+            // type="color"
+            // class="w-10 h-10"
+            // on:input=move |evt| primary_color_preview.set(Some(event_target_value(&evt)))
+            // />
+            // <input
+            // type="color"
+            // class="w-10 h-10"
+            // on:input=move |evt| accent_color_preview.set(Some(event_target_value(&evt)))
+            // />
             </ActionForm>
         </div>
     }

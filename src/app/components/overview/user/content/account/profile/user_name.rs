@@ -32,7 +32,7 @@ pub fn UserName() -> impl IntoView {
     let focus = create_rw_signal(false);
 
     view! {
-        <label class="form-control group relative ml-7 mt-[200px]">
+        <label class="form-control group relative ml-5 mt-[200px]">
             <span
                 class="invisible absolute text-3xl px-2 rounded-md font-bold whitespace-pre"
                 node_ref=span_ref
@@ -59,7 +59,7 @@ pub fn UserName() -> impl IntoView {
                 }
                 name="new_name"
                 type="text"
-                class="text-3xl font-bold w-8 bg-transparent rounded-md px-2 group-hover:bg-base-300/60 focus:bg-base-300/60 cursor-text transition"
+                class="text-3xl font-bold w-8 bg-transparent rounded-md px-2 group-hover:bg-base-content/10 focus:bg-base-content/10 cursor-text transition"
                 style=move || format!("width: {}px", input_width.get())
                 node_ref=input_ref
             />

@@ -65,7 +65,6 @@ pub fn ServerSideBar() -> impl IntoView {
                 <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
                     <ServerMenu />
                     <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
-                        // <div class="h-3" />
                         <Transition fallback=move || ()>
                             {move || {
                                 channels

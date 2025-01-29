@@ -69,6 +69,13 @@ pub async fn get_user_members() -> Result<Vec<Member>, ServerFnError> {
     Ok(Member::get_user_members(user.id, &pool).await?)
 }
 
+#[server(GetServerMembers)]
+pub async fn get_server_members(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+    Ok(Member::get_server_members(server_id, &pool).await?)
+}
+
 #[server(MemberCanEdit)]
 pub async fn member_can_edit(server_id: Uuid) -> Result<bool, ServerFnError> {
     let pool = pool()?;

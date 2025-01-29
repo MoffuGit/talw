@@ -28,104 +28,25 @@ pub fn Thread(channel_id: Uuid) -> impl IntoView {
     );
     view! {
         <Transition fallback=move || ()>
-            {move || {
-                threads
-                    .and_then(|threads| {
-                        if let Some((channel_url, thread_url)) = use_current_thread().get() {
-                            if !threads.iter().any(|thread| thread.id == thread_url)
-                                && channel_id == channel_url
-                            {
-                                let threads_is_empty = threads.is_empty();
-                                let thread = create_resource(
-                                    move || (),
-                                    move |_| get_thread(thread_url, channel_id),
-                                );
-                                view! {
-                                    <Transition fallback=move || ()>
-                                        {move || {
-                                            thread
-                                                .and_then(|thread| {
-                                                    view! {
-                                                        <div class="flex h-auto ml-6 items-center">
-                                                            {if threads_is_empty {
-                                                                view! {
-                                                                    <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
-                                                                        <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
-                                                                    </svg>
-                                                                }
-                                                                    .into_view()
-                                                            } else {
-                                                                view! {
-                                                                    <div class="flex flex-col -space-y-1">
-                                                                        <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
-                                                                            <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
-                                                                        </svg>
-                                                                        <svg
-                                                                            viewBox="0 0 12 11"
-                                                                            class="h-[12px] fill-base-content rotate-90"
-                                                                        >
-                                                                            <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
-                                                                        </svg>
-                                                                    </div>
-                                                                }
-                                                                    .into_view()
-                                                            }} <ThreadMenu thread=thread.clone() />
-                                                        </div>
-                                                    }
-                                                })
-                                        }}
-                                    </Transition>
-                                }
-                                    .into_view()
-                            } else {
-                                ().into_view()
-                            }
-                        } else {
-                            ().into_view()
-                        }
-                    })
-            }}
-        </Transition>
-        <Transition fallback=move || ()>
-            {move || {
-                threads
-                    .and_then(|threads| {
-                        let len = threads.len();
+            <div class="ml-6 border-0 border-l border-l-base-100">
+                {
+                    move || {
                         threads
-                            .iter()
-                            .enumerate()
-                            .map(|(idx, thread)| {
-                                view! {
-                                    <div class="flex h-auto ml-6 items-center">
-                                        {if idx == len - 1 {
-                                            view! {
-                                                <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
-                                                    <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
-                                                </svg>
-                                            }
-                                                .into_view()
-                                        } else {
-                                            view! {
-                                                <div class="flex flex-col -space-y-1">
-                                                    <svg viewBox="0 0 12 11" class="h-[12px] fill-base-content">
-                                                        <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
-                                                    </svg>
-                                                    <svg
-                                                        viewBox="0 0 12 11"
-                                                        class="h-[12px] fill-base-content rotate-90"
-                                                    >
-                                                        <path d="M11 9H4C2.89543 9 2 8.10457 2 7V1C2 0.447715 1.55228 0 1 0C0.447715 0 0 0.447715 0 1V7C0 9.20914 1.79086 11 4 11H11C11.5523 11 12 10.5523 12 10C12 9.44771 11.5523 9 11 9Z" />
-                                                    </svg>
-                                                </div>
-                                            }
-                                                .into_view()
-                                        }} <ThreadMenu thread=thread.clone() />
-                                    </div>
-                                }
-                            })
-                            .collect_view()
-                    })
-            }}
+                            .and_then(|threads| {
+                                threads
+                                    .iter()
+                                    .map(|thread| {
+                                        view! {
+                                            <div class="flex h-auto ml-2 items-center">
+                                                <ThreadMenu thread=thread.clone() />
+                                            </div>
+                                        }
+                                    })
+                                .collect_view()
+                        })
+                    }
+                }
+            </div>
         </Transition>
     }
 }
@@ -142,12 +63,12 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
     view! {
         <ContextMenuProvider modal=false open=open>
             <ContextMenuTrigger class="w-full h-auto">
-                <div class="relative py-[1px] rounded mt-0.5 w-full max-h-[32px] group">
+                <div class="relative py-[1px] mt-0.5 w-full max-h-[32px] group">
                     <A
                         href=move || {
                             format!("thread/{}/{}", thread.channel_id.simple(), thread.id.simple())
                         }
-                        class="relative box-border flex flex-col cursor-pointer hover:bg-base-content/5"
+                        class="relative box-border flex flex-col cursor-pointer hover:bg-base-content/5 rounded-lg"
                     >
                         <div class="relative flex flex-row group items-center py-[6px] px-2">
                             <div

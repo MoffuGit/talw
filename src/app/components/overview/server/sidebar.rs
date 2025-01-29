@@ -1,26 +1,26 @@
 use leptos::*;
 
-use crate::app::components::overview::user::UserOverviewContext;
+use crate::app::components::overview::server::ServerOverviewContext;
 
-use super::UserSettings;
+use super::ServerSettings;
 
 #[component]
-pub fn UserSettingsSideBar() -> impl IntoView {
+pub fn ServerSettingsSideBar() -> impl IntoView {
     view! {
         <div class="w-3/5 min-w-[218px] h-full flex bg-base-300 justify-end pt-8 pr-1">
             <div class="flex flex-col overflow-scroll">
-                <div class="font-semibold mb-0.5">"User Settings"</div>
-                <UserSettingsSelect select=UserSettings::Account />
-                <div class="font-semibold mb-0.5">"App Settings"</div>
-                <UserSettingsSelect select=UserSettings::Appearance />
+                <div class="font-semibold mb-0.5">"Server Settings"</div>
+                <ServerSettingsSelect select=ServerSettings::Overview />
+                <div class="font-semibold mb-0.5">"Members"</div>
+                <ServerSettingsSelect select=ServerSettings::Members />
             </div>
         </div>
     }
 }
 
 #[component]
-pub fn UserSettingsSelect(select: UserSettings) -> impl IntoView {
-    let settings = use_context::<UserOverviewContext>()
+pub fn ServerSettingsSelect(select: ServerSettings) -> impl IntoView {
+    let settings = use_context::<ServerOverviewContext>()
         .expect("should acces to the user overview context")
         .settings;
     view! {

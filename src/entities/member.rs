@@ -21,6 +21,19 @@ pub struct Member {
 
 #[cfg(feature = "ssr")]
 impl Member {
+    pub async fn get_server_members(
+        server_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Vec<Member>, Error> {
+        Ok(sqlx::query_as::<_, Member>(
+        r#"
+            SELECT members.id, members.server_id, members.user_id FROM members WHERE members.server_id = ?
+        "#,
+        )
+        .bind(server_id)
+        .fetch_all(pool)
+        .await?)
+    }
     pub async fn get(member_id: Uuid, pool: &MySqlPool) -> Result<Member, Error> {
         Ok(sqlx::query_as::<_, Member>(
         r#"

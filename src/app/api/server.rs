@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use crate::entities::role::Role;
 use crate::entities::server::Server;
 use cfg_if::cfg_if;
@@ -29,6 +31,8 @@ pub struct ServerContext {
     pub join_with_invitation: Action<JoinServerWithInvitation, Result<(), ServerFnError>>,
     pub create_server: Action<FormData, Result<String, ServerFnError>>,
     pub leave_server: Action<LeaveServer, Result<(), ServerFnError>>,
+    pub edit_server_image: Action<FormData, Result<(), ServerFnError>>,
+    pub edit_server_name: Action<EditServerName, Result<(), ServerFnError>>,
 }
 
 #[derive(Clone, Copy, EnumIter, Display, PartialEq)]
@@ -56,12 +60,14 @@ pub fn provide_server_context() {
         create_server(data.into())
     });
     let leave_server = create_server_action::<LeaveServer>();
-    // let create_category = create_server_action::<CreateCategory>();
-    // let rename_category = create_server_action::<RenameCategory>();
-    // let delete_category = create_server_action::<DeleteCategory>();
-    //NOTE: agregar mas razones de cambio para los resources, leave_server, server_settings...,
-    //rename_member
+    let edit_server_image = create_action(|data: &FormData| {
+        let data = data.clone();
+        edit_server_image(data.into())
+    });
+    let edit_server_name = create_server_action::<EditServerName>();
     provide_context(ServerContext {
+        edit_server_name,
+        edit_server_image,
         leave_server,
         join_with_invitation,
         create_server,
@@ -70,6 +76,88 @@ pub fn provide_server_context() {
 
 pub fn use_server() -> ServerContext {
     use_context::<ServerContext>().expect("have server context")
+}
+
+#[server(name = EditServerImage, prefix = "/api", input = MultipartFormData)]
+pub async fn edit_server_image(data: MultipartData) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+    let mut data = data.into_inner().unwrap();
+    let mut server_id: Option<Uuid> = None;
+    let mut chunks: Option<Vec<u8>> = None;
+    let mut file_name: Option<String> = None;
+    let mut file_type: Option<String> = None;
+
+    while let Ok(Some(mut field)) = data.next_field().await {
+        match field.name().unwrap_or_default() {
+            "server_id" => {
+                if let Ok(Some(chunk)) = field.chunk().await {
+                    if let Ok(id) = String::from_utf8(chunk.to_vec()) {
+                        server_id = Uuid::from_str(&id).ok();
+                    }
+                }
+            }
+            "server_image" => {
+                file_name = Some(field.file_name().expect("file name").to_string());
+                file_type = Some(field.content_type().expect("mime type").to_string());
+                chunks = Some(
+                    field
+                        .try_collect::<Vec<MulterBytes>>()
+                        .await
+                        .or(Err(ServerFnError::new("Something go wrong in our servers")))?
+                        .concat(),
+                );
+            }
+            field => {
+                return Err(ServerFnError::new(format!(
+                    "Field {field} not should exist"
+                )))
+            }
+        }
+    }
+    if let (Some(file_type), Some(chunks), Some(file_name), Some(server_id)) =
+        (file_type, chunks, file_name, server_id)
+    {
+        let uploadthing = use_context::<UploadThing>().expect("acces to upload thing");
+        if chunks.is_empty() {
+            return Err(ServerFnError::new(
+                "Something go wrong, the chunks are empty",
+            ));
+        }
+        let size = chunks.len();
+
+        if let Ok(res) = uploadthing
+            .upload_file(
+                chunks,
+                FileData {
+                    name: file_name,
+                    file_type,
+                    size,
+                },
+                true,
+            )
+            .await
+        {
+            if let Some(current_image_key) = Server::get_server_image_key(server_id, &pool).await? {
+                println!("deleting the file with key: {}", current_image_key);
+                uploadthing
+                    .delete_files(vec![current_image_key])
+                    .await
+                    .map_err(|_| ServerFnError::new("We have problems deleting your file"))?;
+            }
+            return Ok(Server::set_image_url(res.url, res.key, server_id, &pool).await?);
+        }
+    }
+
+    Ok(())
+}
+
+#[server(EditServerName)]
+pub async fn edit_server_name(new_name: String, server_id: Uuid) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(Server::set_server_name(new_name, server_id, &pool).await?)
 }
 
 #[server(GetServerRoles)]

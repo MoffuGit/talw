@@ -31,7 +31,7 @@ pub fn UserAbout() -> impl IntoView {
     });
     let focus_textarea = create_rw_signal(false);
     view! {
-        <label class="form-control relative px-8 group h-fit w-full grow">
+        <label class="form-control relative px-6 group h-fit w-full grow">
             <div class=move || {
                 format!(
                     "label py-0.5 transition transition {}",
@@ -68,9 +68,9 @@ pub fn UserAbout() -> impl IntoView {
                         format!(
                             "absolute left-0 top-0 block text-lg rounded-md px-1 w-full whitespace-pre z-40 {} {}",
                             if about_preview.get().is_none() {
-                                "bg-base-300/60 text-base-content/80"
+                                "bg-base-content/10"
                             } else {
-                                "group-hover:bg-base-300/60 text-base-content"
+                                "group-hover:bg-base-content/10 text-base-content"
                             },
                             if focus_textarea.get() { "invisible" } else { "" },
                         )

@@ -23,6 +23,19 @@ pub struct Server {
 
 #[cfg(feature = "ssr")]
 impl Server {
+    pub async fn set_server_name(
+        new_name: String,
+        server_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        sqlx::query("UPDATE servers SET servers.name = ? WHERE servers.id = ?")
+            .bind(new_name)
+            .bind(server_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
     pub async fn member_exist(
         server_id: Uuid,
         user_id: Uuid,
@@ -89,6 +102,19 @@ impl Server {
             .execute(pool)
             .await?;
         Ok(id)
+    }
+
+    pub async fn get_server_image_key(
+        server_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Option<String>, Error> {
+        Ok(sqlx::query_as::<_, (Option<String>,)>(
+            "SELECT servers.image_key FROM servers WHERE servers.id = ?",
+        )
+        .bind(server_id)
+        .fetch_one(pool)
+        .await?
+        .0)
     }
 
     pub async fn set_image_url(

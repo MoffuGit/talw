@@ -2,6 +2,7 @@ use crate::app::components::modal::create_category::CreateCategoryModal;
 use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::modal::invite_people::InvitePeopleModal;
 use crate::app::components::modal::leave_server::LeaveServer;
+use crate::app::components::overview::server::ServerOverviewTrigger;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
@@ -101,9 +102,9 @@ fn ServerMenuAdminItems(
 ) -> impl IntoView {
     let CurrentServerContext { server, .. } = use_current_server_context();
     view! {
-        <div class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
-            <div>"Server Settings"</div>
-        </div>
+        <ServerOverviewTrigger server_id=server.id class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
+            "Server Settings"
+        </ServerOverviewTrigger>
 
         <CreateChannelModal
             content_ref=create_channel_node

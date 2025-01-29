@@ -18,6 +18,8 @@ pub fn Servers() -> impl IntoView {
     let servers = create_resource(
         move || {
             (
+                use_server.edit_server_image.version().get(),
+                use_server.edit_server_name.version().get(),
                 use_server.leave_server.version().get(),
                 use_server.join_with_invitation.version().get(),
                 use_server.create_server.version().get(),

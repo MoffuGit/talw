@@ -12,7 +12,7 @@ pub fn ImageBanner(primary_color_preview: RwSignal<Option<String>>) -> impl Into
     let context = use_context::<ProfilesSettingsContext>()
         .expect("should acces to the user overview context");
     let image_url = context.banner.image_url;
-    let image_preview_url = create_rw_signal(image_url);
+    let image_preview_url = create_rw_signal(image_url.clone());
     let edit_banner_image = use_user().edit_banner_image;
     let form_ref = create_node_ref::<Form>();
     view! {
@@ -24,7 +24,7 @@ pub fn ImageBanner(primary_color_preview: RwSignal<Option<String>>) -> impl Into
                 edit_banner_image.dispatch(form_data);
             }
             on:reset=move |_| {
-                image_preview_url.set(None);
+                image_preview_url.set(image_url.clone());
             }
             node_ref=form_ref
             class="group w-full relative"

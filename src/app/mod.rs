@@ -35,20 +35,25 @@ pub fn App() -> impl IntoView {
     provide_thread_context();
 
     //NOTE:
-    //keep working in the profile settings
-    //then go to appareance and move the theme
-    //select in there,
     //work in the overview for server settings
+    //  - work in the members and role part
+    //      - list of members
+    //      - create roles
+    //      - remove and add roles to members
+    //change the ui for the modals
     //add the capacity to send messages and pin messages
+    //before other things, migrate from 0.6 to 0.7
     //add things to user stuff and search stuff servers stuff
     //add notifications
+    //add inbox
     //add friends
     //add pinned channels and conversations
     //add the voice channel, stream sound and meaby video
     //add the optin to change the width of the sidebar
+    //keep working in the profile settings
+    //add the email and phone number to the user, give the posibility of change the password
     //add the option to edit the theme of the app, give some default options and more complex
     //settings
-    //add the email and phone number to the user, give the posibility of change the password
     //check tauri for creating a desktop app and cellphone app
 
     //TODO:user_side_bar is waiting the roles and aboout

@@ -3,6 +3,7 @@ use crate::app::components::modal::create_category::CreateCategoryModal;
 use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::modal::invite_people::InvitePeopleModal;
 use crate::app::components::modal::leave_server::LeaveServer;
+use crate::app::components::overview::server::ServerOverviewTrigger;
 use crate::app::components::ui::context_menu::*;
 use crate::entities::server::Server;
 use leptos::*;
@@ -105,9 +106,9 @@ fn ServerMenuAdminItems(
         create_category_node,
     } = nodes;
     view! {
-        <div class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
-            <div class="">"Server Settings"</div>
-        </div>
+        <ServerOverviewTrigger server_id=server.id class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
+            "Server Settings"
+        </ServerOverviewTrigger>
 
         <CreateChannelModal
             content_ref=create_channel_node

@@ -8,7 +8,7 @@ pub mod thread;
 pub mod user;
 
 use cfg_if::cfg_if;
-use leptos::*;
+use leptos::prelude::*;
 
 #[cfg(feature = "ssr")]
 pub const SERVER_ERROR: &str = "Something go wrong in our servers";

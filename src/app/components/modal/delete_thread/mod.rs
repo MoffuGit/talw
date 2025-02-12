@@ -1,7 +1,7 @@
 use crate::app::api::thread::use_thread;
 use crate::app::components::ui::modal::*;
 use crate::app::ActionForm;
-use leptos::*;
+use leptos::{html, prelude::*};
 use uuid::Uuid;
 
 #[component]
@@ -14,8 +14,8 @@ pub fn DeleteThreadModal(
     content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let delete_thread = use_thread().delete_thread;
-    let open = create_rw_signal(false);
-    create_effect(move |_| delete_thread.version().with(|_| open.set(false)));
+    let open = RwSignal::new(false);
+    Effect::new(move |_| delete_thread.version().with(|_| open.set(false)));
     view! {
         <ModalProvider content_ref=content_ref open=open>
             <ModalTrigger class=class>{children.map(|children| children())}</ModalTrigger>

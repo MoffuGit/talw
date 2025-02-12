@@ -1,4 +1,4 @@
-use leptos::*;
+use leptos::prelude::*;
 
 use crate::app::api::member::get_server_members;
 use crate::app::components::overview::server::ServerSettingsData;
@@ -9,7 +9,7 @@ pub fn MembersSettings() -> impl IntoView {
     let server = use_context::<ServerSettingsData>()
         .expect("should acces to the user overview context")
         .server;
-    let members = create_resource(move || (), move |_| get_server_members(server.id));
+    let members = Resource::new(move || (), move |_| get_server_members(server.id));
     //let members = create_resource
     //for member in members
     //  name
@@ -24,6 +24,7 @@ pub fn MembersSettings() -> impl IntoView {
                     members.and_then(|members| {
                         members.iter().map(|member|{
                             view!{
+                                <p/>
                             }
                         }).collect_view()
                     })

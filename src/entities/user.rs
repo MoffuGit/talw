@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -5,10 +7,10 @@ use uuid::Uuid;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use async_trait::async_trait;
-        use axum_session::SessionMySqlPool;
-        use axum_session_auth::Authentication;
+        use axum_session_auth::{Authentication, HasPermission};
         use bcrypt::{hash, DEFAULT_COST};
         use sqlx::{FromRow, MySqlPool};
+        use axum_session_sqlx::SessionMySqlPool;
         pub type AuthSession = axum_session_auth::AuthSession<User, Uuid, SessionMySqlPool, MySqlPool>;
         use super::Error;
 
@@ -20,7 +22,15 @@ cfg_if! {
 pub struct User {
     pub id: Uuid,
     pub name: String,
-    pub password: String,
+}
+
+impl Default for User {
+    fn default() -> Self {
+        Self {
+            id: Uuid::default(),
+            name: "Guest".into(),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

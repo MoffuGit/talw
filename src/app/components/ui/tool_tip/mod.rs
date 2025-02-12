@@ -1,6 +1,8 @@
-use leptos::{leptos_dom::helpers::TimeoutHandle, *};
+use leptos::html;
+use leptos::portal::Portal;
+use leptos::{leptos_dom::helpers::TimeoutHandle, prelude::*};
 use std::time::Duration;
-use web_sys::PointerEvent;
+use web_sys::{HtmlDivElement, HtmlElement, PointerEvent};
 
 #[derive(Clone)]
 struct TooltipProviderContext {
@@ -18,10 +20,10 @@ pub fn TooltipProvider(
     children: Children,
     #[prop(default = Duration::new(0,0))] delay_duration: Duration,
 ) -> impl IntoView {
-    let was_open_delayed_ref = create_rw_signal(false);
-    let is_open = create_rw_signal(false);
-    let open_timer_ref: RwSignal<Option<TimeoutHandle>> = create_rw_signal(None);
-    let trigger_ref = create_node_ref::<html::Div>();
+    let was_open_delayed_ref = RwSignal::new(false);
+    let is_open = RwSignal::new(false);
+    let open_timer_ref: RwSignal<Option<TimeoutHandle>> = RwSignal::new(None);
+    let trigger_ref = NodeRef::<html::Div>::new();
 
     let handle_open = move || match open_timer_ref.get_untracked() {
         None => {
@@ -106,13 +108,13 @@ pub fn TooltipTrigger(
     #[prop(optional)] on_click: Option<Signal<()>>,
 ) -> impl IntoView {
     let provider_context = use_context::<TooltipProviderContext>().expect("have this context");
-    let is_hover = create_rw_signal(false);
+    let is_hover = RwSignal::new(false);
     let trigger_ref = provider_context.trigger_ref;
 
     view! {
         <div
             class=class
-            _ref=trigger_ref
+            node_ref=trigger_ref
             on:pointermove=move |evt: PointerEvent| {
                 if evt.pointer_type() == "touch" {
                     return;
@@ -157,8 +159,8 @@ pub enum ToolTipSide {
 }
 
 pub fn get_tooltip_position(
-    trigger: HtmlElement<html::Div>,
-    content: HtmlElement<html::Div>,
+    trigger: HtmlDivElement,
+    content: HtmlDivElement,
     tooltip_side: ToolTipSide,
     tooltip_of_side: f64,
 ) -> (String, String) {
@@ -194,7 +196,7 @@ pub fn get_tooltip_position(
 #[allow(non_snake_case)]
 #[component]
 pub fn TooltipContent(
-    #[prop(into)] tip: MaybeSignal<String>,
+    #[prop(into)] tip: Signal<String>,
     #[prop(optional)] class: &'static str,
     #[prop(optional, default = ToolTipSide::Right)] tooltip_side: ToolTipSide,
     #[prop(optional, default = 2.0)] tooltip_of_side: f64,
@@ -205,20 +207,20 @@ pub fn TooltipContent(
     let is_open = context.is_open;
     let trigger_ref = context.trigger_ref;
 
-    let content_ref = create_node_ref::<html::Div>();
+    let content_ref = NodeRef::<html::Div>::new();
 
-    let show = create_rw_signal(false);
-    let position = create_rw_signal(("".to_string(), "".to_string()));
-    let position_timer_ref: RwSignal<Option<TimeoutHandle>> = create_rw_signal(None);
+    let show = RwSignal::new(false);
+    let position = RwSignal::new(("".to_string(), "".to_string()));
+    let position_timer_ref: RwSignal<Option<TimeoutHandle>> = RwSignal::new(None);
 
-    create_effect(move |_| {
+    Effect::new(move |_| {
         if let (Some(trigger), Some(content), true) =
             (trigger_ref.get(), content_ref.get(), is_open.get())
         {
             if let Some(timer) = position_timer_ref.get_untracked() {
                 timer.clear();
             }
-            position_timer_ref.set_untracked(
+            position_timer_ref.set(
                 set_timeout_with_handle(
                     move || {
                         position.set(get_tooltip_position(
@@ -240,13 +242,13 @@ pub fn TooltipContent(
         }
     });
 
-    create_effect(move |_| show.update(|value| *value = true));
+    Effect::new(move |_| show.update(|value| *value = true));
 
     view! {
         <Show when=move || show.get() && is_open.get()>
             <Portal mount=document().get_element_by_id("app").unwrap() clone:tip>
                 <div
-                    _ref=content_ref
+                    node_ref=content_ref
                     style=move || format!("translate: {}px {}px;", position().0, position().1)
                     class=format!("absolute z-50 left-0 top-0 animate-tooltip-open {} {}", class, {
                         if arrow {

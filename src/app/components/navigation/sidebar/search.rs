@@ -1,6 +1,6 @@
 use crate::app::components::ui::tool_tip::*;
 use icondata;
-use leptos::*;
+use leptos::prelude::*;
 use leptos_icons::*;
 use std::time::Duration;
 
@@ -11,7 +11,7 @@ pub fn Search() -> impl IntoView {
             <TooltipTrigger class="relative my-0.5">
                 <div class="flex relative items-center">
                     <div class="flex transition-all items-center justify-center text-base-content w-8 h-8">
-                        <Icon icon=icondata::LuSearch class="h-5 w-5 stroke-base-content" />
+                        <Icon icon=icondata::LuSearch /* class="h-5 w-5 stroke-base-content" */ />
                     </div>
                 </div>
             </TooltipTrigger>

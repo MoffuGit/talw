@@ -1,4 +1,6 @@
-use leptos::*;
+use leptos::context::Provider;
+use leptos::html;
+use leptos::prelude::*;
 use leptos_use::use_element_bounding;
 use leptos_use::UseElementBoundingReturn;
 
@@ -21,10 +23,10 @@ pub fn DropdownProvider(
     #[prop(optional)] content_ref: Option<NodeRef<html::Div>>,
     #[prop(optional)] hidden: Option<RwSignal<bool>>,
 ) -> impl IntoView {
-    let open = open.unwrap_or(create_rw_signal(false));
-    let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
-    let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
-    let hidden = hidden.unwrap_or(create_rw_signal(false));
+    let open = open.unwrap_or(RwSignal::new(false));
+    let trigger_ref = trigger_ref.unwrap_or(NodeRef::<html::Div>::new());
+    let content_ref = content_ref.unwrap_or(NodeRef::<html::Div>::new());
+    let hidden = hidden.unwrap_or(RwSignal::new(false));
     view! {
         <Provider value=DropdownProviderContext {
             trigger_ref,
@@ -218,7 +220,7 @@ pub fn DropdownContent(
 
     let position = Signal::derive(move || format!("translate: {}px {}px;", x.get(), y_position()));
 
-    create_effect(move |_| {
+    Effect::new(move |_| {
         if context.open.get() {
             update_trigger();
         }
@@ -230,7 +232,7 @@ pub fn DropdownContent(
             ignore=ignore
             style=position
         >
-            {children.clone()}
+            {children.clone().map(|children| children())}
         </MenuContent>
     }
 }

@@ -1,7 +1,10 @@
+use leptos::context::Provider;
 use leptos::ev::contextmenu;
-use leptos::*;
+use leptos::portal::Portal;
+use leptos::{html, logging, prelude::*};
 use leptos_use::{
-    on_click_outside_with_options, use_document, use_event_listener, OnClickOutsideOptions,
+    on_click_outside_with_options, use_document, use_event_listener,
+    use_event_listener_with_options, OnClickOutsideOptions, UseEventListenerOptions,
 };
 
 #[derive(Clone)]
@@ -31,10 +34,10 @@ pub fn MenuProvider(
     #[prop(optional)] content_ref: Option<NodeRef<html::Div>>,
     trigger_key: TriggerKey,
 ) -> impl IntoView {
-    let open = open.unwrap_or(create_rw_signal(false));
-    let hidden = hidden.unwrap_or(create_rw_signal(false));
-    let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
-    let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
+    let open = open.unwrap_or(RwSignal::new(false));
+    let hidden = hidden.unwrap_or(RwSignal::new(false));
+    let trigger_ref = trigger_ref.unwrap_or(NodeRef::<html::Div>::new());
+    let content_ref = content_ref.unwrap_or(NodeRef::<html::Div>::new());
     view! {
         <Provider value=MenuProviderContext {
             open,
@@ -78,7 +81,8 @@ pub fn MenuTrigger(
             >
                 {children.map(|children| children())}
             </div>
-        },
+        }
+        .into_any(),
         TriggerKey::Rtl => view! {
             <div
                 class=move || {
@@ -100,7 +104,8 @@ pub fn MenuTrigger(
             >
                 {children.map(|children| children())}
             </div>
-        },
+        }
+        .into_any(),
     }
 }
 
@@ -115,7 +120,7 @@ pub fn MenuContent(
     let context = use_context::<MenuProviderContext>().expect("acces to menu context");
     let content_ref = context.content_ref;
     let style = style.unwrap_or_default();
-    create_effect(move |_| {
+    Effect::new(move |_| {
         if context.modal {
             if let Some(app) = document().get_element_by_id("app") {
                 if context.open.get() {
@@ -141,18 +146,18 @@ pub fn MenuContent(
         },
         on_click_outside_options,
     );
-    let show = create_rw_signal(false);
-    create_effect(move |_| {
+    let show = RwSignal::new(false);
+    Effect::new(move |_| {
         show.set(true);
     });
-    let class = store_value(class);
+    let class = StoredValue::new(class);
     view! {
         <Provider value=context.clone()>
             <Show when=move || {
                 show.get() && context.open.get()
             }>
                 {if context.trigger_key == TriggerKey::Rtl {
-                    let _ = use_event_listener(
+                    let _ = use_event_listener_with_options(
                         use_document(),
                         contextmenu,
                         move |_| {
@@ -160,6 +165,7 @@ pub fn MenuContent(
                                 context.open.set(false)
                             }
                         },
+                        UseEventListenerOptions::default().capture(true)
                     );
                 }}
                 <Portal
@@ -180,7 +186,7 @@ pub fn MenuContent(
                         }
                         node_ref=content_ref
                     >
-                        {children.clone()}
+                        {children.clone().map(|children| children())}
                     </div>
                 </Portal>
             </Show>

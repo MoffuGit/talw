@@ -3,7 +3,7 @@ use std::time::Duration;
 use crate::app::api::theme::use_theme;
 use crate::app::components::ui::tool_tip::*;
 use icondata::Icon;
-use leptos::*;
+use leptos::prelude::*;
 use leptos_icons::*;
 use leptos_router::*;
 
@@ -24,14 +24,14 @@ pub fn Toggle_Theme(
     let prefers_theme = theme_context.prefers_theme;
 
     view! {
-        <ActionForm action=toggle_theme class=class>
+        <ActionForm action=toggle_theme /* class=class */>
             <input type="hidden" name="theme" value=move || (!prefers_theme.get()).to_string() />
             <button type="submit" class="w-full h-full flex items-center justify-center">
                 {icons
                     .clone()
                     .map(|icons| move || match prefers_theme.get() {
-                        true => view! { <Icon icon=icons.dark class=icons.class /> },
-                        false => view! { <Icon icon=icons.light class=icons.class /> },
+                        true => view! { <Icon icon=icons.dark /* class=icons.class */ /> },
+                        false => view! { <Icon icon=icons.light /* class=icons.class */ /> },
                     })}
             </button>
         </ActionForm>
@@ -45,13 +45,13 @@ pub fn SelectTheme(dark_mode: bool) -> impl IntoView {
     view! {
         <ActionForm
             action=theme_context.toggle_theme
-            class=move || {
-                if theme_context.prefers_theme.get() == dark_mode {
-                    "rounded-full w-16 h-16 border-2 border-primary"
-                } else {
-                    "rounded-full w-16 h-16 "
-                }
-            }
+            // class=move || {
+            //     if theme_context.prefers_theme.get() == dark_mode {
+            //         "rounded-full w-16 h-16 border-2 border-primary"
+            //     } else {
+            //         "rounded-full w-16 h-16 "
+            //     }
+            // }
         >
             <input type="hidden" name="theme" value=dark_mode.to_string() />
             <TooltipProvider delay_duration=Duration::new(0,0)>

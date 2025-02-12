@@ -1,4 +1,4 @@
-use leptos::*;
+use leptos::{html, prelude::*};
 
 use crate::app::api::thread::{check_member_on_thread, use_thread};
 use crate::app::components::modal::delete_thread::DeleteThreadModal;
@@ -8,7 +8,7 @@ use crate::app::components::navigation::server::{
 use crate::app::components::thread::{JoinThread, LeaveThread};
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::thread::Thread;
-use leptos_router::A;
+use leptos_router::components::A;
 
 #[component]
 pub fn ThreadMenuContent(
@@ -20,8 +20,8 @@ pub fn ThreadMenuContent(
     let join_thread = thread_context.join_thread;
     let leave_thread = thread_context.leave_thread;
     let current_server_context = use_current_server_context();
-    let thread_name = store_value(thread.name.clone());
-    let check_member_on_thread = create_resource(
+    let thread_name = StoredValue::new(thread.name.clone());
+    let check_member_on_thread = Resource::new(
         move || (join_thread.version().get(), leave_thread.version().get()),
         move |_| check_member_on_thread(thread.id),
     );
@@ -39,7 +39,7 @@ pub fn ThreadMenuContent(
                                         class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                                     />
                                 }
-                                    .into_view()
+                                    .into_any()
                             } else {
                                 view! {
                                     <JoinThread
@@ -47,7 +47,7 @@ pub fn ThreadMenuContent(
                                         server_id=current_server_context.server.id
                                         class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                                     />
-                                }.into_view()
+                                }.into_any()
                             }
                         })
                 }}
@@ -65,14 +65,15 @@ pub fn ThreadMenuContent(
                                     )
                                 }
                                 on:click=move |_| open.set(false)
+                                {..}
                                 class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                             >
                                 "Open Full View"
                             </A>
                         }
-                            .into_view()
+                            .into_any()
                     } else {
-                        ().into_view()
+                        ().into_any()
                     }
                 } else {
                     view! {
@@ -86,12 +87,13 @@ pub fn ThreadMenuContent(
                                 )
                             }
                             on:click=move |_| open.set(false)
+                            {..}
                             class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                         >
                             "Open Full View"
                         </A>
                     }
-                        .into_view()
+                        .into_any()
                 }
             }}
             {move || {
@@ -111,14 +113,15 @@ pub fn ThreadMenuContent(
                                     )
                                 }
                                 on:click=move |_| open.set(false)
+                                {..}
                                 class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                             >
                                 "Open Split View"
                             </A>
                         }
-                            .into_view()
+                            .into_any()
                     } else {
-                        ().into_view()
+                        ().into_any()
                     }
                 } else {
                     view! {
@@ -132,12 +135,13 @@ pub fn ThreadMenuContent(
                                 )
                             }
                             on:click=move |_| open.set(false)
+                            {..}
                             class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                         >
                             "Open Split View"
                         </A>
                     }
-                        .into_view()
+                        .into_any()
                 }
             }}
                 {move || {
@@ -154,9 +158,9 @@ pub fn ThreadMenuContent(
                             >
                                 "Delete Thread"
                             </DeleteThreadModal>
-                        }
+                        }.into_any()
                     } else {
-                        ().into_view()
+                        ().into_any()
                     }
                 }}
             </div>

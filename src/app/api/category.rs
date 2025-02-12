@@ -1,6 +1,6 @@
 use crate::entities::category::Category;
 use cfg_if::cfg_if;
-use leptos::*;
+use leptos::prelude::*;
 use uuid::Uuid;
 
 cfg_if! {
@@ -15,15 +15,15 @@ cfg_if! {
 
 #[derive(Clone, Copy)]
 pub struct CategoryContext {
-    pub create_category: Action<CreateCategory, Result<Uuid, ServerFnError>>,
-    pub rename_category: Action<RenameCategory, Result<(), ServerFnError>>,
-    pub delete_category: Action<DeleteCategory, Result<(), ServerFnError>>,
+    pub create_category: ServerAction<CreateCategory>,
+    pub rename_category: ServerAction<RenameCategory>,
+    pub delete_category: ServerAction<DeleteCategory>,
 }
 
 pub fn provide_category_context() {
-    let create_category = create_server_action::<CreateCategory>();
-    let rename_category = create_server_action::<RenameCategory>();
-    let delete_category = create_server_action::<DeleteCategory>();
+    let create_category = ServerAction::<CreateCategory>::new();
+    let rename_category = ServerAction::<RenameCategory>::new();
+    let delete_category = ServerAction::<DeleteCategory>::new();
     provide_context(CategoryContext {
         create_category,
         rename_category,

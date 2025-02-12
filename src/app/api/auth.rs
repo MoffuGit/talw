@@ -1,11 +1,12 @@
 use super::user::get_user;
 use crate::entities::user::User;
 use cfg_if::cfg_if;
-use futures::join;
-use leptos::*;
+use leptos::prelude::*;
+use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use futures::join;
         use bcrypt::verify;
         use super::pool;
         use super::auth;
@@ -14,18 +15,18 @@ cfg_if! {
 
 #[derive(Clone, Copy)]
 pub struct AuthContext {
-    pub auth: Resource<(usize, usize, usize), Result<Option<User>, ServerFnError>>,
-    pub login: Action<Login, Result<(), ServerFnError>>,
-    pub logout: Action<Logout, Result<(), ServerFnError>>,
-    pub signup: Action<Signup, Result<(), ServerFnError>>,
+    pub auth: Resource<Result<Option<User>, ServerFnError>>,
+    pub login: ServerAction<Login>,
+    pub logout: ServerAction<Logout>,
+    pub signup: ServerAction<Signup>,
 }
 
 pub fn provide_auth_context() {
-    let login = create_server_action::<Login>();
-    let logout = create_server_action::<Logout>();
-    let signup = create_server_action::<Signup>();
+    let login = ServerAction::<Login>::new();
+    let logout = ServerAction::<Logout>::new();
+    let signup = ServerAction::<Signup>::new();
 
-    let auth = create_resource(
+    let auth = Resource::new(
         move || {
             (
                 login.version().get(),
@@ -69,7 +70,7 @@ pub async fn login(
         }
     };
 
-    match verify(password, &user.password) {
+    match verify(password, &String::default()) {
         Ok(true) => {
             auth.login_user(user.id);
             auth.remember_user(remember.is_some());

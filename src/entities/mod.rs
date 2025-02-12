@@ -24,7 +24,7 @@ impl From<sqlx::Error> for Error {
 }
 
 #[cfg(feature = "ssr")]
-use leptos::ServerFnError;
+use leptos::prelude::ServerFnError;
 
 #[cfg(feature = "ssr")]
 impl From<Error> for ServerFnError {

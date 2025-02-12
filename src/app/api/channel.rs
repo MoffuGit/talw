@@ -1,7 +1,7 @@
 use crate::entities::channel::Channel;
 use crate::entities::channel::ChannelType;
 use cfg_if::cfg_if;
-use leptos::*;
+use leptos::prelude::*;
 use uuid::Uuid;
 
 use super::server;
@@ -17,12 +17,11 @@ cfg_if! {
 
 #[derive(Clone, Copy)]
 pub struct ChannelContext {
-    pub create_channel: Action<CreateChannel, Result<Uuid, ServerFnError>>,
-    pub create_channel_with_category:
-        Action<CreateChannelWithCategory, Result<Uuid, ServerFnError>>,
-    pub rename_channel: Action<RenameChannel, Result<(), ServerFnError>>,
-    pub delete_channel: Action<DeleteChannel, Result<(), ServerFnError>>,
-    pub update_channel: Action<UpdateChannel, Result<(), ServerFnError>>,
+    pub create_channel: ServerAction<CreateChannel>,
+    pub create_channel_with_category: ServerAction<CreateChannelWithCategory>,
+    pub rename_channel: ServerAction<RenameChannel>,
+    pub delete_channel: ServerAction<DeleteChannel>,
+    pub update_channel: ServerAction<UpdateChannel>,
 }
 
 pub fn use_channel() -> ChannelContext {
@@ -30,11 +29,11 @@ pub fn use_channel() -> ChannelContext {
 }
 
 pub fn provide_channel_context() {
-    let create_channel = create_server_action::<CreateChannel>();
-    let rename_channel = create_server_action::<RenameChannel>();
-    let create_channel_with_category = create_server_action::<CreateChannelWithCategory>();
-    let delete_channel = create_server_action::<DeleteChannel>();
-    let update_channel = create_server_action::<UpdateChannel>();
+    let create_channel = ServerAction::<CreateChannel>::new();
+    let rename_channel = ServerAction::<RenameChannel>::new();
+    let create_channel_with_category = ServerAction::<CreateChannelWithCategory>::new();
+    let delete_channel = ServerAction::<DeleteChannel>::new();
+    let update_channel = ServerAction::<UpdateChannel>::new();
 
     provide_context(ChannelContext {
         create_channel,

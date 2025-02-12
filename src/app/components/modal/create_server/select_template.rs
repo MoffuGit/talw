@@ -3,7 +3,7 @@ use crate::app::api::server::ServerTemplate;
 use crate::app::components::ui::modal::slide_modal::SlideForward;
 use crate::app::components::ui::modal::ModalClose;
 use icondata;
-use leptos::*;
+use leptos::prelude::*;
 use leptos_icons::*;
 use strum::IntoEnumIterator;
 
@@ -17,12 +17,12 @@ pub fn SelectTemplate() -> impl IntoView {
                 Your server is where you and your friends hang out. Make yours and start talking.
             </p>
             <ModalClose
-                attr:type="reset"
+                attr:r#type="reset"
                 class="absolute right-2 top-2 flex items-center group bg-none"
             >
                 <Icon
                     icon=icondata::RiCloseSystemLine
-                    class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
+                    // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                 />
             </ModalClose>
         </div>
@@ -69,7 +69,7 @@ fn Templates(template: ServerTemplate, children: Children) -> impl IntoView {
             >
                 <div class="w-[66px] h-[66px]" />
                 <div class="text-base leading-[20px] font-bold">{children()}</div>
-                <Icon icon=icondata::RiArrowRightSArrowsLine class="ml-auto mr-3 h-6 w-6" />
+                <Icon icon=icondata::RiArrowRightSArrowsLine /* class="ml-auto mr-3 h-6 w-6" */ />
             </div>
         </SlideForward>
     }

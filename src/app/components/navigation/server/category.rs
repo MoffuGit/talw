@@ -6,12 +6,10 @@ use crate::app::components::modal::edit_category::EditCategoryModal;
 use crate::app::components::navigation::server::channel::Channel;
 use crate::app::components::ui::collapsible::*;
 use crate::app::components::ui::context_menu::*;
-use crate::app::components::ui::tool_tip::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
-use icondata;
-use leptos::*;
-use leptos_icons::*;
+use leptos::html;
+use leptos::prelude::*;
 use std::time::Duration;
 
 use crate::app::api::channel::get_channels_with_category;
@@ -20,8 +18,8 @@ use crate::entities::category::Category;
 #[allow(non_snake_case)]
 #[component]
 pub fn Category(category: StoredValue<Category>) -> impl IntoView {
-    let collapsible_open = create_rw_signal(false);
-    let hidden_context_menu = create_rw_signal(false);
+    let collapsible_open = RwSignal::new(false);
+    let hidden_context_menu = RwSignal::new(false);
     let delete_category = use_category().delete_category;
     let create_channel_with_category = use_channel().create_channel_with_category;
     let delete_channel = use_channel().delete_channel;
@@ -33,9 +31,9 @@ pub fn Category(category: StoredValue<Category>) -> impl IntoView {
     } = use_current_server_context();
 
     let Category { id, name, .. } = category.get_value();
-    let name = store_value(name);
+    let name = StoredValue::new(name);
 
-    let channels = create_resource(
+    let channels = Resource::new(
         move || {
             (
                 create_channel_with_category.version().get(),
@@ -47,10 +45,10 @@ pub fn Category(category: StoredValue<Category>) -> impl IntoView {
         move |_| get_channels_with_category(server.id, id),
     );
 
-    let create_channel_node = create_node_ref::<html::Div>();
-    let edit_category_node = create_node_ref::<html::Div>();
-    let delete_category_node = create_node_ref::<html::Div>();
-    let menu_open = create_rw_signal(false);
+    let create_channel_node = NodeRef::<html::Div>::new();
+    let edit_category_node = NodeRef::<html::Div>::new();
+    let delete_category_node = NodeRef::<html::Div>::new();
+    let menu_open = RwSignal::new(false);
 
     view! {
         <CollapsibleProvider open=collapsible_open>
@@ -86,7 +84,6 @@ pub fn Category(category: StoredValue<Category>) -> impl IntoView {
                 <ContextMenuContent
                     ignore=vec![create_channel_node, edit_category_node, delete_category_node]
                     class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
-                        .to_string()
                 >
                     <CreateChannelModal
                         content_ref=create_channel_node

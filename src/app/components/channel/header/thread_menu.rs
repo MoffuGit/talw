@@ -8,17 +8,17 @@ use crate::app::components::ui::dropdown_menu::*;
 use crate::entities::thread::Thread;
 use crate::entities::user::Profile;
 use icondata;
-use leptos::*;
+use leptos::{html, prelude::*};
 use leptos_icons::Icon;
-use leptos_router::A;
+use leptos_router::components::A;
 use uuid::Uuid;
 
 #[component]
 pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
-    let open = create_rw_signal(false);
-    let create_thread_node = create_node_ref::<html::Div>();
-    let context_menu_ref = create_node_ref::<html::Div>();
-    let delete_thread_modal_ref = create_node_ref::<html::Div>();
+    let open = RwSignal::new(false);
+    let create_thread_node = NodeRef::<html::Div>::new();
+    let context_menu_ref = NodeRef::<html::Div>::new();
+    let delete_thread_modal_ref = NodeRef::<html::Div>::new();
     view! {
         <DropdownProvider open=open modal=false>
             <DropdownTrigger class="hover:bg-base-content/5 rounded-lg p-1 cursor-pointer select-none p-1">
@@ -43,7 +43,7 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
                         <div class="hover:bg-base-content/10 rounded-md p-1 fill-base-content ml-[10px]">
                             <Icon
                                 icon=icondata::LuX
-                                class="w-5 h-5"
+                                // class="w-5 h-5"
                                 on:click=move |_| open.set(false)
                             />
                         </div>
@@ -74,7 +74,7 @@ pub fn ActiveThreads(
 ) -> impl IntoView {
     let thread_context = use_thread();
     let delete_thread = thread_context.delete_thread;
-    let get_threads = create_resource(
+    let get_threads = Resource::new(
         move || {
             (
                 delete_thread.version().get(),
@@ -88,7 +88,7 @@ pub fn ActiveThreads(
             <div class="flex w-full justify-between items-center my-2">
                 <div class="h-6 w-[200px] border border-base-100 rounded p-1.5 flex items-center justify-between">
                     "Search"
-                    <Icon icon=icondata::LuSearch class="h-4 w-4 stroke-base-content" />
+                    <Icon icon=icondata::LuSearch /* class="h-4 w-4 stroke-base-content" */ />
                 </div>
                 <CreatethreadModal
                     content_ref=create_thread_node
@@ -132,24 +132,25 @@ pub fn ThreadLink(
     context_menu_ref: NodeRef<html::Div>,
     delete_thread_modal_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
-    let created_by_profile = create_resource(|| (), move |_| get_member_profile(thread.created_by));
-    let name = store_value(thread.name.to_string());
+    let created_by_profile = Resource::new(|| (), move |_| get_member_profile(thread.created_by));
+    let name = StoredValue::new(thread.name.to_string());
     let thread_id = thread.id;
-    let thread = store_value(thread);
+    let thread = StoredValue::new(thread);
     view! {
         <Transition fallback=move || ()>
             {move || {
                 created_by_profile
                     .and_then(|profile| {
                         let profile = profile.as_ref().expect("should have a profile");
-                        let created_by = store_value(profile.name.clone());
-                        let member_url = store_value(profile.image_url.clone());
+                        let created_by = StoredValue::new(profile.name.clone());
+                        let member_url = StoredValue::new(profile.image_url.clone());
                         view! {
                             <ContextMenuProvider modal=false content_ref=context_menu_ref>
                                 <ContextMenuTrigger class="w-full h-auto">
                                     <A
                                         on:click=move |_| open.set(false)
                                         href=format!("{}", thread_id.simple())
+                                        {..}
                                         class="w-full h-20 hover:bg-base-content/10 rounded-md inline-block flex justify-between items-center px-2"
                                     >
                                         <div class="flex flex-col w-auto h-auto">
@@ -162,12 +163,12 @@ pub fn ThreadLink(
                                                             src=url
                                                         />
                                                     }
-                                                        .into_view()
+                                                        .into_any()
                                                 } else {
                                                     view! {
                                                         <div class="w-5 h-5 rounded-full bg-white border-base-200 mr-1" />
                                                     }
-                                                        .into_view()
+                                                        .into_any()
                                                 }} {format!("Started by {}", created_by.get_value())}
                                             </div>
                                         </div>
@@ -194,7 +195,7 @@ pub fn ThreadLink(
 
 #[component]
 pub fn ThreadMembers(thread_id: Uuid) -> impl IntoView {
-    let thread_members = create_resource(|| (), move |_| get_thread_members(thread_id));
+    let thread_members = Resource::new(|| (), move |_| get_thread_members(thread_id));
 
     view! {
         <Transition fallback=move || ()>
@@ -206,7 +207,7 @@ pub fn ThreadMembers(thread_id: Uuid) -> impl IntoView {
                                 .clone()
                                 .into_iter()
                                 .map(|member| {
-                                    let member_profile = create_resource(
+                                    let member_profile = Resource::new(
                                         || (),
                                         move |_| get_user_profile(member.user_id),
                                     );
@@ -221,12 +222,12 @@ pub fn ThreadMembers(thread_id: Uuid) -> impl IntoView {
                                                         src=image_url
                                                     />
                                                 }
-                                                    .into_view()
+                                                    .into_any()
                                             } else {
                                                 view! {
                                                     <div class="w-4 h-4 rounded-full bg-white border-base-200 mr-1" />
                                                 }
-                                                    .into_view()
+                                                    .into_any()
                                             }
                                         }}
                                     }

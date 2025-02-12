@@ -6,7 +6,8 @@ use crate::app::api::server::ServerTemplate;
 use crate::app::components::modal::create_server::join_with_invitation::JoinWithInvitation;
 use crate::app::components::ui::modal::slide_modal::*;
 use crate::app::components::ui::modal::*;
-use leptos::*;
+use leptos::html;
+use leptos::prelude::*;
 use select_name::SelectName;
 use select_template::SelectTemplate;
 use std::time::Duration;
@@ -33,14 +34,14 @@ pub fn CreateServerModal(
 ) -> impl IntoView {
     let use_server = use_server();
 
-    let is_open = create_rw_signal(false);
+    let is_open = RwSignal::new(false);
 
-    let selected_template = create_rw_signal::<ServerTemplate>(ServerTemplate::Default);
-    let join_with_invitation_ref = create_node_ref::<html::Form>();
-    let select_name_ref = create_node_ref::<html::Form>();
+    let selected_template = RwSignal::new(ServerTemplate::Default);
+    let join_with_invitation_ref = NodeRef::<html::Form>::new();
+    let select_name_ref = NodeRef::<html::Form>::new();
 
     let inital_value = 0;
-    let slides = create_rw_signal::<Vec<u8>>(vec![]);
+    let slides = RwSignal::<Vec<u8>>::new(vec![]);
 
     let on_close = move || {
         if let Some(form) = join_with_invitation_ref.get() {
@@ -49,7 +50,7 @@ pub fn CreateServerModal(
         if let Some(form) = select_name_ref.get() {
             form.reset()
         }
-        use_server.create_server.value().set(None);
+        use_server.create_server.clear();
         set_timeout(
             move || {
                 slides.update(|slides| {
@@ -65,7 +66,7 @@ pub fn CreateServerModal(
         use_server.create_server.value().set(None);
     };
 
-    create_effect(move |_| {
+    Effect::new(move |_| {
         use_server.create_server.version().with(|_| {
             if let Some(Ok(_)) = use_server.create_server.value().get() {
                 is_open.update(|value| *value = false);

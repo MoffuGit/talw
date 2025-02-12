@@ -1,5 +1,5 @@
 use crate::app::api::auth::use_auth;
-use leptos::*;
+use leptos::prelude::*;
 
 use crate::app::components::navigation::navbar::Navbar;
 
@@ -8,16 +8,17 @@ use crate::app::components::navigation::navbar::Navbar;
 pub fn Home() -> impl IntoView {
     view! {
         <Navbar />
-        <Suspense fallback=move || ()>
+        <Transition>
             {move || {
-                use_auth()
-                    .auth
-                    .get()
-                    .map(|user| match user {
-                        Ok(Some(user)) => view! { <div>{user.name}</div> }.into_view(),
-                        _ => view! { <div>"error with auth"</div> }.into_view(),
-                    })
+                Suspend::new(async move {
+                    use_auth().auth.await.map(|user| {
+                        match user {
+                            Some(user) => view! { <div>{user.name}</div> }.into_any(),
+                            _ => view! { <div>"error with auth"</div> }.into_any(),
+                        }
+                    }).into_any()
+                })
             }}
-        </Suspense>
+        </Transition>
     }
 }

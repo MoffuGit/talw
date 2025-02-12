@@ -2,9 +2,8 @@ use crate::app::api::category::use_category;
 use crate::app::components::ui::modal::ModalProvider;
 use crate::app::components::ui::modal::*;
 use crate::entities::category::Category;
-use leptos::*;
+use leptos::{html, prelude::*};
 use leptos_icons::Icon;
-use leptos_router::ActionForm;
 
 #[allow(non_snake_case)]
 #[component]
@@ -15,22 +14,22 @@ pub fn EditCategoryModal(
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
-    let open = create_rw_signal(false);
-    let form_ref = create_node_ref::<html::Form>();
+    let open = RwSignal::new(false);
+    let form_ref = NodeRef::<html::Form>::new();
     let rename_category = use_category().rename_category;
     let on_close = move || {
         if let Some(form) = form_ref.get() {
             form.reset();
         }
     };
-    create_effect(move |_| {
+    Effect::new(move |_| {
         rename_category.version().with(|_| {
             if let Some(Ok(_)) = rename_category.value().get() {
                 open.update(|value| *value = false);
             }
         });
     });
-    let name = store_value(category.name);
+    let name = StoredValue::new(category.name);
     view! {
         <ModalProvider content_ref=content_ref open=open on_close=Signal::derive(on_close)>
             <ModalTrigger class=class on_click=on_click>
@@ -42,11 +41,11 @@ pub fn EditCategoryModal(
                     <ModalClose class="absolute right-2 top-2 flex items-center group bg-none">
                         <Icon
                             icon=icondata::RiCloseSystemLine
-                            class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
+                            // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                         />
                     </ModalClose>
                 </div>
-                <ActionForm action=rename_category node_ref=form_ref class="w-full">
+                <ActionForm action=rename_category node_ref=form_ref /* class="w-full" */>
                     <div class="px-[16px] w-full">
                         <div class="text-[12px] mb-0.5 leading-[18px] uppercase font-bold text-base-content">
                             "category name"
@@ -63,7 +62,7 @@ pub fn EditCategoryModal(
                     </div>
                     <div class="relative p-4 flex justify-end w-full bg-base-200">
                         <ModalClose
-                            attr:type="reset"
+                            attr:r#type="reset"
                             class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 hover:underline"
                         >
                             "Cancel"

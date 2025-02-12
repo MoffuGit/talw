@@ -1,6 +1,6 @@
 use crate::entities::user::{Banner, Profile, User};
 use cfg_if::cfg_if;
-use leptos::*;
+use leptos::prelude::*;
 use server_fn::codec::{MultipartData, MultipartFormData};
 use uuid::Uuid;
 use web_sys::FormData;
@@ -20,28 +20,28 @@ cfg_if! {
 
 #[derive(Clone, Copy)]
 pub struct UserContext {
-    pub edit_banner_image: Action<FormData, Result<(), ServerFnError>>,
-    pub edit_profile_image: Action<FormData, Result<(), ServerFnError>>,
-    pub banner: Resource<(usize, usize, usize), Result<Banner, ServerFnError>>,
-    pub profile: Resource<(usize, usize, usize), Result<Profile, ServerFnError>>,
-    pub edit_profile_name: Action<EditUserName, Result<(), ServerFnError>>,
-    pub edit_banner_about: Action<EditUserAbout, Result<(), ServerFnError>>,
-    pub edit_user_data: Action<EditUserData, Result<(), ServerFnError>>,
+    pub edit_banner_image: Action<FormData, Result<(), ServerFnError>, LocalStorage>,
+    pub edit_profile_image: Action<FormData, Result<(), ServerFnError>, LocalStorage>,
+    pub banner: Resource<Result<Banner, ServerFnError>>,
+    pub profile: Resource<Result<Profile, ServerFnError>>,
+    pub edit_profile_name: ServerAction<EditUserName>,
+    pub edit_banner_about: ServerAction<EditUserAbout>,
+    pub edit_user_data: ServerAction<EditUserData>,
 }
 
 pub fn provide_user_context(user_id: Uuid) {
-    let edit_banner_image = create_action(|data: &FormData| {
+    let edit_banner_image = Action::new_local(|data: &FormData| {
         let data = data.clone();
         edit_image_banner(data.into())
     });
-    let edit_banner_about = create_server_action::<EditUserAbout>();
-    let edit_profile_image = create_action(|data: &FormData| {
+    let edit_banner_about = ServerAction::<EditUserAbout>::new();
+    let edit_profile_image = Action::new_local(|data: &FormData| {
         let data = data.clone();
         edit_profile_image(data.into())
     });
-    let edit_profile_name = create_server_action::<EditUserName>();
-    let edit_user_data = create_server_action::<EditUserData>();
-    let banner = create_resource(
+    let edit_profile_name = ServerAction::<EditUserName>::new();
+    let edit_user_data = ServerAction::<EditUserData>::new();
+    let banner = Resource::new(
         move || {
             (
                 edit_banner_image.version().get(),
@@ -51,7 +51,7 @@ pub fn provide_user_context(user_id: Uuid) {
         },
         move |_| get_user_banner(user_id),
     );
-    let profile = create_resource(
+    let profile = Resource::new(
         move || {
             (
                 edit_profile_image.version().get(),
@@ -59,7 +59,7 @@ pub fn provide_user_context(user_id: Uuid) {
                 edit_user_data.version().get(),
             )
         },
-        move |_| get_user_profile(user_id),
+        move |_| async move { get_user_profile(user_id).await },
     );
 
     provide_context(UserContext {

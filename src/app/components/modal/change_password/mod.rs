@@ -1,5 +1,5 @@
 use crate::app::components::ui::modal::*;
-use leptos::*;
+use leptos::prelude::*;
 use uuid::Uuid;
 
 #[component]
@@ -8,9 +8,9 @@ pub fn ChangePasswordModal(
     #[prop(optional)] children: Option<Children>,
     class: &'static str,
 ) -> impl IntoView {
-    let open = create_rw_signal(false);
-    let content_ref = create_node_ref();
-    let _new_password = create_rw_signal(String::new());
+    let open = RwSignal::new(false);
+    let content_ref = NodeRef::new();
+    let _new_password = RwSignal::new(String::new());
     view! {
         <ModalProvider open=open content_ref=content_ref>
             <ModalTrigger class=class>{children.map(|children| children())}</ModalTrigger>

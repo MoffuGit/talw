@@ -2,10 +2,12 @@
 #[tokio::main]
 async fn main() {
     use axum::extract::State;
+    use axum_session_sqlx::SessionMySqlPool;
     use dotenvy::dotenv;
     use leptos::logging::log;
-    use leptos::*;
+    use leptos::prelude::*;
     use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
+    use sqlx::mysql::MySqlPoolOptions;
     use start_axum::entities::user::AuthSession;
     use start_axum::entities::user::User;
     use start_axum::state::AppState;
@@ -14,7 +16,6 @@ async fn main() {
     use start_axum::ws::WsChannels;
 
     use start_axum::app::*;
-    use start_axum::fileserv::file_and_error_handler;
     use uuid::Uuid;
 
     use axum::{
@@ -26,7 +27,7 @@ async fn main() {
         Router,
     };
 
-    use axum_session::{SessionConfig, SessionLayer, SessionMySqlPool, SessionStore};
+    use axum_session::{SessionConfig, SessionLayer, SessionStore};
     use axum_session_auth::{AuthConfig, AuthSessionLayer};
 
     use sqlx::MySqlPool;
@@ -36,10 +37,11 @@ async fn main() {
     async fn server_fn_handler(
         State(app_state): State<AppState>,
         auth_session: AuthSession,
-        _path: Path<String>,
+        path: Path<String>,
         cookies: Cookies,
         req: Request<Body>,
     ) -> impl IntoResponse {
+        log!("path: {:?}", path);
         handle_server_fns_with_context(
             move || {
                 provide_context(app_state.pool.clone());
@@ -54,21 +56,22 @@ async fn main() {
 
     async fn leptos_router_handler(
         auth_session: AuthSession,
-        State(app_state): State<AppState>,
+        state: State<AppState>,
         cookies: Cookies,
         req: Request<Body>,
     ) -> Response {
-        let handler = leptos_axum::render_app_to_stream_with_context(
-            app_state.leptos_options.clone(),
+        let State(app_state) = state.clone();
+        let handler = leptos_axum::render_route_with_context(
+            app_state.routes.clone(),
             move || {
                 provide_context(cookies.clone());
                 provide_context(app_state.pool.clone());
                 provide_context(app_state.uploadthing.clone());
                 provide_context(auth_session.clone())
             },
-            || view! { <App /> },
+            move || shell(app_state.leptos_options.clone()),
         );
-        handler(req).await.into_response()
+        handler(state, req).await.into_response()
     }
 
     simple_logger::init_with_level(log::Level::Debug).expect("couldn't initialize logging");
@@ -77,7 +80,8 @@ async fn main() {
 
     let database_url = std::env::var("DATABASE_URL").expect("have database url");
 
-    let pool = MySqlPool::connect(&database_url)
+    let pool = MySqlPoolOptions::new()
+        .connect(&database_url)
         .await
         .expect("connect to db");
 
@@ -90,7 +94,7 @@ async fn main() {
 
     sqlx::migrate!().run(&pool).await.expect("sql migrations");
 
-    let conf = get_configuration(None).await.unwrap();
+    let conf = get_configuration(None).unwrap();
     let leptos_options = conf.leptos_options;
     let addr = leptos_options.site_addr;
     let routes = generate_route_list(App);
@@ -100,6 +104,7 @@ async fn main() {
 
     let app_state = AppState {
         leptos_options,
+        routes: routes.clone(),
         pool: pool.clone(),
         ws_channels,
         uploadthing,
@@ -112,7 +117,7 @@ async fn main() {
             get(server_fn_handler).post(server_fn_handler),
         )
         .leptos_routes_with_handler(routes, get(leptos_router_handler))
-        .fallback(file_and_error_handler)
+        .fallback(leptos_axum::file_and_error_handler::<AppState, _>(shell))
         .layer(CookieManagerLayer::new())
         .layer(
             AuthSessionLayer::<User, Uuid, SessionMySqlPool, MySqlPool>::new(Some(pool.clone()))

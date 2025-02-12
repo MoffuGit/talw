@@ -1,15 +1,15 @@
 use crate::app::api::auth::use_auth;
-use leptos::*;
-use leptos_router::{ActionForm, A};
+use leptos::prelude::*;
+use leptos_router::components::A;
 
 #[allow(non_snake_case)]
 #[component]
 pub fn Signup() -> impl IntoView {
     let signup = use_auth().signup;
-    leptos::on_cleanup(move || signup.value().set(None));
+    on_cleanup(move || signup.value().set(None));
     view! {
-        <ActionForm action=signup class="w-full h-full flex flex-col items-center">
-            <A href="/" class="btn btn-ghost btn-sm m-1">
+        <ActionForm action=signup /* class="w-full h-full flex flex-col items-center" */>
+            <A href="/" {..} class="btn btn-ghost btn-sm m-1">
                 "go back"
             </A>
             <h1 class="w-auto text-center font-bold text-5xl mt-[24vh] mb-2">"Sign Up"</h1>
@@ -60,19 +60,17 @@ pub fn Signup() -> impl IntoView {
             >
                 "Sing Up"
             </button>
-            <Transition fallback=move || ()>
-                {move || {
-                    signup
-                        .value()
-                        .get()
-                        .map(|res| match res {
-                            Err(ServerFnError::ServerError(err)) => {
-                                view! { <p class="text-error w-full text-center">{err}</p> }
-                            }
-                            _ => view! { <p class="text-error w-full text-center" /> },
-                        })
-                }}
-            </Transition>
+            {move || {
+                signup
+                    .value()
+                    .get()
+                    .map(|res| match res {
+                        Err(ServerFnError::ServerError(err)) => {
+                            view! { <p class="text-error w-full text-center">{err}</p> }.into_any()
+                        }
+                        _ => view! { <p class="text-error w-full text-center" /> }.into_any(),
+                    })
+            }}
         </ActionForm>
     }
 }

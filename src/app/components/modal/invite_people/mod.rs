@@ -1,5 +1,5 @@
 use crate::app::components::ui::modal::*;
-use leptos::*;
+use leptos::{html, prelude::*};
 use uuid::Uuid;
 
 #[component]
@@ -10,7 +10,7 @@ pub fn InvitePeopleModal(
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
-    let invite_ref = create_node_ref::<html::Div>();
+    let invite_ref = NodeRef::<html::Div>::new();
     view! {
         <ModalProvider content_ref=content_ref>
             <ModalTrigger class=class on_click=on_click>

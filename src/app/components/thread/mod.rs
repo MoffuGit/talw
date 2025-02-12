@@ -1,7 +1,7 @@
 pub mod sidebar;
 use crate::app::api::thread::JoinThread;
 use crate::app::api::thread::LeaveThread;
-use leptos::*;
+use leptos::prelude::*;
 use uuid::Uuid;
 
 use crate::app::api::thread::use_thread;
@@ -16,7 +16,7 @@ pub fn LeaveThread(thread_id: Uuid, server_id: Uuid, class: &'static str) -> imp
                     .dispatch(LeaveThread {
                         thread_id,
                         server_id,
-                    })
+                    });
             }
             class=class
         >
@@ -29,7 +29,7 @@ pub fn LeaveThread(thread_id: Uuid, server_id: Uuid, class: &'static str) -> imp
 pub fn JoinThread(thread_id: Uuid, server_id: Uuid, class: &'static str) -> impl IntoView {
     view! {
         <div
-            on:click=move |_| use_thread().join_thread.dispatch(JoinThread { thread_id, server_id })
+            on:click=move |_| {use_thread().join_thread.dispatch(JoinThread { thread_id, server_id });}
             class=class
         >
             "Join Thread"

@@ -1,6 +1,6 @@
 mod server_image;
 mod server_name;
-use leptos::*;
+use leptos::prelude::*;
 
 use self::server_image::ServerImage;
 use self::server_name::ServerName;

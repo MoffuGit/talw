@@ -2,7 +2,8 @@ use crate::app::components::menu::thread::ThreadMenuContent;
 use crate::app::components::thread::sidebar::CurrentThreadContext;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::app::components::ui::tool_tip::*;
-use leptos::*;
+use leptos::html;
+use leptos::prelude::*;
 use leptos_icons::Icon;
 use std::time::Duration;
 
@@ -11,8 +12,8 @@ pub fn ThreadMenu() -> impl IntoView {
     let current_thread = use_context::<CurrentThreadContext>()
         .expect("SHould return the current thrread context")
         .thread;
-    let open = create_rw_signal(false);
-    let delete_thread_modal_ref = create_node_ref::<html::Div>();
+    let open = RwSignal::new(false);
+    let delete_thread_modal_ref = NodeRef::<html::Div>::new();
     view! {
         <DropdownProvider modal=false open=open>
             <TooltipProvider delay_duration=Duration::new(0, 0)>

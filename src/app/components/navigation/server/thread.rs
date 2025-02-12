@@ -3,8 +3,9 @@ use crate::app::api::thread::get_threads_for_member;
 use crate::app::api::thread::use_thread;
 use crate::app::components::menu::thread::ThreadMenuContent;
 use crate::app::routes::servers::server::use_current_server_context;
-use leptos::*;
-use leptos_router::A;
+use leptos::html;
+use leptos::prelude::*;
+use leptos_router::components::A;
 use uuid::Uuid;
 
 use crate::app::components::navigation::server::use_current_thread;
@@ -15,7 +16,7 @@ use crate::entities::thread::Thread;
 pub fn Thread(channel_id: Uuid) -> impl IntoView {
     let use_threads = use_thread();
     let member = use_current_server_context().member;
-    let threads = create_resource(
+    let threads = Resource::new(
         move || {
             (
                 use_threads.leave_thread.version().get(),
@@ -53,13 +54,13 @@ pub fn Thread(channel_id: Uuid) -> impl IntoView {
 
 #[component]
 pub fn ThreadMenu(thread: Thread) -> impl IntoView {
-    let open = create_rw_signal(false);
+    let open = RwSignal::new(false);
     let use_current_thread = use_current_thread();
     let is_current_thread = move || {
         use_current_thread.with(|url| url.is_some_and(|(_, thread_url)| thread_url == thread.id))
     };
-    let name = store_value(thread.name.clone());
-    let delete_thread_modal_ref = create_node_ref::<html::Div>();
+    let name = StoredValue::new(thread.name.clone());
+    let delete_thread_modal_ref = NodeRef::<html::Div>::new();
     view! {
         <ContextMenuProvider modal=false open=open>
             <ContextMenuTrigger class="w-full h-auto">
@@ -68,6 +69,7 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
                         href=move || {
                             format!("thread/{}/{}", thread.channel_id.simple(), thread.id.simple())
                         }
+                        {..}
                         class="relative box-border flex flex-col cursor-pointer hover:bg-base-content/5 rounded-lg"
                     >
                         <div class="relative flex flex-row group items-center py-[6px] px-2">

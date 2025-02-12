@@ -1,8 +1,8 @@
 use cfg_if::cfg_if;
-use leptos::*;
+use leptos::prelude::*;
 use leptos_meta::{Body, Html, Script};
 
-use self::html::Head;
+use leptos::html::Head;
 
 #[server(ToggleTheme, "/api")]
 pub async fn toggle_theme(theme: bool) -> Result<bool, ServerFnError> {
@@ -51,13 +51,13 @@ fn initial_theme() -> bool {
 
 #[derive(Clone)]
 pub struct ThemeContext {
-    pub toggle_theme: Action<ToggleTheme, Result<bool, ServerFnError>>,
+    pub toggle_theme: ServerAction<ToggleTheme>,
     pub prefers_theme: Signal<bool>,
 }
 
 pub fn provide_theme_context() {
     let initial = initial_theme();
-    let toggle_theme = create_server_action::<ToggleTheme>();
+    let toggle_theme = ServerAction::<ToggleTheme>::new();
     let input = toggle_theme.input();
     let value = toggle_theme.value();
     let prefers_theme = Signal::derive(move || match (input.get(), value.get()) {
@@ -91,11 +91,6 @@ pub fn Theme() -> impl IntoView {
 
     view! {
         <Html attr:data-theme=theme />
-        <head>
-            <link rel="preconnect" href="https://fonts.googleapis.com"/>
-            <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-            <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet"/>
-        </head>
-        <Body class=move || format!("w-full h-screen font-geist {}", theme()) />
+        <Body {..} class=move || format!("w-full h-screen font-geist {}", theme()) />
     }
 }

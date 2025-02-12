@@ -9,7 +9,7 @@ use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
-use leptos::*;
+use leptos::prelude::*;
 use uuid::Uuid;
 
 #[derive(Clone)]
@@ -32,7 +32,7 @@ pub fn ServerSideBar() -> impl IntoView {
 
     let CurrentServerContext { server, .. } = use_current_server_context();
 
-    let channels = create_resource(
+    let channels = Resource::new(
         move || {
             (
                 delete_category.version().get(),
@@ -44,7 +44,7 @@ pub fn ServerSideBar() -> impl IntoView {
         move |_| get_general_channels(server.id),
     );
 
-    let categories = create_resource(
+    let categories = Resource::new(
         move || {
             (
                 create_category.version().get(),
@@ -54,7 +54,7 @@ pub fn ServerSideBar() -> impl IntoView {
         },
         move |_| get_categories(server.id),
     );
-    let open = create_rw_signal(true);
+    let open = RwSignal::new(true);
     provide_context(ServerSideBarContext { open });
     view! {
         <div
@@ -76,9 +76,9 @@ pub fn ServerSideBar() -> impl IntoView {
                                                     .map(|channel| {
                                                         view! { <Channel channel=channel.clone() /> }
                                                     })
-                                                    .collect_view()
+                                                    .collect_view().into_any()
                                             }
-                                            _ => view! { <div /> }.into_view(),
+                                            _ => view! { <div /> }.into_any(),
                                         }
                                     })
                             }}
@@ -92,12 +92,12 @@ pub fn ServerSideBar() -> impl IntoView {
                                                 categories
                                                     .iter()
                                                     .map(|category| {
-                                                        let category = store_value(category.clone());
+                                                        let category = StoredValue::new(category.clone());
                                                         view! { <Category category=category /> }
                                                     })
-                                                    .collect_view()
+                                                    .collect_view().into_any()
                                             }
-                                            _ => view! { <div /> }.into_view(),
+                                            _ => view! { <div /> }.into_any(),
                                         }
                                     })
                             }}
@@ -107,7 +107,7 @@ pub fn ServerSideBar() -> impl IntoView {
                 <SideBarContextMenu server_id=server.id />
             </div>
         </div>
-    }.into_view()
+    }
 }
 
 #[component]
@@ -128,16 +128,15 @@ pub fn ServerSideBarTrigger(
 
 #[component]
 fn SideBarContextMenu(server_id: Uuid) -> impl IntoView {
-    let hidden = create_rw_signal(false);
-    let create_channel_node = create_node_ref();
-    let create_category_node = create_node_ref();
+    let hidden = RwSignal::new(false);
+    let create_channel_node = NodeRef::new();
+    let create_category_node = NodeRef::new();
     view! {
         <ContextMenuProvider modal=false hidden=hidden>
             <ContextMenuTrigger class="h-full w-full bg-none" />
             <ContextMenuContent
                 ignore=vec![create_channel_node, create_category_node]
                 class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
-                    .to_string()
             >
                 <CreateChannelModal
                     content_ref=create_channel_node

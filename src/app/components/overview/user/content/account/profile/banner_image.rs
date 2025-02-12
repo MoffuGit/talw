@@ -1,27 +1,27 @@
-use leptos::*;
+use leptos::prelude::*;
 
 use crate::app::api::user::use_user;
 use crate::app::components::overview::user::content::account::profile::ProfilesSettingsContext;
 use wasm_bindgen::JsCast;
 use web_sys::{Blob, FormData, HtmlFormElement, HtmlInputElement, Url};
 
-use self::ev::SubmitEvent;
-use self::html::Form;
+use leptos::ev::SubmitEvent;
+use leptos::html::Form;
 #[component]
 pub fn ImageBanner(primary_color_preview: RwSignal<Option<String>>) -> impl IntoView {
     let context = use_context::<ProfilesSettingsContext>()
         .expect("should acces to the user overview context");
     let image_url = context.banner.image_url;
-    let image_preview_url = create_rw_signal(image_url.clone());
+    let image_preview_url = RwSignal::new(image_url.clone());
     let edit_banner_image = use_user().edit_banner_image;
-    let form_ref = create_node_ref::<Form>();
+    let form_ref = NodeRef::<Form>::new();
     view! {
         <form
             on:submit=move |evt: SubmitEvent| {
                 evt.prevent_default();
                 let target = evt.target().unwrap().unchecked_into::<HtmlFormElement>();
                 let form_data = FormData::new_with_form(&target).unwrap();
-                edit_banner_image.dispatch(form_data);
+                edit_banner_image.dispatch_local(form_data);
             }
             on:reset=move |_| {
                 image_preview_url.set(image_url.clone());
@@ -45,7 +45,7 @@ pub fn ImageBanner(primary_color_preview: RwSignal<Option<String>>) -> impl Into
             />
             {move || match image_preview_url.get() {
                 Some(url) => {
-                    let url = store_value(url);
+                    let url = StoredValue::new(url);
                     view! {
                         <img
                             class="w-full h-36 absolute top-0 object-cover z-30 rounded-t"
@@ -55,13 +55,13 @@ pub fn ImageBanner(primary_color_preview: RwSignal<Option<String>>) -> impl Into
                             }
                         />
                     }
-                        .into_view()
+                        .into_any()
                 }
                 None => {
                     view! {
                         <div class="w-full h-36 absolute top-0 object-cover z-30 rounded-t bg-primary" />
                     }
-                        .into_view()
+                        .into_any()
                 }
             }}
             <div class="w-full h-36 absolute top-0 rounded-t transition-opacity bg-base-100/30 opacity-0 group-hover:opacity-100 flex items-center justify-center z-40">

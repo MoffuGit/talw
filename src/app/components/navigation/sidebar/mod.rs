@@ -5,9 +5,9 @@ mod servers;
 use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
 use crate::app::components::ui::tool_tip::*;
 use icondata;
-use leptos::*;
+use leptos::prelude::*;
 use leptos_icons::*;
-use leptos_router::A;
+use leptos_router::components::A;
 use std::time::Duration;
 
 use self::inbox::Inbox;
@@ -24,11 +24,11 @@ pub fn SideBar() -> impl IntoView {
                 <Search />
                 <TooltipProvider delay_duration=Duration::new(0, 0)>
                     <TooltipTrigger class="relative my-0.5">
-                        <A href="me" class=" flex relative items-center">
+                        <A href="me" {..} class=" flex relative items-center">
                             <div class="flex transition-all items-center justify-center text-base-content w-8 h-8">
                                 <Icon
                                     icon=icondata::LuMessageCircle
-                                    class="h-5 w-5 stroke-base-content"
+                                    // class="h-5 w-5 stroke-base-content"
                                 />
                             </div>
                         </A>

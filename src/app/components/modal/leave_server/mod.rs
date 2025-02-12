@@ -2,7 +2,7 @@ use crate::app::api::server::use_server;
 use crate::app::components::ui::modal::*;
 use crate::app::ActionForm;
 use crate::entities::server::Server;
-use leptos::*;
+use leptos::{html, prelude::*};
 
 #[component]
 pub fn LeaveServer(

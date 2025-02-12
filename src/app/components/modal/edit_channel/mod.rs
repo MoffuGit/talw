@@ -2,10 +2,10 @@ use crate::app::api::channel::{get_channel_topic, use_channel, UpdateChannel};
 use crate::app::components::ui::modal::ModalProvider;
 use crate::app::components::ui::modal::*;
 use crate::entities::channel::Channel;
-use leptos::*;
+use leptos::{html, prelude::*};
 use leptos_icons::Icon;
 
-use self::ev::MouseEvent;
+use leptos::ev::MouseEvent;
 
 #[allow(non_snake_case)]
 #[component]
@@ -16,11 +16,11 @@ pub fn EditChannelModal(
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
-    let open = create_rw_signal(false);
-    let name = store_value(channel.name.clone());
+    let open = RwSignal::new(false);
+    let name = StoredValue::new(channel.name.clone());
 
-    let new_name = create_rw_signal(name.get_value());
-    let new_topic = create_rw_signal(String::default());
+    let new_name = RwSignal::new(name.get_value());
+    let new_topic = RwSignal::new(String::default());
 
     let on_close = move || {
         new_name.set(name.get_value());
@@ -36,7 +36,7 @@ pub fn EditChannelModal(
                     <ModalClose class="absolute right-2 top-2 flex items-center group bg-none">
                         <Icon
                             icon=icondata::RiCloseSystemLine
-                            class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
+                            // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                         />
                     </ModalClose>
                 </div>
@@ -62,11 +62,11 @@ fn EditChannelModalContent(
 ) -> impl IntoView {
     let use_channel = use_channel();
     let update_channel = use_channel.update_channel;
-    let current_topic = create_resource(
+    let current_topic = Resource::new(
         move || (update_channel.version().get()),
         move |_| get_channel_topic(channel.id),
     );
-    create_effect(move |_| {
+    Effect::new(move |_| {
         update_channel.version().with(|_| {
             if let Some(Ok(_)) = update_channel.value().get() {
                 open.update(|value| *value = false);
@@ -78,9 +78,9 @@ fn EditChannelModalContent(
             {move || {
                 match current_topic.get() {
                     Some(Ok(topic)) => {
-                        let topic = store_value(topic.unwrap_or_default());
+                        let topic = StoredValue::new(topic.unwrap_or_default());
                         new_topic.set(topic.get_value());
-                        create_effect(move |_| {
+                        Effect::new(move |_| {
                             if !open.get() {
                                 new_topic.set(topic.get_value());
                             }
@@ -112,7 +112,7 @@ fn EditChannelModalContent(
                                         }),
                                     server_id: channel.server_id,
                                     channel_id: channel.id,
-                                })
+                                });
                         };
 
                         view! {
@@ -158,9 +158,9 @@ fn EditChannelModalContent(
                                 </button>
                             </div>
                         }
-                            .into_view()
+                            .into_any()
                     }
-                    _ => ().into_view(),
+                    _ => ().into_any(),
                 }
             }}
         </Transition>

@@ -3,7 +3,7 @@ mod sidebar;
 use std::fmt::Display;
 
 use crate::app::components::ui::overview::*;
-use leptos::*;
+use leptos::prelude::*;
 
 use self::content::UserSettigsContent;
 use self::sidebar::UserSettingsSideBar;
@@ -31,8 +31,8 @@ impl Display for UserSettings {
 
 #[component]
 pub fn UserOverview(children: Children) -> impl IntoView {
-    let open = create_rw_signal(false);
-    let settings = create_rw_signal(UserSettings::Account);
+    let open = RwSignal::new(false);
+    let settings = RwSignal::new(UserSettings::Account);
     provide_context(UserOverviewContext { open, settings });
     view! {
         {children()}

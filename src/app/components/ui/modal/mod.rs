@@ -1,9 +1,12 @@
 pub mod slide_modal;
 
 use leptos::{
-    html::{Dialog, Div},
+    attr::Attribute,
+    context::Provider,
+    html::{self, Dialog, Div},
     logging::warn,
-    *,
+    portal::Portal,
+    prelude::*,
 };
 
 #[derive(Clone)]
@@ -25,10 +28,10 @@ pub fn ModalProvider(
     #[prop(optional)] content_ref: Option<NodeRef<html::Div>>,
     #[prop(optional)] dialog_ref: Option<NodeRef<html::Dialog>>,
 ) -> impl IntoView {
-    let open = open.unwrap_or(create_rw_signal(false));
-    let trigger_ref = trigger_ref.unwrap_or(create_node_ref::<html::Div>());
-    let content_ref = content_ref.unwrap_or(create_node_ref::<html::Div>());
-    let dialog_ref = dialog_ref.unwrap_or(create_node_ref::<html::Dialog>());
+    let open = open.unwrap_or(RwSignal::new(false));
+    let trigger_ref = trigger_ref.unwrap_or(NodeRef::<html::Div>::new());
+    let content_ref = content_ref.unwrap_or(NodeRef::<html::Div>::new());
+    let dialog_ref = dialog_ref.unwrap_or(NodeRef::<html::Dialog>::new());
 
     view! {
         <Provider value=ModalProviderContext {
@@ -74,14 +77,12 @@ pub fn ModalClose(
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] class: &'static str,
     #[prop(optional, into)] on_click: Option<Signal<()>>,
-    #[prop(attrs)] attrs: Vec<(&'static str, Attribute)>,
 ) -> impl IntoView {
     let is_open = use_context::<ModalProviderContext>()
         .expect("have this context")
         .open;
     view! {
         <button
-            {..attrs}
             on:click=move |_| {
                 if let Some(on_click) = on_click {
                     on_click.get()
@@ -103,7 +104,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
     let is_open = modal_context.open;
     let dialog_ref = modal_context.dialog_ref;
     let content_ref = modal_context.content_ref;
-    create_effect(move |_| {
+    Effect::new(move |_| {
         if let Some(dialog) = dialog_ref.get() {
             if is_open.get() {
                 if dialog.show_modal().is_err() {
@@ -116,8 +117,9 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
         }
     });
 
-    let show = create_rw_signal(false);
-    create_effect(move |_| show.update(|value| *value = true));
+    let show = RwSignal::new(false);
+    // let children = StoredValue::new(children);
+    Effect::new(move |_| show.update(|value| *value = true));
     view! {
         <Show when=move || show.get()>
             <Portal
@@ -134,7 +136,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
                     }
                 >
                     <div class=format!("modal-box {}", class) node_ref=content_ref>
-                        {children.clone()}
+                        {children.clone()()}
                     </div>
                     <form method="dialog" class="modal-backdrop">
                         <button on:click=move |_| is_open.set(false) />

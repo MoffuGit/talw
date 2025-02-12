@@ -1,4 +1,4 @@
-use leptos::*;
+use leptos::prelude::*;
 mod members;
 mod overview;
 
@@ -19,8 +19,8 @@ pub fn ServerSettingsContent() -> impl IntoView {
             <div class="max-w-[740px] relative w-full h-full overflow-scroll flex flex-col items-start">
                 {
                     move || match settings.get() {
-                        ServerSettings::Overview => OverviewSettings.into_view(),
-                        ServerSettings::Members => MembersSettings.into_view()
+                        ServerSettings::Overview => view!{<OverviewSettings/>}.into_any(),
+                        ServerSettings::Members => view!{<MembersSettings/>}.into_any()
                     }
                 }
             </div>

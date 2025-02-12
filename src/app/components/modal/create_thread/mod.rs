@@ -1,8 +1,8 @@
 use crate::app::api::thread::use_thread;
 use crate::app::components::ui::modal::*;
-use leptos::*;
+use leptos::{html, prelude::*};
 use leptos_icons::Icon;
-use leptos_router::ActionForm;
+
 use uuid::Uuid;
 
 #[component]
@@ -13,9 +13,9 @@ pub fn CreatethreadModal(
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
-    let open = create_rw_signal(false);
+    let open = RwSignal::new(false);
     let create_thread = use_thread().create_thread;
-    let form_ref = create_node_ref::<html::Form>();
+    let form_ref = NodeRef::<html::Form>::new();
 
     let on_close = move || {
         if let Some(form) = form_ref.get() {
@@ -23,7 +23,7 @@ pub fn CreatethreadModal(
         }
     };
 
-    create_effect(move |_| {
+    Effect::new(move |_| {
         create_thread.version().with(|_| {
             if let Some(Ok(_)) = create_thread.value().get() {
                 open.update(|value| *value = false)
@@ -39,11 +39,11 @@ pub fn CreatethreadModal(
                     <ModalClose class="absolute right-2 top-2 flex items-center group bg-none">
                         <Icon
                             icon=icondata::RiCloseSystemLine
-                            class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
+                            // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                         />
                     </ModalClose>
                 </div>
-                <ActionForm action=create_thread node_ref=form_ref class="w-full">
+                <ActionForm action=create_thread node_ref=form_ref  /* class="w-full" */>
                     <div class="px-[16px] w-full">
                         <div class="text-[12px] mb-0.5 leading-[18px] uppercase font-bold text-base-content">
                             "category name"
@@ -59,7 +59,7 @@ pub fn CreatethreadModal(
                     </div>
                     <div class="relative p-4 flex justify-end w-full bg-base-200">
                         <ModalClose
-                            attr:type="reset"
+                            attr:r#type="reset"
                             class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 hover:underline"
                         >
                             "Cancel"

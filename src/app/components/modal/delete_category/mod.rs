@@ -2,7 +2,7 @@ use crate::app::api::category::use_category;
 use crate::app::components::ui::modal::*;
 use crate::app::ActionForm;
 use crate::entities::category::Category;
-use leptos::*;
+use leptos::{html, prelude::*};
 use uuid::Uuid;
 
 #[allow(non_snake_case)]

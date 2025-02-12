@@ -1,6 +1,7 @@
 use cfg_if::cfg_if;
 use icondata::Icon;
-use leptos::IntoAttribute;
+use leptos::attr::IntoAttribute;
+use leptos::prelude::IntoRender;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -27,18 +28,26 @@ impl From<ChannelType> for Icon {
     }
 }
 
-impl IntoAttribute for ChannelType {
-    fn into_attribute(self) -> leptos::Attribute {
+impl IntoRender for ChannelType {
+    type Output = &'static str;
+
+    fn into_render(self) -> Self::Output {
         match self {
-            ChannelType::TEXT => leptos::Attribute::String("TEXT".into()),
-            ChannelType::VOICE => leptos::Attribute::String("VOICE".into()),
+            ChannelType::TEXT => "TEXT",
+            ChannelType::VOICE => "VOICE",
         }
     }
-
-    fn into_attribute_boxed(self: Box<Self>) -> leptos::Attribute {
-        self.into_attribute()
-    }
 }
+// fn into_attribute(self) -> leptos::Attribute {
+//     match self {
+//         ChannelType::TEXT => leptos::attr::Attribute::String("TEXT".into()),
+//         ChannelType::VOICE => leptos::attr::Attribute::String("VOICE".into()),
+//     }
+// }
+//
+// fn into_attribute_boxed(self: Box<Self>) -> leptos::Attribute {
+//     self.into_attribute()
+// }
 
 #[cfg(feature = "ssr")]
 impl sqlx::Type<sqlx::MySql> for ChannelType {

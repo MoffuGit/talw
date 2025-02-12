@@ -8,7 +8,7 @@ use crate::app::components::ui::tool_tip::*;
 use crate::entities::channel::Channel;
 use crate::entities::thread::Thread;
 use icondata;
-use leptos::*;
+use leptos::prelude::*;
 use leptos_icons::Icon;
 
 use self::thread_menu::ThreadMenu;
@@ -53,16 +53,16 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                                 tooltip_side=ToolTipSide::Bottom
                             />
                         </TooltipProvider>
-                    }
+                    }.into_any()
                 } else {
-                    ().into_view()
+                    ().into_any()
                 }}
                 <TooltipProvider>
                     <TooltipTrigger
                         close_on_click=true
                         class="hover:bg-base-content/5 rounded-lg p-1 cursor-pointer"
                     >
-                         <Icon icon=icondata::LuPin class="w-5 h-5" />
+                         <Icon icon=icondata::LuPin /* class="w-5 h-5" */ />
                     </TooltipTrigger>
                     <TooltipContent
                         tip="Pinned Messages"
@@ -80,7 +80,7 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                     >
                         <Icon
                             icon=icondata::LuSearch
-                            class="w-5 h-5"
+                            // class="w-5 h-5"
                         />
                     </TooltipTrigger>
                     <TooltipContent

@@ -8,7 +8,7 @@ use crate::app::components::channel::sidebars::server::CurrentMember;
 use crate::app::components::channel::sidebars::SideBarContext;
 use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
 use crate::entities::role::Role;
-use leptos::*;
+use leptos::prelude::*;
 use uuid::Uuid;
 
 #[component]
@@ -17,7 +17,7 @@ pub fn ThreadMemberSideBar(server_id: Uuid, thread_id: Uuid) -> impl IntoView {
         .expect("should acces to the SideBarContext")
         .0;
     let use_thread = use_thread();
-    let roles = create_resource(
+    let roles = Resource::new(
         move || {
             (
                 use_thread.join_thread.version().get(),
@@ -26,7 +26,7 @@ pub fn ThreadMemberSideBar(server_id: Uuid, thread_id: Uuid) -> impl IntoView {
         },
         move |_| get_server_roles(server_id),
     );
-    let members_without_role = create_resource(
+    let members_without_role = Resource::new(
         move || {
             (
                 use_thread.join_thread.version().get(),
@@ -64,9 +64,9 @@ pub fn ThreadMemberSideBar(server_id: Uuid, thread_id: Uuid) -> impl IntoView {
                                 <CurrentMember />
                             </div>
                         }
-                            .into_view()
+                            .into_any()
                     }
-                    _ => ().into_view(),
+                    _ => ().into_any(),
                 }
             }}
         </Transition>
@@ -75,7 +75,7 @@ pub fn ThreadMemberSideBar(server_id: Uuid, thread_id: Uuid) -> impl IntoView {
 
 #[component]
 pub fn Role(role: Role, thread_id: Uuid) -> impl IntoView {
-    let members = create_resource(
+    let members = Resource::new(
         || (),
         move |_| get_thread_members_with_role(role.id, thread_id),
     );
@@ -94,16 +94,16 @@ pub fn Role(role: Role, thread_id: Uuid) -> impl IntoView {
                         })
                         .collect_view()}
                 }
-                    .into_view()
+                    .into_any()
             }
-            _ => ().into_view(),
+            _ => ().into_any(),
         }}
     }
 }
 
 #[component]
 pub fn Member(user_id: Uuid, member_id: Uuid) -> impl IntoView {
-    let profile = create_resource(move || (), move |_| get_user_profile(user_id));
+    let profile = Resource::new(move || (), move |_| get_user_profile(user_id));
     view! {
         <Transition fallback=move || ()>
             {move || {
@@ -127,12 +127,12 @@ pub fn Member(user_id: Uuid, member_id: Uuid) -> impl IntoView {
                                             src=url
                                         />
                                     }
-                                        .into_view()
+                                        .into_any()
                                 } else {
                                     view! {
                                         <div class="rounded-full bg-base-100/80 w-9 h-9 mr-2" />
                                     }
-                                        .into_view()
+                                        .into_any()
                                 }}
                                 <div>{name}</div>
                             </MemberBanner>

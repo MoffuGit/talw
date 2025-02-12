@@ -9,9 +9,10 @@ use crate::app::routes::servers::server::CurrentServerContext;
 use crate::entities::channel::Channel;
 use icondata;
 use icondata::Icon;
-use leptos::*;
+use leptos::html;
+use leptos::prelude::*;
 use leptos_icons::Icon;
-use leptos_router::A;
+use leptos_router::components::A;
 use std::time::Duration;
 
 use super::thread::Thread;
@@ -39,21 +40,22 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
         channel_type,
         ..
     } = channel.clone();
-    let hidden = create_rw_signal(false);
+    let hidden = RwSignal::new(false);
     let use_current_channel = use_current_channel();
     let is_current_channel =
         move || use_current_channel.with(|current| current.is_some_and(|current| current == id));
-    let stored_channel = store_value(channel);
-    let invite_people_node = create_node_ref::<html::Div>();
-    let edit_channel_node = create_node_ref::<html::Div>();
-    let delete_channel_node = create_node_ref::<html::Div>();
-    let open = create_rw_signal(false);
+    let stored_channel = StoredValue::new(channel);
+    let invite_people_node = NodeRef::<html::Div>::new();
+    let edit_channel_node = NodeRef::<html::Div>::new();
+    let delete_channel_node = NodeRef::<html::Div>::new();
+    let open = RwSignal::new(false);
     view! {
         <div class="relative py-px ml-2 group mt-0.5">
             <ContextMenuProvider hidden=hidden open=open modal=false>
                 <ContextMenuTrigger class="relative box-border flex flex-col cursor-pointer">
                     <A
                         href=move || id.simple().to_string()
+                        {..}
                         class=move || {
                             format!("relative flex group items-center py-1.5 px-2 rounded-lg {}", {
                                 if is_current_channel() {
@@ -66,12 +68,13 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                     >
                         <Icon
                             icon=Icon::from(channel_type)
-                            class="relative w-4 h-4 shrink-0 mr-1.5 fill-base-content"
+                            // class="relative w-4 h-4 shrink-0 mr-1.5 fill-base-content"
                         />
                         <div
                             class="whitespace-nowrap overflow-hidden text-ellipsis mr-auto leading-5 flex-auto relative text-sm"
                         >
-                            {&name.clone()}
+                            //WARNING: checkt this
+                            // {&name.clone()}
                         </div>
                     </A>
                     <div
@@ -93,7 +96,6 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                 <ContextMenuContent
                     ignore=vec![invite_people_node, edit_channel_node, delete_channel_node]
                     class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
-                        .to_string()
                 >
                     <InvitePeopleModal
                         content_ref=invite_people_node
@@ -128,9 +130,9 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                                     </div>
                                 </DeleteChannel>
                             }
-                                .into_view()
+                                .into_any()
                         }
-                        _ => view! {}.into_view(),
+                        _ => view! {}.into_any(),
                     }}
                 </ContextMenuContent>
             </ContextMenuProvider>

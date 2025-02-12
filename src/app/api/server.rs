@@ -1,9 +1,7 @@
-use std::str::FromStr;
-
 use crate::entities::role::Role;
 use crate::entities::server::Server;
 use cfg_if::cfg_if;
-use leptos::*;
+use leptos::prelude::*;
 use server_fn::codec::{MultipartData, MultipartFormData};
 use strum_macros::{Display, EnumIter};
 use uuid::Uuid;
@@ -11,6 +9,7 @@ use web_sys::FormData;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use std::str::FromStr;
         use crate::entities::member::Member;
         use multer::bytes::Bytes as MulterBytes;
         use futures::TryStreamExt;
@@ -28,11 +27,11 @@ cfg_if! {
 
 #[derive(Clone, Copy)]
 pub struct ServerContext {
-    pub join_with_invitation: Action<JoinServerWithInvitation, Result<(), ServerFnError>>,
-    pub create_server: Action<FormData, Result<String, ServerFnError>>,
-    pub leave_server: Action<LeaveServer, Result<(), ServerFnError>>,
-    pub edit_server_image: Action<FormData, Result<(), ServerFnError>>,
-    pub edit_server_name: Action<EditServerName, Result<(), ServerFnError>>,
+    pub join_with_invitation: ServerAction<JoinServerWithInvitation>,
+    pub create_server: Action<FormData, Result<String, ServerFnError>, LocalStorage>,
+    pub leave_server: ServerAction<LeaveServer>,
+    pub edit_server_image: Action<FormData, Result<(), ServerFnError>, LocalStorage>,
+    pub edit_server_name: ServerAction<EditServerName>,
 }
 
 #[derive(Clone, Copy, EnumIter, Display, PartialEq)]
@@ -54,17 +53,17 @@ pub enum ServerTemplate {
 }
 
 pub fn provide_server_context() {
-    let join_with_invitation = create_server_action::<JoinServerWithInvitation>();
-    let create_server = create_action(|data: &FormData| {
+    let join_with_invitation = ServerAction::<JoinServerWithInvitation>::new();
+    let create_server = Action::new_local(|data: &FormData| {
         let data = data.clone();
         create_server(data.into())
     });
-    let leave_server = create_server_action::<LeaveServer>();
-    let edit_server_image = create_action(|data: &FormData| {
+    let leave_server = ServerAction::<LeaveServer>::new();
+    let edit_server_image = Action::new_local(|data: &FormData| {
         let data = data.clone();
         edit_server_image(data.into())
     });
-    let edit_server_name = create_server_action::<EditServerName>();
+    let edit_server_name = ServerAction::<EditServerName>::new();
     provide_context(ServerContext {
         edit_server_name,
         edit_server_image,

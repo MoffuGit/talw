@@ -4,7 +4,7 @@ use crate::entities::member::Member;
 use crate::entities::thread::Thread;
 use cfg_if::cfg_if;
 use core::f64;
-use leptos::*;
+use leptos::prelude::*;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -16,10 +16,10 @@ cfg_if! {
 
 #[derive(Clone, Copy)]
 pub struct ThreadContext {
-    pub create_thread: Action<CreateThread, Result<(), ServerFnError>>,
-    pub join_thread: Action<JoinThread, Result<(), ServerFnError>>,
-    pub leave_thread: Action<LeaveThread, Result<(), ServerFnError>>,
-    pub delete_thread: Action<DeleteThread, Result<(), ServerFnError>>,
+    pub create_thread: ServerAction<CreateThread>,
+    pub join_thread: ServerAction<JoinThread>,
+    pub leave_thread: ServerAction<LeaveThread>,
+    pub delete_thread: ServerAction<DeleteThread>,
 }
 
 pub fn use_thread() -> ThreadContext {
@@ -27,10 +27,10 @@ pub fn use_thread() -> ThreadContext {
 }
 
 pub fn provide_thread_context() {
-    let join_thread = create_server_action::<JoinThread>();
-    let leave_thread = create_server_action::<LeaveThread>();
-    let create_thread = create_server_action::<CreateThread>();
-    let delete_thread = create_server_action::<DeleteThread>();
+    let join_thread = ServerAction::<JoinThread>::new();
+    let leave_thread = ServerAction::<LeaveThread>::new();
+    let create_thread = ServerAction::<CreateThread>::new();
+    let delete_thread = ServerAction::<DeleteThread>::new();
 
     provide_context(ThreadContext {
         create_thread,

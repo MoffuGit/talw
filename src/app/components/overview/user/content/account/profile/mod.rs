@@ -4,8 +4,8 @@ mod user_image;
 mod user_name;
 
 use banner_image::ImageBanner;
-use leptos::*;
-use leptos_router::ActionForm;
+use leptos::prelude::*;
+
 use user_image::UserImage;
 
 use crate::app::api::user::use_user;
@@ -32,9 +32,9 @@ pub fn ProfilesSettings() -> impl IntoView {
             {move || {
                 match (profile.get(), banner.get()) {
                     (Some(Ok(profile)), Some(Ok(banner))) => {
-                        view! { <UserBanner banner=banner profile=profile /> }.into_view()
+                        view! { <UserBanner banner=banner profile=profile /> }.into_any()
                     }
-                    _ => view! {}.into_view(),
+                    _ => view! {}.into_any(),
                 }
             }}
         </Transition>
@@ -43,9 +43,9 @@ pub fn ProfilesSettings() -> impl IntoView {
 
 #[component]
 fn UserBanner(banner: Banner, profile: Profile) -> impl IntoView {
-    let primary_color_preview = create_rw_signal(banner.primary_color.clone());
-    let accent_color_preview = create_rw_signal(banner.accent_color.clone());
-    let user_data_change = create_rw_signal(false);
+    let primary_color_preview = RwSignal::new(banner.primary_color.clone());
+    let accent_color_preview = RwSignal::new(banner.accent_color.clone());
+    let user_data_change = RwSignal::new(false);
     //NOTE: Move the colors preview to its own component, this should wrapp the others and create
     //two components to select the color, one for primary, another for accent
     provide_context(ProfilesSettingsContext {
@@ -78,7 +78,7 @@ fn UserBanner(banner: Banner, profile: Profile) -> impl IntoView {
             <UserImage />
             <ActionForm
                 action=use_user().edit_user_data
-                class="flex flex-col items-start w-full relative pb-16"
+                // class="flex flex-col items-start w-full relative pb-16"
             >
                 <UserName />
                 <UserAbout />

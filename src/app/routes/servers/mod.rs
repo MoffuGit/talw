@@ -1,30 +1,25 @@
-pub mod channel;
-pub mod empty_server;
-pub mod server;
-pub mod thread;
-
 use crate::app::api::auth::use_auth;
 use crate::app::api::user::provide_user_context;
 use crate::app::components::navigation::sidebar::SideBar;
 use crate::app::components::overview::server::ServerOverview;
 use crate::app::components::overview::user::UserOverview;
-use leptos::*;
-use leptos_router::Outlet;
-use leptos_router::Redirect;
+use leptos::prelude::*;
+use leptos_router::components::Outlet;
+use leptos_router::components::Redirect;
+use leptos_router::components::A;
 
 #[allow(non_snake_case)]
 #[component]
 pub fn Servers() -> impl IntoView {
+    //NOTE: probably the outlet should be outside the transition,
+    //or use the new await suspend option
     view! {
-        <Transition fallback=move || ()>
+        <Transition fallback=move || view!{"we are loading"}>
             {move || {
-                use_auth()
-                    .auth
-                    .get()
-                    .map(|result| match result {
-                        Ok(Some(user)) => {
-                            provide_user_context(user.id);
-                            view! {
+                use_auth().auth.and_then(|user| {
+                    user.clone().map(|auth_user| {
+                            provide_user_context(auth_user.id);
+                            view!{
                                 <UserOverview>
                                     <ServerOverview>
                                         <div class="h-full w-full">
@@ -38,10 +33,8 @@ pub fn Servers() -> impl IntoView {
                                     </ServerOverview>
                                 </UserOverview>
                             }
-                                .into_view()
-                        }
-                        _ => view! { <Redirect path="/" /> }.into_view(),
                     })
+                })
             }}
         </Transition>
     }

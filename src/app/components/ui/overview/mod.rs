@@ -1,7 +1,8 @@
-use leptos::*;
+use leptos::portal::Portal;
+use leptos::prelude::*;
 use leptos_use::{use_document, use_event_listener};
 
-use self::ev::{keydown, KeyboardEvent};
+use leptos::ev::{keydown, KeyboardEvent};
 
 #[component]
 pub fn OverviewTrigger(
@@ -30,12 +31,10 @@ pub fn OverviewClose(
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] class: &'static str,
     #[prop(optional, into)] on_click: Option<Signal<()>>,
-    #[prop(attrs)] attrs: Vec<(&'static str, Attribute)>,
     #[prop(optional)] open: RwSignal<bool>,
 ) -> impl IntoView {
     view! {
         <button
-            {..attrs}
             on:click=move |_| {
                 if let Some(on_click) = on_click {
                     on_click.get()
@@ -56,7 +55,7 @@ pub fn OverviewContent(
     open: RwSignal<bool>,
     #[prop(optional)] on_close: Option<Signal<()>>,
 ) -> impl IntoView {
-    create_effect(move |_| {
+    Effect::new(move |_| {
         if !open.get() {
             if let Some(on_close) = &on_close {
                 on_close.get();
@@ -80,7 +79,7 @@ pub fn OverviewContent(
                         },
                     );
                 }
-                <div class=format!("z-[999] absolute inset-0 {}", class)>{children.clone()}</div>
+                <div class=format!("z-[999] absolute inset-0 {}", class)>{children()}</div>
             </Portal>
         </Show>
     }

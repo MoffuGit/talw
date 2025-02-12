@@ -3,9 +3,9 @@ use crate::app::api::server::use_server;
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;
 use icondata;
-use leptos::*;
+use leptos::prelude::*;
 use leptos_icons::*;
-use leptos_router::{ActionForm, A};
+use leptos_router::components::A;
 
 #[allow(non_snake_case)]
 #[component]
@@ -13,7 +13,7 @@ pub fn JoinWithInvitation() -> impl IntoView {
     let join_with_invitation = use_server().join_with_invitation;
     let use_create_server = use_create_server();
     let join_with_invitation_ref = use_create_server.join_with_invitation_ref;
-    create_effect(move |_| {
+    Effect::new(move |_| {
         join_with_invitation
             .version()
             .with(|_| use_create_server.is_open.set(false));
@@ -27,12 +27,12 @@ pub fn JoinWithInvitation() -> impl IntoView {
                         Enter an invite below to join an existing server
                     </div>
                     <ModalClose
-                        attr:type="reset"
+                        attr:r#type="reset"
                         class="absolute right-2 top-2 flex items-center group bg-none"
                     >
                         <Icon
                             icon=icondata::RiCloseSystemLine
-                            class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
+                            // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                         />
                     </ModalClose>
                 </div>
@@ -48,9 +48,9 @@ pub fn JoinWithInvitation() -> impl IntoView {
                                             Err(ServerFnError::ServerError(err)) => {
                                                 view! {
                                                     <p class="text-error mb-2 text-xs italic">{err}</p>
-                                                }
+                                                }.into_any()
                                             }
-                                            _ => view! { <p /> },
+                                            _ => ().into_any(),
                                         }
                                     })
                             }}
@@ -76,10 +76,11 @@ pub fn JoinWithInvitation() -> impl IntoView {
                     <A
                         on:click=move |_| use_create_server.is_open.set(false)
                         href="search_servers"
+                        {..}
                         class="rounded-lg bg-base-300/30 hover:bg-base-content/30 mb-4 flex items-center p-3 text-left"
                     >
                         <div class="mr-3 w-[40px] h-[40px] bg-primary rounded-full flex items-center justify-center">
-                            <Icon icon=icondata::RiCompassMapLine class="h-8 w-8" />
+                            <Icon icon=icondata::RiCompassMapLine /* class="h-8 w-8" */ />
                         </div>
                         <div>
                             <h2 class="text-[16px] leading-[20px] font-bold">
@@ -89,12 +90,12 @@ pub fn JoinWithInvitation() -> impl IntoView {
                                 Check out Discoverable communities in Server Discovery.
                             </div>
                         </div>
-                        <Icon icon=icondata::RiArrowRightSArrowsLine class="ml-auto mr-3 h-6 w-6" />
+                        <Icon icon=icondata::RiArrowRightSArrowsLine /* class="ml-auto mr-3 h-6 w-6" */ />
                     </A>
                 </div>
                 <div class="relative p-4 overflow-x-auto flex justify-between items-center bg-base-300/60">
                     <SlideBack
-                        attr:type="reset"
+                        attr:r#type="reset"
                         class="w-auto min-h-min h-[38px] py-0.5 px-1 leading-[16px] hover:underline text-base-content text-[14px]"
                     >
                         Back

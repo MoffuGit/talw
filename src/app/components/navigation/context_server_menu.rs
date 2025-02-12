@@ -6,7 +6,7 @@ use crate::app::components::modal::leave_server::LeaveServer;
 use crate::app::components::overview::server::ServerOverviewTrigger;
 use crate::app::components::ui::context_menu::*;
 use crate::entities::server::Server;
-use leptos::*;
+use leptos::{html, prelude::*};
 
 #[allow(non_snake_case)]
 #[component]
@@ -17,7 +17,7 @@ pub fn ContextServerMenu(
     let open = create_rw_signal(false);
     let hidden = create_rw_signal(false);
     let on_click_item = Signal::derive(move || hidden.set(true));
-    let member_can_update = create_resource(|| (), move |_| member_can_edit(server.id));
+    let member_can_update = Resource::new(|| (), move |_| member_can_edit(server.id));
     let invite_code = server.invite_code;
     let server = store_value(server);
     let create_channel_node = create_node_ref::<html::Div>();
@@ -38,7 +38,6 @@ pub fn ContextServerMenu(
                     invite_people_node,
                 ]
                 class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
-                    .to_string()
             >
                 <InvitePeopleModal
                     content_ref=invite_people_node
@@ -62,9 +61,9 @@ pub fn ContextServerMenu(
                                     on_click=on_click_item
                                 />
                             }
-                                .into_view()
+                                .into_any()
                         } else {
-                            ().into_view()
+                            ().into_any()
                         }
                     }}
                     {move || {
@@ -77,9 +76,9 @@ pub fn ContextServerMenu(
                                     on_click=on_click_item
                                 />
                             }
-                                .into_view()
+                                .into_any()
                         } else {
-                            ().into_view()
+                            ().into_any()
                         }
                     }}
                 </Transition>

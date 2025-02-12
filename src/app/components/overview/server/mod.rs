@@ -5,7 +5,7 @@ use self::sidebar::ServerSettingsSideBar;
 use crate::app::api::server::get_server;
 use crate::app::components::ui::overview::*;
 use crate::entities::server::Server;
-use leptos::*;
+use leptos::prelude::*;
 use std::fmt::Display;
 use uuid::Uuid;
 
@@ -38,9 +38,9 @@ pub struct ServerSettingsData {
 
 #[component]
 pub fn ServerOverview(children: Children) -> impl IntoView {
-    let open = create_rw_signal(false);
-    let server = create_rw_signal(None);
-    let settings = create_rw_signal(ServerSettings::Overview);
+    let open = RwSignal::new(false);
+    let server = RwSignal::new(None);
+    let settings = RwSignal::new(ServerSettings::Overview);
     provide_context(ServerOverviewContext {
         open,
         server,
@@ -51,8 +51,8 @@ pub fn ServerOverview(children: Children) -> impl IntoView {
         <OverviewContent open=open class="w-full h-full flex items-center">
             {
                 move || {
-                    if let Some(server_id) = server.get() {
-                        let get_server = create_resource(move || (), move |_| get_server(server_id));
+                    server.get().map(|server|  {
+                        let get_server = Resource::new(move || (), move |_| get_server(server));
                         view!{
                             <Transition>
                                 {
@@ -67,10 +67,8 @@ pub fn ServerOverview(children: Children) -> impl IntoView {
                                     }
                                 }
                             </Transition>
-                        }.into_view()
-                    } else {
-                        ().into_view()
-                    }
+                        }
+                    }).into_any()
                 }
             }
         </OverviewContent>
@@ -88,12 +86,14 @@ pub fn ServerOverviewTrigger(
         .expect("should acces to the server overview context");
     let open = overview_context.open;
     view! {
-        <OverviewTrigger on_click=Signal::derive(move ||  {
-            overview_context.server.set(Some(server_id));
-            if let Some(select_setting) = select_setting {
-                overview_context.settings.set(select_setting)
-            }
-        }) open=open class=class>
+        <OverviewTrigger
+            on_click=Signal::derive(move ||  {
+                overview_context.server.set(Some(server_id));
+                if let Some(select_setting) = select_setting {
+                    overview_context.settings.set(select_setting)
+                }
+            })
+            open=open class=class>
             {children()}
         </OverviewTrigger>
     }

@@ -6,9 +6,10 @@ use crate::app::components::navigation::server::use_current_thread;
 use crate::app::components::thread::sidebar::ThreadSideBar;
 use crate::app::routes::servers::server::use_current_server_context;
 use leptos::html::Div;
-use leptos::*;
+use leptos::prelude::*;
 use leptos_icons::Icon;
-use leptos_router::{use_params_map, Redirect};
+use leptos_router::components::Redirect;
+use leptos_router::hooks::use_params_map;
 use leptos_use::core::Position;
 use leptos_use::use_draggable_with_options;
 use leptos_use::{use_window, UseDraggableCallbackArgs, UseDraggableOptions, UseDraggableReturn};
@@ -17,9 +18,9 @@ use leptos_use::{use_window, UseDraggableCallbackArgs, UseDraggableOptions, UseD
 #[allow(non_snake_case)]
 pub fn ThreadSplit() -> impl IntoView {
     let initial_width = initial_width();
-    let update_width = create_action(|width: &f64| toggle_thread_width(*width));
+    let update_width = Action::new(|width: &f64| toggle_thread_width(*width));
 
-    let divider_ref = create_node_ref::<Div>();
+    let divider_ref = NodeRef::<Div>::new();
     let UseDraggableReturn { x, .. } = use_draggable_with_options(
         divider_ref,
         UseDraggableOptions::default()
@@ -114,13 +115,13 @@ pub fn ThreadView() -> impl IntoView {
                     match use_current_thread().get() {
                         None => {
                             view! { <Redirect path=format!("/servers/{}", server_id) /> }
-                                .into_view()
+                                .into_any()
                         }
                         Some((channel_id, thread_id)) => {
                             let use_channel = use_channel();
                             let use_thread = use_thread();
                             let params = use_params_map();
-                            let channel = create_resource(
+                            let channel = Resource::new(
                                 move || {
                                     (
                                         use_channel.rename_channel.version().get(),
@@ -129,7 +130,7 @@ pub fn ThreadView() -> impl IntoView {
                                 },
                                 move |(_, _)| get_channel(channel_id, server_id),
                             );
-                            let thread = create_resource(
+                            let thread = Resource::new(
                                 move || (use_thread.delete_thread.version().get(),),
                                 move |_| get_thread(thread_id, channel_id),
                             );
@@ -151,14 +152,14 @@ pub fn ThreadView() -> impl IntoView {
                                                             <div class="m-4 w-full flex-grow bg-base-300/60 rounded-lg flex items-center px-4">
                                                                 <Icon
                                                                     icon=icondata::RiAddCircleSystemFill
-                                                                    class="w-7 h-7 fill-base-content/40 grow-0 mr-4"
+                                                                    // class="w-7 h-7 fill-base-content/40 grow-0 mr-4"
                                                                 />
                                                                 <div class="grow text-base-content/60">
                                                                     {format!("Message #{}", name)}
                                                                 </div>
                                                                 <Icon
                                                                     icon=icondata::RiEmojiStickerCommunicationFill
-                                                                    class="w-7 h-7 fill-base-content/40"
+                                                                    // class="w-7 h-7 fill-base-content/40"
                                                                 />
                                                             </div>
                                                         </div>
@@ -166,7 +167,7 @@ pub fn ThreadView() -> impl IntoView {
                                                     <MemberSideBar server_id=server_id thread_id=thread_id />
                                                 </div>
                                             }
-                                                .into_view()
+                                                .into_any()
                                         }
                                         (Some(Err(_)), _) | (_, Some(Err(_))) => {
 
@@ -174,12 +175,12 @@ pub fn ThreadView() -> impl IntoView {
                                                 <Redirect path=params
                                                     .with(|p| format!("/servers/{}", p.get("id").unwrap())) />
                                             }
-                                                .into_view()
+                                                .into_any()
                                         }
-                                        _ => view! {}.into_view(),
+                                        _ => view! {}.into_any(),
                                     }}
                                 </Transition>
-                            }
+                            }.into_any()
                         }
                     }
                 }}

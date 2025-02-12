@@ -2,7 +2,7 @@ use crate::app::api::channel::use_channel;
 use crate::app::components::ui::modal::*;
 use crate::app::ActionForm;
 use crate::entities::channel::Channel;
-use leptos::*;
+use leptos::{html, prelude::*};
 use uuid::Uuid;
 
 #[allow(non_snake_case)]
@@ -15,9 +15,9 @@ pub fn DeleteChannel(
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
-    let open = create_rw_signal(false);
+    let open = RwSignal::new(false);
     let delete_channel = use_channel().delete_channel;
-    create_effect(move |_| {
+    Effect::new(move |_| {
         delete_channel.version().with(|_| {
             if let Some(Ok(_)) = delete_channel.value().get() {
                 open.update(|value| *value = false);

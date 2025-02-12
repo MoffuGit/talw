@@ -5,7 +5,7 @@ use crate::app::components::navigation::server::use_current_channel;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::thread::Thread;
 use leptos_icons::Icon;
-use leptos_router::{use_router, Redirect};
+use leptos_router::components::Redirect;
 use std::str::FromStr;
 use uuid::Uuid;
 
@@ -14,13 +14,14 @@ struct CurrentThreadContext {
     pub thread: Thread,
 }
 
-use leptos::*;
+use leptos::prelude::*;
 #[component]
 pub fn ThreadSideBar() -> impl IntoView {
     let current_thread = move || {
-        use_router()
-            .pathname()
-            .with(|path| path.split('/').nth(4).map(Uuid::from_str))
+        // use_router()
+        //     .pathname()
+        //     .with(|path| path.split('/').nth(4).map(Uuid::from_str))
+        Some(Ok::<Uuid, ServerFnError>(Uuid::default()))
     };
     let server_id = use_current_server_context().server.id.simple();
     let channel_id = move || use_current_channel().get().unwrap().simple();
@@ -28,7 +29,7 @@ pub fn ThreadSideBar() -> impl IntoView {
         {move || {
             match current_thread() {
                 Some(Ok(thread_id)) => {
-                    let current_thread = create_resource(
+                    let current_thread = Resource::new(
                         move || (use_thread().delete_thread.version().get()),
                         move |_| get_thread(thread_id, channel_id().into_uuid()),
                     );
@@ -36,7 +37,7 @@ pub fn ThreadSideBar() -> impl IntoView {
                         <Transition fallback=move || ()>
                             {move || {
                                 match current_thread.get() {
-                                    None => ().into_view(),
+                                    None => ().into_any(),
                                     Some(Err(_)) => {
                                         view! {
                                             <Redirect path=format!(
@@ -45,7 +46,7 @@ pub fn ThreadSideBar() -> impl IntoView {
                                                 channel_id(),
                                             ) />
                                         }
-                                            .into_view()
+                                            .into_any()
                                     }
                                     Some(Ok(thread)) => {
                                         let name = thread.name.clone();
@@ -59,30 +60,30 @@ pub fn ThreadSideBar() -> impl IntoView {
                                                     <div class="m-4 w-full flex-grow bg-base-300/60 rounded-lg flex items-center px-4">
                                                         <Icon
                                                             icon=icondata::RiAddCircleSystemFill
-                                                            class="w-7 h-7 fill-base-content/40 grow-0 mr-4"
+                                                            // class="w-7 h-7 fill-base-content/40 grow-0 mr-4"
                                                         />
                                                         <div class="grow text-base-content/60">
                                                             {format!("Message #{}", name)}
                                                         </div>
                                                         <Icon
                                                             icon=icondata::RiEmojiStickerCommunicationFill
-                                                            class="w-7 h-7 fill-base-content/40"
+                                                            // class="w-7 h-7 fill-base-content/40"
                                                         />
                                                     </div>
                                                 </div>
                                             </div>
                                         }
-                                            .into_view()
+                                            .into_any()
                                     }
                                 }
                             }}
                         </Transition>
                     }
-                        .into_view()
+                        .into_any()
                 }
                 Some(Err(_)) | None => {
                     view! { <Redirect path=format!("/servers/{}/{}", server_id, channel_id()) /> }
-                        .into_view()
+                        .into_any()
                 }
             }
         }}

@@ -4,7 +4,7 @@ use crate::app::components::ui::tool_tip::{
     ToolTipSide, TooltipContent, TooltipProvider, TooltipTrigger,
 };
 use icondata;
-use leptos::*;
+use leptos::prelude::*;
 use leptos_icons::Icon;
 use std::time::Duration;
 use uuid::Uuid;
@@ -20,9 +20,9 @@ pub struct SideBarContext(pub RwSignal<bool>);
 pub fn MemberSideBar(server_id: Uuid, #[prop(optional)] thread_id: Option<Uuid>) -> impl IntoView {
     if let Some(thread_id) = thread_id {
         return view! { <ThreadMemberSideBar server_id=server_id thread_id=thread_id /> }
-            .into_view();
+            .into_any();
     };
-    view! { <ServerMemberSideBar server_id=server_id /> }.into_view()
+    view! { <ServerMemberSideBar server_id=server_id /> }.into_any()
 }
 
 #[allow(non_snake_case)]
@@ -37,7 +37,7 @@ pub fn MemberSideBarTrigger() -> impl IntoView {
                 class="hover:bg-base-content/5 rounded-lg p-1 cursor-pointer"
                 on_click=Signal::derive(move || open.update(|open| *open = !*open))
             >
-                <Icon icon=icondata::LuUsers class="w-5 h-5" />
+                <Icon icon=icondata::LuUsers /* class="w-5 h-5" */ />
             </TooltipTrigger>
             <TooltipContent
                 arrow=true

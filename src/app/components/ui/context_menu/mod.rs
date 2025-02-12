@@ -1,4 +1,5 @@
-use leptos::*;
+use leptos::html;
+use leptos::prelude::*;
 use leptos_use::use_mouse;
 use leptos_use::UseMouseReturn;
 
@@ -40,8 +41,8 @@ pub fn ContextMenuTrigger(
 #[allow(non_snake_case)]
 #[component]
 pub fn ContextMenuContent(
-    #[prop(optional)] class: String,
-    #[prop(optional)] children: Option<ChildrenFn>,
+    #[prop(optional)] class: &'static str,
+    children: ChildrenFn,
     #[prop(optional)] ignore: Vec<NodeRef<html::Div>>,
 ) -> impl IntoView {
     let UseMouseReturn { x, y, .. } = use_mouse();
@@ -60,7 +61,7 @@ pub fn ContextMenuContent(
             ignore=ignore
             style=position
         >
-            {children.clone()}
+            {children()}
         </MenuContent>
     }
 }

@@ -1,11 +1,13 @@
-use leptos::*;
+use leptos::context::Provider;
+use leptos::portal::Portal;
+use leptos::prelude::*;
 
 #[derive(Clone)]
 pub struct ContextPortal(RwSignal<bool>, String);
 
 #[component]
 pub fn ProvidePortalContext(children: Children, name: &'static str) -> impl IntoView {
-    let signal = create_rw_signal(false);
+    let signal = RwSignal::new(false);
 
     provide_context(ContextPortal(signal, name.to_string()));
     children()
@@ -40,12 +42,13 @@ pub fn ClosePortal(#[prop(optional)] class: &'static str) -> impl IntoView {
 pub fn PortalContent(children: ChildrenFn, #[prop(optional)] class: &'static str) -> impl IntoView {
     let context = use_context::<ContextPortal>().expect("signal");
     let signal = context.0;
+    let children = StoredValue::new(children);
 
     view! {
         <Show when=move || signal.get()>
-            <Provider value=context.clone() clone:children>
+            <Provider value=context.clone()>
                 <Portal mount=document().get_element_by_id("app").expect("acces to the app")>
-                    <div class=class>{children.clone()}</div>
+                    <div class=class>{children.get_value()()}</div>
                 </Portal>
             </Provider>
         </Show>

@@ -2,7 +2,7 @@ use crate::entities::member::Member;
 use crate::entities::role::Role;
 use crate::entities::user::Profile;
 use cfg_if::cfg_if;
-use leptos::*;
+use leptos::prelude::*;
 use uuid::Uuid;
 
 cfg_if! {

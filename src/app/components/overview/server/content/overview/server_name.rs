@@ -1,11 +1,10 @@
-use leptos::*;
-use leptos_router::ActionForm;
+use leptos::prelude::*;
 
 use crate::app::api::server::use_server;
 use crate::app::components::overview::server::ServerSettingsData;
 
-use self::ev::Event;
-use self::html::{Input, Span};
+use leptos::ev::Event;
+use leptos::html::{Input, Span};
 
 #[component]
 pub fn ServerName() -> impl IntoView {
@@ -13,10 +12,10 @@ pub fn ServerName() -> impl IntoView {
     let server = use_context::<ServerSettingsData>()
         .expect("should acces to the user overview context")
         .server;
-    let name_preview = create_rw_signal(server.name);
-    let input_ref = create_node_ref::<Input>();
-    let span_ref = create_node_ref::<Span>();
-    let input_width = create_rw_signal(0);
+    let name_preview = RwSignal::new(server.name);
+    let input_ref = NodeRef::<Input>::new();
+    let span_ref = NodeRef::<Span>::new();
+    let input_width = RwSignal::new(0);
     let handle_input = move |evt: Event| {
         name_preview.set(event_target_value(&evt));
         if let Some(span) = span_ref.get() {
@@ -24,13 +23,13 @@ pub fn ServerName() -> impl IntoView {
         }
     };
 
-    create_effect(move |_| {
+    Effect::new(move |_| {
         if let Some(span) = span_ref.get() {
             input_width.set(span.offset_width());
         }
     });
     view! {
-        <ActionForm action=edit_server_name class="relative ml-44 flex items-center">
+        <ActionForm action=edit_server_name /* class="relative ml-44 flex items-center" */>
             <label class="relative form-control">
                 <span
                     class="invisible text-xl absolute px-2 rounded-md whitespace-pre"

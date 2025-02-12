@@ -2,7 +2,7 @@ mod authentication;
 mod profile;
 
 use authentication::AuthenticationSettings;
-use leptos::*;
+use leptos::prelude::*;
 use profile::ProfilesSettings;
 
 #[component]

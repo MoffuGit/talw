@@ -1,4 +1,4 @@
-use leptos::*;
+use leptos::prelude::*;
 
 use crate::app::api::user::use_user;
 use crate::app::components::overview::user::UserOverviewTrigger;
@@ -17,15 +17,15 @@ pub fn Profile() -> impl IntoView {
                                     view! {
                                         <img
                                             class="w-8 h-8 rounded-full cursor-pointer object-cover"
-                                            src=url
+                                            src=url.clone()
                                         />
                                     }
-                                        .into_view()
+                                        .into_any()
                                 } else {
                                     view! {
                                         <div class="w-8 h-8 rounded-full cursor-pointer bg-base-100/40"/>
                                     }
-                                        .into_view()
+                                        .into_any()
                                 }}
                             }
                         })

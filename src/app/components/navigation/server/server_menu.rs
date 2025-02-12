@@ -7,24 +7,25 @@ use crate::app::components::ui::dropdown_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
 use icondata;
-use leptos::*;
+use leptos::html;
+use leptos::prelude::*;
 use leptos_icons::*;
 
 #[allow(non_snake_case)]
 #[component]
 pub fn ServerMenu() -> impl IntoView {
-    let open = create_rw_signal(false);
-    let hidden = create_rw_signal(false);
+    let open = RwSignal::new(false);
+    let hidden = RwSignal::new(false);
     let on_click_item = Signal::derive(move || hidden.set(true));
     let CurrentServerContext {
         server,
         member_can_edit,
         ..
     } = use_current_server_context();
-    let invite_people_node = create_node_ref::<html::Div>();
-    let create_channel_node = create_node_ref::<html::Div>();
-    let create_category_node = create_node_ref::<html::Div>();
-    let leave_server_node = create_node_ref::<html::Div>();
+    let invite_people_node = NodeRef::<html::Div>::new();
+    let create_channel_node = NodeRef::<html::Div>::new();
+    let create_category_node = NodeRef::<html::Div>::new();
+    let leave_server_node = NodeRef::<html::Div>::new();
     view! {
         <div class="relative w-full px-2 py-1.5">
             <DropdownProvider open=open modal=false hidden=hidden>
@@ -36,7 +37,7 @@ pub fn ServerMenu() -> impl IntoView {
                         </p>
                         <Icon
                             icon=icondata::LuChevronDown
-                            class="relative"
+                            // class="relative"
                         />
                     </div>
                 </DropdownTrigger>
@@ -69,9 +70,9 @@ pub fn ServerMenu() -> impl IntoView {
                                     on_click=on_click_item
                                 />
                             }
-                                .into_view()
+                                .into_any()
                         } else {
-                            ().into_view()
+                            ().into_any()
                         }}
                         <div class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
                             <div>"Edit Server Profile"</div>
@@ -82,9 +83,9 @@ pub fn ServerMenu() -> impl IntoView {
                                     leave_server_node=leave_server_node
                                     on_click=on_click_item
                                 />
-                            }
+                            }.into_any()
                         } else {
-                            ().into_view()
+                            ().into_any()
                         }}
                     </div>
                 </DropdownContent>

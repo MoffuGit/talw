@@ -66,6 +66,8 @@ pub fn ContextServerMenu(
                             ().into_any()
                         }
                     }}
+                </Transition>
+                <Transition>
                     {move || {
                         if let Some(Ok(false)) = member_can_update.get() {
                             view! {

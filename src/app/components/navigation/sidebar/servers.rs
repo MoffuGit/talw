@@ -88,7 +88,7 @@ pub fn Servers() -> impl IntoView {
                 </A>
             </ContextMenuContent>
         </ContextMenuProvider>
-        <Transition fallback=move || view!{}>
+        <Transition>
             <For
                 each=move || servers.get().and_then(Result::ok).unwrap_or_default()
                 key=|server| server.id

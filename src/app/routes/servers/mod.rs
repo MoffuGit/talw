@@ -15,14 +15,13 @@ use leptos_router::components::A;
 #[allow(non_snake_case)]
 #[component]
 pub fn Servers() -> impl IntoView {
-    //NOTE: probably the outlet should be outside the transition,
-    //or use the new await suspend option
     view! {
         <Transition fallback=move || view!{<Outlet/>}>
             {move || {
                 use_auth().auth.and_then(|user| {
-                    user.clone().map(|auth_user| {
-                            provide_user_context(auth_user.id);
+                    match user {
+                        Some(user) => {
+                            provide_user_context(user.id);
                             view!{
                                 <UserOverview>
                                     <ServerOverview>
@@ -36,8 +35,10 @@ pub fn Servers() -> impl IntoView {
                                         </div>
                                     </ServerOverview>
                                 </UserOverview>
-                            }
-                    })
+                            }.into_any()
+                        },
+                        None => view!{<Outlet/>}.into_any(),
+                    }
                 })
             }}
         </Transition>

@@ -26,7 +26,7 @@ pub fn ThreadMenuContent(
         move |_| check_member_on_thread(thread.id),
     );
     view! {
-        <Transition fallback=move || ()>
+        <Transition>
             <div class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100">
                 {move || {
                     check_member_on_thread

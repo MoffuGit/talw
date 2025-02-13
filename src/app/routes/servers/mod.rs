@@ -16,29 +16,26 @@ use leptos_router::components::A;
 #[component]
 pub fn Servers() -> impl IntoView {
     view! {
-        <Transition fallback=move || view!{<Outlet/>}>
+        <Transition>
             {move || {
                 use_auth().auth.and_then(|user| {
-                    match user {
-                        Some(user) => {
-                            provide_user_context(user.id);
-                            view!{
-                                <UserOverview>
-                                    <ServerOverview>
-                                        <div class="h-full w-full">
-                                            <div class="flex w-12 h-full z-30 fixed inset-y-0">
-                                                <SideBar />
-                                            </div>
-                                            <div class="h-full relative overflow-hidden md:pl-12">
-                                                <Outlet />
-                                            </div>
+                    user.map(|user| {
+                        provide_user_context(user.id);
+                        view!{
+                            <UserOverview>
+                                <ServerOverview>
+                                    <div class="h-full w-full">
+                                        <div class="flex w-12 h-full z-30 fixed inset-y-0">
+                                            <SideBar />
                                         </div>
-                                    </ServerOverview>
-                                </UserOverview>
-                            }.into_any()
-                        },
-                        None => view!{<Outlet/>}.into_any(),
-                    }
+                                        <div class="h-full relative overflow-hidden md:pl-12">
+                                            <Outlet />
+                                        </div>
+                                    </div>
+                                </ServerOverview>
+                            </UserOverview>
+                        }.into_any()
+                    })
                 })
             }}
         </Transition>

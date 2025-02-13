@@ -12,8 +12,8 @@ async fn main() {
     use start_axum::entities::user::User;
     use start_axum::state::AppState;
     use start_axum::uploadthing::UploadThing;
-    use start_axum::ws::ws_handler;
-    use start_axum::ws::WsChannels;
+    // use start_axum::ws::ws_handler;
+    // use start_axum::ws::WsChannels;
 
     use start_axum::app::*;
     use uuid::Uuid;
@@ -99,19 +99,19 @@ async fn main() {
     let addr = leptos_options.site_addr;
     let routes = generate_route_list(App);
 
-    let ws_channels = WsChannels::default();
+    // let ws_channels = WsChannels::default();
     let uploadthing = UploadThing::default();
 
     let app_state = AppState {
         leptos_options,
         routes: routes.clone(),
         pool: pool.clone(),
-        ws_channels,
+        // ws_channels,
         uploadthing,
     };
 
     let app = Router::new()
-        .route("/ws/:room", get(ws_handler))
+        // .route("/ws/:room", get(ws_handler))
         .route(
             "/api/*fn_name",
             get(server_fn_handler).post(server_fn_handler),

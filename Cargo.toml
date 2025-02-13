@@ -55,7 +55,7 @@ gloo-net = "=0.4.0"
 async-broadcast = "0.5.1"
 rand = { version = "0.8.0", optional = true }
 serde_json = "1.0.107"
-uuid = { version = "=1.11.0", features = ["v4", "serde", "js"] }
+uuid = { version = "1", features = ["v4", "serde", "js"] }
 chrono = { version = "0.4.31", features = ["serde"] }
 leptos_icons = { version = "0.5" }
 icondata = "0.5.0"

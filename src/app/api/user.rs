@@ -59,7 +59,7 @@ pub fn provide_user_context(user_id: Uuid) {
                 edit_user_data.version().get(),
             )
         },
-        move |_| async move { get_user_profile(user_id).await },
+        move |_| get_user_profile(user_id),
     );
 
     provide_context(UserContext {

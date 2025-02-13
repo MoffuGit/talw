@@ -14,16 +14,16 @@ pub fn ContextServerMenu(
     server: Server,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
-    let open = create_rw_signal(false);
-    let hidden = create_rw_signal(false);
+    let open = RwSignal::new(false);
+    let hidden = RwSignal::new(false);
     let on_click_item = Signal::derive(move || hidden.set(true));
     let member_can_update = Resource::new(|| (), move |_| member_can_edit(server.id));
     let invite_code = server.invite_code;
-    let server = store_value(server);
-    let create_channel_node = create_node_ref::<html::Div>();
-    let create_category_node = create_node_ref::<html::Div>();
-    let invite_people_node = create_node_ref::<html::Div>();
-    let leave_server_node = create_node_ref();
+    let server = StoredValue::new(server);
+    let create_channel_node = NodeRef::<html::Div>::new();
+    let create_category_node = NodeRef::<html::Div>::new();
+    let invite_people_node = NodeRef::<html::Div>::new();
+    let leave_server_node = NodeRef::new();
 
     view! {
         <ContextMenuProvider open=open modal=false hidden=hidden>

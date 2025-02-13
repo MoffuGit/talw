@@ -78,10 +78,9 @@ pub fn App() -> impl IntoView {
 
         <Title text="Welcome to Leptos" />
 
-        <Theme />
+        // <Theme />
         <Router>
             <main id="app" class="w-full h-full overflow-hidden">
-                <ErrorBoundary fallback=move |_| view!{<div>fuck</div>}>
                     <Routes fallback=|| "Not Found">
                         <Route path=StaticSegment("") view=Home />
                             <ProtectedParentRoute
@@ -109,7 +108,6 @@ pub fn App() -> impl IntoView {
                             <Route path=StaticSegment("login" ) view=Login />
                             <Route path=StaticSegment("signup" ) view=Signup />
                     </Routes>
-                </ErrorBoundary>
             </main>
         </Router>
     }

@@ -7,7 +7,7 @@ use leptos_router::components::A;
 pub fn Login() -> impl IntoView {
     let login = use_auth().login;
 
-    on_cleanup(move || login.value().set(None));
+    // on_cleanup(move || login.value().set(None));
     view! {
         <ActionForm action=login /* class="w-full h-full flex flex-col items-center" */>
             <A href="/" {..} class="btn btn-ghost btn-sm m-1">

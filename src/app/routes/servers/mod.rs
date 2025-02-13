@@ -1,3 +1,7 @@
+pub mod channel;
+pub mod empty_server;
+pub mod server;
+pub mod thread;
 use crate::app::api::auth::use_auth;
 use crate::app::api::user::provide_user_context;
 use crate::app::components::navigation::sidebar::SideBar;
@@ -14,7 +18,7 @@ pub fn Servers() -> impl IntoView {
     //NOTE: probably the outlet should be outside the transition,
     //or use the new await suspend option
     view! {
-        <Transition fallback=move || view!{"we are loading"}>
+        <Transition fallback=move || view!{<Outlet/>}>
             {move || {
                 use_auth().auth.and_then(|user| {
                     user.clone().map(|auth_user| {

@@ -1,11 +1,15 @@
+use leptos::ev::contextmenu;
 use leptos::html;
 use leptos::prelude::*;
+use leptos_use::use_document;
+use leptos_use::use_event_listener_with_options;
 use leptos_use::use_mouse;
+use leptos_use::UseEventListenerOptions;
 use leptos_use::UseMouseReturn;
 
+use crate::app::components::ui::menu::MenuProviderContext;
 use crate::app::components::ui::menu::{MenuContent, MenuProvider, MenuTrigger, TriggerKey};
 
-#[allow(non_snake_case)]
 #[component]
 pub fn ContextMenuProvider(
     children: Children,
@@ -29,7 +33,6 @@ pub fn ContextMenuProvider(
     }
 }
 
-#[allow(non_snake_case)]
 #[component]
 pub fn ContextMenuTrigger(
     #[prop(optional)] children: Option<Children>,
@@ -38,7 +41,6 @@ pub fn ContextMenuTrigger(
     view! { <MenuTrigger class=class>{children.map(|children| children())}</MenuTrigger> }
 }
 
-#[allow(non_snake_case)]
 #[component]
 pub fn ContextMenuContent(
     #[prop(optional)] class: &'static str,
@@ -54,6 +56,19 @@ pub fn ContextMenuContent(
             y.get_untracked()
         )
     });
+
+    let context = use_context::<MenuProviderContext>().expect("acces to menu context");
+
+    let _ = use_event_listener_with_options(
+        use_document(),
+        contextmenu,
+        move |_| {
+            if context.open.get() {
+                context.open.set(false)
+            }
+        },
+        UseEventListenerOptions::default().capture(true),
+    );
 
     view! {
         <MenuContent

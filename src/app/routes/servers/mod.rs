@@ -19,7 +19,7 @@ pub fn Servers() -> impl IntoView {
         <Transition>
             {move || {
                 use_auth().auth.and_then(|user| {
-                    user.map(|user| {
+                    user.clone().map(|user| {
                         provide_user_context(user.id);
                         view!{
                             <UserOverview>

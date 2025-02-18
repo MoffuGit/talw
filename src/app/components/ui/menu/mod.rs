@@ -1,20 +1,23 @@
 use leptos::context::Provider;
-use leptos::ev::contextmenu;
+use leptos::ev::{contextmenu, MouseEvent};
 use leptos::portal::Portal;
 use leptos::{html, logging, prelude::*};
 use leptos_use::{
     on_click_outside_with_options, use_document, use_event_listener,
     use_event_listener_with_options, OnClickOutsideOptions, UseEventListenerOptions,
 };
+use wasm_bindgen::prelude::Closure;
+use wasm_bindgen::JsCast;
+use web_sys::{AddEventListenerOptions, EventListenerOptions};
 
 #[derive(Clone)]
-struct MenuProviderContext {
-    open: RwSignal<bool>,
-    hidden: RwSignal<bool>,
-    modal: bool,
-    trigger_ref: NodeRef<html::Div>,
-    content_ref: NodeRef<html::Div>,
-    trigger_key: TriggerKey,
+pub struct MenuProviderContext {
+    pub open: RwSignal<bool>,
+    pub hidden: RwSignal<bool>,
+    pub modal: bool,
+    pub trigger_ref: NodeRef<html::Div>,
+    pub content_ref: NodeRef<html::Div>,
+    pub trigger_key: TriggerKey,
 }
 
 #[derive(Clone, PartialEq, Copy)]
@@ -23,7 +26,6 @@ pub enum TriggerKey {
     Rtl,
 }
 
-#[allow(non_snake_case)]
 #[component]
 pub fn MenuProvider(
     children: Children,
@@ -117,6 +119,7 @@ pub fn MenuContent(
     #[prop(optional)] style: Option<Signal<String>>,
     #[prop(optional)] ignore: Option<Vec<NodeRef<html::Div>>>,
 ) -> impl IntoView {
+    let children = StoredValue::new(children);
     let context = use_context::<MenuProviderContext>().expect("acces to menu context");
     let content_ref = context.content_ref;
     let style = style.unwrap_or_default();
@@ -146,34 +149,18 @@ pub fn MenuContent(
         },
         on_click_outside_options,
     );
-    let show = RwSignal::new(false);
-    Effect::new(move |_| {
-        show.set(true);
-    });
     let class = StoredValue::new(class);
+
     view! {
         <Provider value=context.clone()>
             <Show when=move || {
-                show.get() && context.open.get()
+                context.open.get()
             }>
-                {if context.trigger_key == TriggerKey::Rtl {
-                    let _ = use_event_listener_with_options(
-                        use_document(),
-                        contextmenu,
-                        move |_| {
-                            if context.open.get() {
-                                context.open.set(false)
-                            }
-                        },
-                        UseEventListenerOptions::default().capture(true)
-                    );
-                }}
                 <Portal
                     mount=document().get_element_by_id("app").expect("acces to app")
-                    clone:children
                 >
                     <div
-                        style=move || if context.open.get() { style.get() } else { "".to_string() }
+                        style=move || style.get()
                         class=move || {
                             format!(
                                 "{} {}",
@@ -186,7 +173,7 @@ pub fn MenuContent(
                         }
                         node_ref=content_ref
                     >
-                        {children.clone().map(|children| children())}
+                        {children.get_value().map(|children| children())}
                     </div>
                 </Portal>
             </Show>

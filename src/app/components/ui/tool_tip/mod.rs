@@ -96,7 +96,9 @@ pub fn TooltipProvider(
         trigger_ref,
     });
 
-    children()
+    view! {
+        {children()}
+    }
 }
 
 #[allow(non_snake_case)]
@@ -129,7 +131,6 @@ pub fn TooltipTrigger(
                 is_hover.update_untracked(|value| *value = false)
             }
             on:click=move |evt| {
-                evt.stop_propagation();
                 if close_on_click {
                     provider_context.on_close.get_untracked();
                 }
@@ -149,7 +150,6 @@ pub fn TooltipTrigger(
     }
 }
 
-#[allow(dead_code)]
 #[derive(Clone, Copy)]
 pub enum ToolTipSide {
     Bottom,
@@ -209,7 +209,6 @@ pub fn TooltipContent(
 
     let content_ref = NodeRef::<html::Div>::new();
 
-    let show = RwSignal::new(false);
     let position = RwSignal::new(("".to_string(), "".to_string()));
     let position_timer_ref: RwSignal<Option<TimeoutHandle>> = RwSignal::new(None);
 
@@ -242,11 +241,9 @@ pub fn TooltipContent(
         }
     });
 
-    Effect::new(move |_| show.update(|value| *value = true));
-
     view! {
-        <Show when=move || show.get() && is_open.get()>
-            <Portal mount=document().get_element_by_id("app").unwrap() clone:tip>
+        <Show when=move || is_open.get()>
+            <Portal mount=document().get_element_by_id("app").unwrap()>
                 <div
                     node_ref=content_ref
                     style=move || format!("translate: {}px {}px;", position().0, position().1)
@@ -263,7 +260,7 @@ pub fn TooltipContent(
                         }
                     })
                 >
-                    {tip.clone()}
+                    {move || tip.get()}
                 </div>
             </Portal>
         </Show>

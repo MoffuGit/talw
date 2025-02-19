@@ -5,7 +5,7 @@ use crate::entities::category::Category;
 use leptos::{html, prelude::*};
 use uuid::Uuid;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn DeleteCategoryModal(
     category: Category,

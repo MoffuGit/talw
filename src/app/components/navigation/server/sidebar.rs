@@ -13,11 +13,11 @@ use leptos::prelude::*;
 use uuid::Uuid;
 
 #[derive(Clone)]
-struct ServerSideBarContext {
-    open: RwSignal<bool>,
+pub struct ServerSideBarContext {
+    pub open: RwSignal<bool>,
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn ServerSideBar() -> impl IntoView {
     let use_channel = use_channel();
@@ -54,8 +54,9 @@ pub fn ServerSideBar() -> impl IntoView {
         },
         move |_| get_categories(server.id),
     );
-    let open = RwSignal::new(true);
-    provide_context(ServerSideBarContext { open });
+    let open = use_context::<ServerSideBarContext>()
+        .expect("should acces teh server sidebar context")
+        .open;
     view! {
         <div
             class="flex w-[240px] h-full relative inset-y-0 bg-base-300 z-40 border-l-base-100 border-l border-0"
@@ -65,41 +66,29 @@ pub fn ServerSideBar() -> impl IntoView {
                 <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
                     <ServerMenu />
                     <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
-                        <Transition fallback=move || ()>
+                        <Transition>
                             {move || {
-                                channels
-                                    .with(|channels| {
-                                        match channels {
-                                            Some(Ok(channels)) => {
-                                                channels
-                                                    .iter()
-                                                    .map(|channel| {
-                                                        view! { <Channel channel=channel.clone() /> }
-                                                    })
-                                                    .collect_view().into_any()
-                                            }
-                                            _ => view! { <div /> }.into_any(),
-                                        }
-                                    })
+                                channels.and_then(|channels| {
+                                    channels
+                                        .iter()
+                                        .map(|channel| {
+                                            view! { <Channel channel=channel.clone() /> }
+                                        })
+                                        .collect_view()
+                                })
                             }}
                         </Transition>
-                        <Transition fallback=move || ()>
+                        <Transition>
                             {move || {
-                                categories
-                                    .with(|categories| {
-                                        match categories {
-                                            Some(Ok(categories)) => {
-                                                categories
-                                                    .iter()
-                                                    .map(|category| {
-                                                        let category = StoredValue::new(category.clone());
-                                                        view! { <Category category=category /> }
-                                                    })
-                                                    .collect_view().into_any()
-                                            }
-                                            _ => view! { <div /> }.into_any(),
-                                        }
-                                    })
+                                categories.and_then(|categories| {
+                                    categories
+                                        .iter()
+                                        .map(|category| {
+                                            let category = StoredValue::new(category.clone());
+                                            view! { <Category category=category /> }
+                                        })
+                                        .collect_view()
+                                })
                             }}
                         </Transition>
                     </div>

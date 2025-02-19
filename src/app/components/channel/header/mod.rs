@@ -13,7 +13,6 @@ use leptos_icons::Icon;
 
 use self::thread_menu::ThreadMenu;
 
-#[allow(non_snake_case)]
 #[component]
 pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>) -> impl IntoView {
     view! {

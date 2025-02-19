@@ -3,7 +3,7 @@ use leptos::prelude::*;
 
 use crate::app::components::navigation::navbar::Navbar;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn Home() -> impl IntoView {
     view! {

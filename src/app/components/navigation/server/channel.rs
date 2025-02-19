@@ -17,7 +17,7 @@ use std::time::Duration;
 
 use super::thread::Thread;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn Channel(channel: Channel) -> impl IntoView {
     let Channel { id: channel_id, .. } = channel;
@@ -73,8 +73,7 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                         <div
                             class="whitespace-nowrap overflow-hidden text-ellipsis mr-auto leading-5 flex-auto relative text-sm"
                         >
-                            //WARNING: checkt this
-                            // {&name.clone()}
+                            {name.clone()}
                         </div>
                     </A>
                     <div

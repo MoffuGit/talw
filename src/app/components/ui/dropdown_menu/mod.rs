@@ -13,7 +13,6 @@ pub struct DropdownProviderContext {
     open: RwSignal<bool>,
 }
 
-#[allow(non_snake_case)]
 #[component]
 pub fn DropdownProvider(
     children: Children,
@@ -47,7 +46,6 @@ pub fn DropdownProvider(
     }
 }
 
-#[allow(non_snake_case)]
 #[component]
 pub fn DropdownTrigger(
     #[prop(optional)] children: Option<Children>,
@@ -56,7 +54,6 @@ pub fn DropdownTrigger(
     view! { <MenuTrigger class=class>{children.map(|children| children())}</MenuTrigger> }
 }
 
-#[allow(dead_code)]
 #[derive(Clone)]
 pub enum MenuSide {
     Bottom,
@@ -65,7 +62,6 @@ pub enum MenuSide {
     Top,
 }
 
-#[allow(dead_code)]
 #[derive(Clone)]
 pub enum MenuAlign {
     Start,
@@ -181,7 +177,6 @@ fn use_menu_position(
     }
 }
 
-#[allow(non_snake_case)]
 #[component]
 pub fn DropdownContent(
     #[prop(optional)] class: &'static str,

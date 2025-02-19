@@ -18,7 +18,7 @@ pub struct ModalProviderContext {
     trigger_ref: NodeRef<Div>,
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn ModalProvider(
     children: Children,
@@ -44,7 +44,7 @@ pub fn ModalProvider(
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn ModalTrigger(
     children: Children,
@@ -71,7 +71,7 @@ pub fn ModalTrigger(
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn ModalClose(
     #[prop(optional)] children: Option<Children>,
@@ -96,7 +96,7 @@ pub fn ModalClose(
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView {
     let modal_context = use_context::<ModalProviderContext>().expect("have context");
@@ -118,13 +118,12 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
     });
 
     let show = RwSignal::new(false);
-    // let children = StoredValue::new(children);
+    let children = StoredValue::new(children);
     Effect::new(move |_| show.update(|value| *value = true));
     view! {
         <Show when=move || show.get()>
             <Portal
                 mount=document().get_element_by_id("app").expect("acces to the app")
-                clone:children
             >
                 <dialog
                     class="modal"
@@ -136,7 +135,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
                     }
                 >
                     <div class=format!("modal-box {}", class) node_ref=content_ref>
-                        {children.clone()()}
+                        {children.get_value()()}
                     </div>
                     <form method="dialog" class="modal-backdrop">
                         <button on:click=move |_| is_open.set(false) />

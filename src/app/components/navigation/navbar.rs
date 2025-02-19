@@ -3,7 +3,7 @@ use crate::app::components::theme::Toggle_Theme;
 use leptos::prelude::*;
 use leptos_router::components::A;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn Logout() -> impl IntoView {
     let logout = use_auth().logout;
@@ -16,7 +16,7 @@ pub fn Logout() -> impl IntoView {
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn Navbar() -> impl IntoView {
     view! {

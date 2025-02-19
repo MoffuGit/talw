@@ -15,7 +15,7 @@ use std::time::Duration;
 use crate::app::api::channel::get_channels_with_category;
 use crate::entities::category::Category;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn Category(category: StoredValue<Category>) -> impl IntoView {
     let collapsible_open = RwSignal::new(false);

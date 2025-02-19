@@ -13,7 +13,7 @@ use leptos_router::components::A;
 use uuid::Uuid;
 
 #[component]
-#[allow(non_snake_case)]
+ 
 pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -> impl IntoView {
     let hidden = RwSignal::new(false);
     let CurrentServerContext {

@@ -5,7 +5,7 @@ use crate::entities::channel::Channel;
 use leptos::{html, prelude::*};
 use uuid::Uuid;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn DeleteChannel(
     channel: Channel,

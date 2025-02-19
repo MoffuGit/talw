@@ -15,7 +15,7 @@ use leptos_use::use_draggable_with_options;
 use leptos_use::{use_window, UseDraggableCallbackArgs, UseDraggableOptions, UseDraggableReturn};
 
 #[component]
-#[allow(non_snake_case)]
+ 
 pub fn ThreadSplit() -> impl IntoView {
     let initial_width = initial_width();
     let update_width = Action::new(|width: &f64| toggle_thread_width(*width));

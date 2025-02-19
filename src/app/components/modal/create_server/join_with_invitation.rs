@@ -7,7 +7,7 @@ use leptos::prelude::*;
 use leptos_icons::*;
 use leptos_router::components::A;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn JoinWithInvitation() -> impl IntoView {
     let join_with_invitation = use_server().join_with_invitation;

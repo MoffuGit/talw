@@ -11,7 +11,7 @@ use leptos_icons::*;
 use wasm_bindgen::JsCast;
 use web_sys::{Blob, FormData, HtmlFormElement, Url};
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn SelectName() -> impl IntoView {
     let create_server = use_server().create_server;

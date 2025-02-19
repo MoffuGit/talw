@@ -102,7 +102,7 @@ pub fn Servers() -> impl IntoView {
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn ServerNavigation(server: Server) -> impl IntoView {
     let current_server =

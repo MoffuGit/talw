@@ -15,7 +15,7 @@ use self::profile::Profile;
 use self::search::Search;
 use self::servers::Servers;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn SideBar() -> impl IntoView {
     view! {

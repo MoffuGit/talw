@@ -7,7 +7,7 @@ use leptos_icons::Icon;
 
 use leptos::ev::MouseEvent;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn EditChannelModal(
     channel: Channel,

@@ -5,11 +5,19 @@ use crate::app::api::member::member_can_edit;
 use crate::app::api::server::get_server;
 use crate::app::api::server::use_server;
 use crate::app::components::navigation::server::sidebar::ServerSideBar;
+use crate::app::components::navigation::server::sidebar::ServerSideBarContext;
 use crate::entities::member::Member;
+use futures::future::join_all;
+use futures::join;
+use futures::try_join;
+use leptos::context::Provider;
+use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_router::components::Outlet;
 use leptos_router::components::Redirect;
 use leptos_router::hooks::use_params_map;
+use serde::Deserialize;
+use serde::Serialize;
 use uuid::Uuid;
 
 use crate::entities::server::Server as ServerEntitie;
@@ -25,67 +33,59 @@ pub fn use_current_server_context() -> CurrentServerContext {
     use_context::<CurrentServerContext>().expect("Should acces to current server context")
 }
 
-#[allow(non_snake_case)]
 #[component]
 pub fn Server() -> impl IntoView {
+    let params_map = use_params_map();
+    let leave_server = use_server().leave_server;
+    let server_id = move || {
+        params_map.with(|map| {
+            map.get("id")
+                .and_then(|id| Uuid::from_str(&id).ok())
+                .expect("should get the server id from the params")
+        })
+    };
+    let server_data = Resource::new(
+        move || (leave_server.version().get(), server_id()),
+        move |(_, server_id)| async move {
+            let server = get_server(server_id);
+            let member = get_member(server_id);
+            let can_edit = member_can_edit(server_id);
+            try_join!(server, member, can_edit)
+        },
+    );
+
+    let open = RwSignal::new(true);
+    //INFO:
+    //Solution for providing context to outlet
+    //https://github.com/leptos-rs/leptos/issues/3042
+    let outer_owner = Owner::current().unwrap();
+
+    let inner_view = move || {
+        server_data.and_then(|data| {
+            outer_owner.with(|| {
+                provide_context(ServerSideBarContext { open });
+                provide_context(CurrentServerContext {
+                    server: data.0.clone(),
+                    member_can_edit: data.2,
+                    member: data.1.clone(),
+                })
+            });
+            view! {
+                <div class="h-full grow relative overflow-hidden z-30">
+                    <ServerSideBar />
+                    <div class="h-full grow relative overflow-hidden z-30">
+                        <Outlet />
+                    </div>
+                </div>
+            }
+        })
+    };
+
     view! {
         <div class="h-full w-full relative z-40 flex">
-            {move || {
-                match use_params_map().with(|params| Uuid::from_str(&params.get("id").unwrap_or_default())) {
-                    Err(_) => view! { <Redirect path="/servers/me" /> }.into_any(),
-                    Ok(server_id) => {
-                        let leave_server = use_server().leave_server;
-                        let server = Resource::new(
-                            move || { (leave_server.version().get(),) },
-                            move |_| get_server(server_id),
-                        );
-                        let member_can_edit = Resource::new(
-                            move || { (leave_server.version().get(),) },
-                            move |_| member_can_edit(server_id),
-                        );
-                        let member = Resource::new(
-                            move || (leave_server.version().get()),
-                            move |_| get_member(server_id),
-                        );
-
-                        view! {
-                            <Transition fallback=move || ()>
-                                {move || {
-                                    match (server.get(), member_can_edit.get(), member.get()) {
-                                        (
-                                            Some(Ok(server)),
-                                            Some(Ok(member_can_edit)),
-                                            Some(Ok(member)),
-                                        ) => {
-                                            provide_context(CurrentServerContext {
-                                                server,
-                                                member_can_edit,
-                                                member,
-                                            });
-                                            view! {
-                                                <ServerSideBar />
-                                                <div class="h-full grow relative overflow-hidden z-30">
-                                                    <Outlet />
-                                                </div>
-                                            }
-                                                .into_any()
-                                        }
-                                        (None, _, _) | (_, None, _) | (_, _, None) => {
-                                            view! {
-                                                <div class="flex w-[240px] h-full fixed inset-y-0 bg-base-200 z-40"></div>
-                                                <div class="h-full relative overflow-hidden md:pl-[240px] z-30"></div>
-                                            }
-                                                .into_any()
-                                        }
-                                        _ => view! { <Redirect path="/servers/me" /> }.into_any(),
-                                    }
-                                }}
-                            </Transition>
-                        }
-                            .into_any()
-                    }
-                }
-            }}
+            <Transition>
+                {inner_view}
+            </Transition>
         </div>
     }
 }

@@ -5,7 +5,7 @@ use crate::entities::category::Category;
 use leptos::{html, prelude::*};
 use leptos_icons::Icon;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn EditCategoryModal(
     category: Category,

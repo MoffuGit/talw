@@ -1,3 +1,4 @@
+use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_icons::Icon;
 use wasm_bindgen::JsCast;
@@ -49,22 +50,24 @@ pub fn UserImage() -> impl IntoView {
             {move || match image_preview_url.get() {
                 Some(url) => {
                     let url = StoredValue::new(url);
-                    view! {
-                        <img
-                            class="w-36 h-36 object-cover absolute top-16 left-6 rounded-full border-8 border-base-300 z-40"
-                            src=url.get_value()
-                            on:load=move |_| {
-                                let _ = Url::revoke_object_url(&url.get_value());
-                            }
-                        />
-                    }
-                        .into_any()
+                    Either::Left(
+                        view! {
+                            <img
+                                class="w-36 h-36 object-cover absolute top-16 left-6 rounded-full border-8 border-base-300 z-40"
+                                src=url.get_value()
+                                on:load=move |_| {
+                                    let _ = Url::revoke_object_url(&url.get_value());
+                                }
+                            />
+                        }
+                    )
                 }
                 None => {
-                    view! {
-                        <div class="w-36 h-36 absolute top-16 left-6 rounded-full border-8 bg-base-content/5 border-base-300 z-40" />
-                    }
-                        .into_any()
+                    Either::Right(
+                        view! {
+                            <div class="w-36 h-36 absolute top-16 left-6 rounded-full border-8 bg-base-content/5 border-base-300 z-40" />
+                        }
+                    )
                 }
             }}
             <div class="w-32 h-32 absolute top-[136px] left-8 rounded-full border-8 border-transparent transition opacity-0 group-hover:opacity-100 bg-base-content/10 z-50 flex items-center justify-center">

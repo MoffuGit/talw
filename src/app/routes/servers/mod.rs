@@ -12,13 +12,14 @@ use leptos_router::components::Outlet;
 use leptos_router::components::Redirect;
 use leptos_router::components::A;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn Servers() -> impl IntoView {
+    let auth = use_auth().auth;
     view! {
         <Transition>
             {move || {
-                use_auth().auth.and_then(|user| {
+                auth.and_then(|user| {
                     user.clone().map(|user| {
                         provide_user_context(user.id);
                         view!{
@@ -34,7 +35,7 @@ pub fn Servers() -> impl IntoView {
                                     </div>
                                 </ServerOverview>
                             </UserOverview>
-                        }.into_any()
+                        }
                     })
                 })
             }}

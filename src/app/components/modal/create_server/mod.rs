@@ -24,7 +24,7 @@ fn use_create_server() -> CreateServerContext {
     use_context::<CreateServerContext>().expect("have create server context")
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn CreateServerModal(
     class: &'static str,

@@ -1,3 +1,4 @@
+use leptos::either::Either;
 use leptos::prelude::*;
 
 use crate::app::api::user::use_user;
@@ -12,21 +13,21 @@ pub fn Profile() -> impl IntoView {
                 {move || {
                     profile
                         .and_then(|profile| {
-                            view! {
-                                {if let Some(url) = &profile.image_url {
+                            if let Some(url) = &profile.image_url {
+                                Either::Left(
                                     view! {
                                         <img
-                                            class="w-8 h-8 rounded-full cursor-pointer object-cover"
-                                            src=url.clone()
+                                        class="w-8 h-8 rounded-full cursor-pointer object-cover"
+                                        src=url.clone()
                                         />
                                     }
-                                        .into_any()
-                                } else {
+                                )
+                            } else {
+                                Either::Right(
                                     view! {
                                         <div class="w-8 h-8 rounded-full cursor-pointer bg-base-100/40"/>
                                     }
-                                        .into_any()
-                                }}
+                                )
                             }
                         })
                 }}

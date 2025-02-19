@@ -6,7 +6,7 @@ use leptos_icons::*;
 
 use uuid::Uuid;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn CreateCategoryModal(
     class: &'static str,

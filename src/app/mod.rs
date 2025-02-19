@@ -25,7 +25,7 @@ use crate::app::routes::servers::thread::ThreadSplit;
 use self::api::auth::use_auth;
 use self::routes::servers::thread::ThreadView;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn App() -> impl IntoView {
     provide_meta_context();
@@ -55,7 +55,10 @@ pub fn App() -> impl IntoView {
                                 <Route path=StaticSegment("") view=move || view! { <div>"list of servers"</div> } />
                                 <Route path=StaticSegment("me") view=move || view! { <div>"user stuff"</div> } />
                                 <Route path=StaticSegment("discover") view=move || view! { <div>"search servers"</div> } />
-                                <Route path=ParamSegment("id") view=move || view!{<div>the server</div>}/>
+                                <ParentRoute path=ParamSegment("id") view=Server>
+                                    <Route path=StaticSegment("") view=EmptyServer/>
+                                    <Route path=ParamSegment("channel_id") view=ChannelView/>
+                                </ParentRoute>
                             </ProtectedParentRoute>
                             <Route path=StaticSegment("login" ) view=Login />
                             <Route path=StaticSegment("signup" ) view=Signup />
@@ -64,6 +67,18 @@ pub fn App() -> impl IntoView {
         </Router>
     }
 }
+
+// <Route path=":id" view=|| view! { <Server /> }>
+//                             <Route path=":channel_id" view=|| view! { <ChannelView /> }>
+//                                 <Route path=":thread_id" view=|| view! { <ThreadSplit /> } />
+//                                 <Route path="" view=|| view! { <div /> } />
+//                             </Route>
+//                             <Route
+//                                 path="thread/:channel_id/:thread_id"
+//                                 view=|| view! { <ThreadView /> }
+//                             />
+//                             <Route path="" view=|| view! { <EmptyServer /> } />
+//                         </Route>
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {

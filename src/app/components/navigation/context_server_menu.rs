@@ -6,9 +6,10 @@ use crate::app::components::modal::leave_server::LeaveServer;
 use crate::app::components::overview::server::ServerOverviewTrigger;
 use crate::app::components::ui::context_menu::*;
 use crate::entities::server::Server;
+use leptos::either::Either;
 use leptos::{html, prelude::*};
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn ContextServerMenu(
     server: Server,
@@ -47,41 +48,36 @@ pub fn ContextServerMenu(
                 >
                     <div class="">"Invite People"</div>
                 </InvitePeopleModal>
-                <Transition fallback=move || ()>
-                    {move || {
-                        if let Some(Ok(true)) = member_can_update.get() {
-                            view! {
-                                <div class="bg-base-100 h-px my-1 -mx-1" />
-                                <ServerMenuAdminItems
-                                    nodes=ServerMenuNodes {
-                                        create_channel_node,
-                                        create_category_node,
-                                    }
-                                    server=server.get_value()
-                                    on_click=on_click_item
-                                />
-                            }
-                                .into_any()
-                        } else {
-                            ().into_any()
-                        }
-                    }}
-                </Transition>
                 <Transition>
                     {move || {
-                        if let Some(Ok(false)) = member_can_update.get() {
-                            view! {
-                                <div class="bg-base-100 h-px my-1 -mx-1" />
-                                <ServerMenuGuestItems
-                                    leave_server_node=leave_server_node
-                                    server=server.get_value()
-                                    on_click=on_click_item
-                                />
+                        member_can_update.and_then(|can_edit| {
+                            if *can_edit {
+                                Either::Left(
+                                    view! {
+                                        <div class="bg-base-100 h-px my-1 -mx-1" />
+                                        <ServerMenuAdminItems
+                                            nodes=ServerMenuNodes {
+                                                create_channel_node,
+                                                create_category_node,
+                                            }
+                                            server=server.get_value()
+                                            on_click=on_click_item
+                                        />
+                                    }
+                                )
+                            } else {
+                                Either::Right(
+                                    view! {
+                                        <div class="bg-base-100 h-px my-1 -mx-1" />
+                                        <ServerMenuGuestItems
+                                            leave_server_node=leave_server_node
+                                            server=server.get_value()
+                                            on_click=on_click_item
+                                        />
+                                    }
+                                )
                             }
-                                .into_any()
-                        } else {
-                            ().into_any()
-                        }
+                        })
                     }}
                 </Transition>
             </ContextMenuContent>
@@ -95,7 +91,7 @@ pub struct ServerMenuNodes {
     pub create_category_node: NodeRef<html::Div>,
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 fn ServerMenuAdminItems(
     on_click: Signal<()>,
@@ -131,7 +127,7 @@ fn ServerMenuAdminItems(
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 fn ServerMenuGuestItems(
     server: Server,

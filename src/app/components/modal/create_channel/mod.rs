@@ -2,12 +2,13 @@ use crate::app::api::channel::use_channel;
 use crate::app::components::ui::modal::*;
 use crate::entities::channel::ChannelType;
 use icondata::{self, Icon};
+use leptos::either::Either;
 use leptos::{html, prelude::*};
 use leptos_icons::*;
 
 use uuid::Uuid;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn CreateChannelModal(
     class: &'static str,
@@ -39,24 +40,25 @@ pub fn CreateChannelModal(
             });
             view! {
                 <ModalProvider content_ref=content_ref open=open on_close=Signal::derive(on_close)>
-                    {match on_click {
-                        Some(on_click) => {
-                            view! {
-                                <ModalTrigger class=class on_click=on_click>
-                                    {children.map(|children| children())}
-                                </ModalTrigger>
-                            }
-                                .into_any()
+                    {
+                        if let Some(on_click) = on_click {
+                            Either::Left(
+                                view! {
+                                    <ModalTrigger class=class on_click=on_click>
+                                        {children.map(|children| children())}
+                                    </ModalTrigger>
+                                }
+                            )
+                        } else {
+                            Either::Right(
+                                view! {
+                                    <ModalTrigger class=class>
+                                        {children.map(|children| children())}
+                                    </ModalTrigger>
+                                }
+                            )
                         }
-                        None => {
-                            view! {
-                                <ModalTrigger class=class>
-                                    {children.map(|children| children())}
-                                </ModalTrigger>
-                            }
-                                .into_any()
-                        }
-                    }}
+                    }
                     <ModalContent class="w-[440px] max-h-[720px] rounded p-0 h-auto overflow-hidden flex flex-col items-center">
                         <div class="text-start p-[16px] w-full">
                             <h1 class="font-bold text-[24px] leading-[30px]">"Create Channel"</h1>

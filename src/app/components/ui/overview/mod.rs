@@ -62,24 +62,18 @@ pub fn OverviewContent(
             }
         }
     });
+    let _ = use_event_listener(use_document(), keydown, move |evt: KeyboardEvent| {
+        if evt.key() == "Escape" {
+            open.set(false)
+        }
+    });
+    let children = StoredValue::new(children);
     view! {
         <Show when=move || open.get()>
             <Portal
                 mount=document().get_element_by_id("app").expect("acces to the app")
-                clone:children
             >
-                {
-                    let _ = use_event_listener(
-                        use_document(),
-                        keydown,
-                        move |evt: KeyboardEvent| {
-                            if evt.key() == "Escape" {
-                                open.set(false)
-                            }
-                        },
-                    );
-                }
-                <div class=format!("z-[999] absolute inset-0 {}", class)>{children()}</div>
+                <div class=format!("z-[999] absolute inset-0 {}", class)>{children.get_value()()}</div>
             </Portal>
         </Show>
     }

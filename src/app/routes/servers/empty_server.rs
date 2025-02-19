@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::app::api::channel::{get_all_channels, use_channel};
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn EmptyServer() -> impl IntoView {
     let params = use_params_map();

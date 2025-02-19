@@ -11,7 +11,7 @@ use leptos::html;
 use leptos::prelude::*;
 use leptos_icons::*;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn ServerMenu() -> impl IntoView {
     let open = RwSignal::new(false);
@@ -94,7 +94,7 @@ pub fn ServerMenu() -> impl IntoView {
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 fn ServerMenuAdminItems(
     on_click: Signal<()>,
@@ -128,7 +128,7 @@ fn ServerMenuAdminItems(
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 fn ServerMenuGuestItems(
     on_click: Signal<()>,

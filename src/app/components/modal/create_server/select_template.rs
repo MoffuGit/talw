@@ -7,7 +7,7 @@ use leptos::prelude::*;
 use leptos_icons::*;
 use strum::IntoEnumIterator;
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn SelectTemplate() -> impl IntoView {
     view! {
@@ -54,7 +54,7 @@ pub fn SelectTemplate() -> impl IntoView {
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 fn Templates(template: ServerTemplate, children: Children) -> impl IntoView {
     let selected_template = use_create_server().selected_template;

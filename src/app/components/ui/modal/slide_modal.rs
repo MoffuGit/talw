@@ -28,7 +28,9 @@ pub fn SlideProvider(
         height,
         width,
     });
-    children()
+    view! {{
+        children()
+    }}
 }
 
 #[component]

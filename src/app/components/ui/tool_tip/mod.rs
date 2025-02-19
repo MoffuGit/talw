@@ -14,7 +14,7 @@ struct TooltipProviderContext {
     trigger_ref: NodeRef<html::Div>,
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn TooltipProvider(
     children: Children,
@@ -101,7 +101,7 @@ pub fn TooltipProvider(
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn TooltipTrigger(
     children: Children,
@@ -193,7 +193,7 @@ pub fn get_tooltip_position(
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn TooltipContent(
     #[prop(into)] tip: Signal<String>,

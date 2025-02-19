@@ -52,7 +52,7 @@ pub fn MenuProvider(
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn MenuTrigger(
     #[prop(optional)] class: &'static str,
@@ -111,7 +111,7 @@ pub fn MenuTrigger(
     }
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn MenuContent(
     #[prop(optional)] class: String,

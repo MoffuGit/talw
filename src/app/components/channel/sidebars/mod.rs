@@ -15,7 +15,7 @@ use self::thread::ThreadMemberSideBar;
 #[derive(Debug, Clone)]
 pub struct SideBarContext(pub RwSignal<bool>);
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn MemberSideBar(server_id: Uuid, #[prop(optional)] thread_id: Option<Uuid>) -> impl IntoView {
     if let Some(thread_id) = thread_id {
@@ -25,7 +25,7 @@ pub fn MemberSideBar(server_id: Uuid, #[prop(optional)] thread_id: Option<Uuid>)
     view! { <ServerMemberSideBar server_id=server_id /> }.into_any()
 }
 
-#[allow(non_snake_case)]
+ 
 #[component]
 pub fn MemberSideBarTrigger() -> impl IntoView {
     let open = use_context::<SideBarContext>()

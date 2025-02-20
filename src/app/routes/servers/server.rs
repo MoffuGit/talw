@@ -71,11 +71,9 @@ pub fn Server() -> impl IntoView {
                 })
             });
             view! {
+                <ServerSideBar />
                 <div class="h-full grow relative overflow-hidden z-30">
-                    <ServerSideBar />
-                    <div class="h-full grow relative overflow-hidden z-30">
-                        <Outlet />
-                    </div>
+                    <Outlet />
                 </div>
             }
         })

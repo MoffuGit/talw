@@ -36,7 +36,7 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
 
             <ContextMenuContent
                 ignore=vec![edit_channel_node, delete_channel_node]
-                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
+                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
             >
                 <InvitePeopleModal
                     invite_code=server.invite_code

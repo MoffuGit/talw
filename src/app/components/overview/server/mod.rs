@@ -36,8 +36,7 @@ pub struct ServerSettingsData {
     server: Server,
 }
 
-#[component]
-pub fn ServerOverview(children: Children) -> impl IntoView {
+pub fn provide_server_overview_context() {
     let open = RwSignal::new(false);
     let server = RwSignal::new(None);
     let settings = RwSignal::new(ServerSettings::Overview);
@@ -46,8 +45,20 @@ pub fn ServerOverview(children: Children) -> impl IntoView {
         server,
         settings,
     });
+}
+
+pub fn use_server_overview() -> ServerOverviewContext {
+    use_context::<ServerOverviewContext>().expect("should get the server overview context")
+}
+
+#[component]
+pub fn ServerOverview() -> impl IntoView {
+    let ServerOverviewContext {
+        open,
+        server,
+        settings,
+    } = use_server_overview();
     view! {
-        {children()}
         <OverviewContent open=open class="w-full h-full flex items-center">
             {
                 move || {
@@ -68,7 +79,7 @@ pub fn ServerOverview(children: Children) -> impl IntoView {
                                 }
                             </Transition>
                         }
-                    }).into_any()
+                    })
                 }
             }
         </OverviewContent>

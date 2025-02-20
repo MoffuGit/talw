@@ -48,7 +48,7 @@ pub fn ServerMenu() -> impl IntoView {
                         create_category_node,
                         leave_server_node,
                     ]
-                    class="transition-transform scale-100 origin-top ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
+                    class="transition-transform scale-100 origin-top ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
                     side=MenuSide::Bottom
                     side_of_set=2.0
                 >

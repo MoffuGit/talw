@@ -125,7 +125,7 @@ fn SideBarContextMenu(server_id: Uuid) -> impl IntoView {
             <ContextMenuTrigger class="h-full w-full bg-none" />
             <ContextMenuContent
                 ignore=vec![create_channel_node, create_category_node]
-                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
+                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
             >
                 <CreateChannelModal
                     content_ref=create_channel_node

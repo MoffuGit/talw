@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
-use leptos::prelude::Signal;
-// use leptos_router::use_router;
+use leptos::prelude::{Memo, Signal, With};
+use leptos_router::hooks::use_params_map;
 use uuid::Uuid;
 
 pub mod category;
@@ -10,21 +10,22 @@ pub mod server_menu;
 pub mod sidebar;
 pub mod thread;
 
-pub fn use_current_channel() -> Signal<Option<Uuid>> {
-    Signal::derive(move || {
-        // use_router().pathname().with(|path| {
-        //     path.split('/')
-        //         .nth(3)
-        //         .and_then(|path| Uuid::parse_str(path).ok())
-        // })
-        None
+//WARNING: check where you use this
+pub fn use_current_channel() -> Memo<Option<Uuid>> {
+    Memo::new(move |_| {
+        use_params_map().with(|map| {
+            map.get("channel_id")
+                .and_then(|channel| Uuid::parse_str(&channel).ok())
+        })
     })
 }
 
-pub fn use_current_thread() -> Signal<Option<(Uuid, Uuid)>> {
-    Signal::derive(move || None)
-}
-
-pub fn use_current_split_thread() -> Signal<Option<Uuid>> {
-    Signal::derive(move || None)
+//WARNING: check where you use this
+pub fn use_current_thread() -> Memo<Option<Uuid>> {
+    Memo::new(move |_| {
+        use_params_map().with(|map| {
+            map.get("thread_id")
+                .and_then(|channel| Uuid::parse_str(&channel).ok())
+        })
+    })
 }

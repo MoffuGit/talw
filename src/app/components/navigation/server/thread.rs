@@ -57,7 +57,7 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
     let open = RwSignal::new(false);
     let use_current_thread = use_current_thread();
     let is_current_thread = move || {
-        use_current_thread.with(|url| url.is_some_and(|(_, thread_url)| thread_url == thread.id))
+        use_current_thread.with(|url| url.is_some_and(|(thread_url)| thread_url == thread.id))
     };
     let name = StoredValue::new(thread.name.clone());
     let delete_thread_modal_ref = NodeRef::<html::Div>::new();

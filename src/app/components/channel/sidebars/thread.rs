@@ -26,20 +26,20 @@ pub fn ThreadMemberSideBar(server_id: Uuid, thread_id: Uuid) -> impl IntoView {
         },
         move |_| get_server_roles(server_id),
     );
-    let members_without_role = Resource::new(
-        move || {
-            (
-                use_thread.join_thread.version().get(),
-                use_thread.leave_thread.version().get(),
-            )
-        },
-        move |_| get_thread_members_without_role(thread_id),
-    );
+    // let members_without_role = Resource::new(
+    //     move || {
+    //         (
+    //             use_thread.join_thread.version().get(),
+    //             use_thread.leave_thread.version().get(),
+    //         )
+    //     },
+    //     move |_| get_thread_members_without_role(thread_id),
+    // );
     view! {
-        <Transition fallback=move || ()>
+        <Transition>
             {move || {
-                match (open.get(), roles.get(), members_without_role.get()) {
-                    (true, Some(Ok(roles)), Some(Ok(members))) => {
+                match (open.get(), roles.get()/* , members_without_role.get() */) {
+                    (true, Some(Ok(roles))/* , Some(Ok(members)) */) => {
                         view! {
                             <div class="h-full shrink-0 w-[240px] bg-base-300 flex flex-col items-stretch justify-between">
                                 <div class="flex flex-col items-stretch overflow-y-scroll overflow-x-hidden">
@@ -50,16 +50,16 @@ pub fn ThreadMemberSideBar(server_id: Uuid, thread_id: Uuid) -> impl IntoView {
                                         })
                                         .collect_view()}
                                     <div class="pt-6 pr-2 pl-4 text-base">
-                                        {format!("Online - {}", members.len())}
+                                        // {format!("Online - {}", members.len())}
                                     </div>
-                                    {members
-                                        .iter()
-                                        .map(|member| {
-                                            view! {
-                                                <Member member_id=member.id user_id=member.user_id />
-                                            }
-                                        })
-                                        .collect_view()}
+                                    // {members
+                                    //     .iter()
+                                    //     .map(|member| {
+                                    //         view! {
+                                    //             <Member member_id=member.id user_id=member.user_id />
+                                    //         }
+                                    //     })
+                                    //     .collect_view()}
                                 </div>
                                 <CurrentMember />
                             </div>

@@ -11,7 +11,6 @@ use leptos_router::hooks::use_params_map;
 use uuid::Uuid;
 
 #[component]
- 
 pub fn ChannelView() -> impl IntoView {
     let server_id = use_current_server_context().server.id;
     let params_map = use_params_map();
@@ -46,37 +45,37 @@ pub fn ChannelView() -> impl IntoView {
                                 let name = channel.name.clone();
                                 view! {
                                     <ChannelHeader channel=channel.clone() />
-                                    // <div class="w-full h-full flex bg-base-200">
-                                    //     // NOTE:
-                                    //     // this is the future chat
-                                    //     // NOTE: move this to his own component,
-                                    //     <div class="flex flex-col h-auto w-full">
-                                    //         <div class="flex-grow overflow-auto" />
-                                    //         <div class="h-20 flex-shrink-0 flex">
-                                    //             <div class="m-4 w-full flex-grow bg-base-300/60 rounded-lg flex items-center px-4">
-                                    //                 <Icon
-                                    //                     icon=icondata::RiAddCircleSystemFill
-                                    //                     // class="w-7 h-7 fill-base-content/40 grow-0 mr-4"
-                                    //                 />
-                                    //                 <div class="grow text-base-content/60">
-                                    //                     {format!("Message #{}", name)}
-                                    //                 </div>
-                                    //                 <Icon
-                                    //                     icon=icondata::RiEmojiStickerCommunicationFill
-                                    //                     // class="w-7 h-7 fill-base-content/40"
-                                    //                 />
-                                    //             </div>
-                                    //         </div>
-                                    //     </div>
-                                    //     <MemberSideBar server_id=server_id />
-                                    // </div>
+                                    <div class="w-full h-full flex bg-base-200">
+                                        // NOTE:
+                                        // this is the future chat
+                                        // NOTE: move this to his own component,
+                                        <div class="flex flex-col h-auto w-full">
+                                            <div class="flex-grow overflow-auto" />
+                                            <div class="h-20 flex-shrink-0 flex">
+                                                <div class="m-4 w-full flex-grow bg-base-300/60 rounded-lg flex items-center px-4">
+                                                    <Icon
+                                                        icon=icondata::RiAddCircleSystemFill
+                                                        // class="w-7 h-7 fill-base-content/40 grow-0 mr-4"
+                                                    />
+                                                    <div class="grow text-base-content/60">
+                                                        {format!("Message #{}", name)}
+                                                    </div>
+                                                    <Icon
+                                                        icon=icondata::RiEmojiStickerCommunicationFill
+                                                        // class="w-7 h-7 fill-base-content/40"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <MemberSideBar server_id=server_id />
+                                    </div>
                                 }
                             })
                         }
                     }
                 </Transition>
             </div>
-            // <Outlet />
+            <Outlet />
         </div>
     }
 }

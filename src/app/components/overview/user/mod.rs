@@ -9,7 +9,7 @@ use self::content::UserSettigsContent;
 use self::sidebar::UserSettingsSideBar;
 
 #[derive(Clone)]
-struct UserOverviewContext {
+pub struct UserOverviewContext {
     open: RwSignal<bool>,
     settings: RwSignal<UserSettings>,
 }
@@ -29,18 +29,25 @@ impl Display for UserSettings {
     }
 }
 
-#[component]
-pub fn UserOverview(children: Children) -> impl IntoView {
+pub fn provide_user_overview_context() {
     let open = RwSignal::new(false);
     let settings = RwSignal::new(UserSettings::Account);
     provide_context(UserOverviewContext { open, settings });
+}
+
+pub fn use_user_overview() -> UserOverviewContext {
+    use_context::<UserOverviewContext>().expect("should acces the user overview context")
+}
+
+#[component]
+pub fn UserOverview() -> impl IntoView {
+    let user_overview = use_user_overview();
     view! {
-        {children()}
         <OverviewContent
             on_close=Signal::derive(move || {
-                settings.set(UserSettings::Account);
+                user_overview.settings.set(UserSettings::Account);
             })
-            open=open
+            open=user_overview.open
             class="w-full h-full flex items-center"
         >
             <UserSettingsSideBar />

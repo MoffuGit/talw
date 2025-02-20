@@ -67,7 +67,7 @@ pub fn SelectTheme(dark_mode: bool) -> impl IntoView {
                 <TooltipContent
                     tip=tip
                     arrow=true
-                    class="rounded z-[1000] w-auto h-auto py-1 px-2 text-base font-bold bg-base-400 border-base-400 border-0"
+                    class="rounded z-[1000] w-auto h-auto py-1 px-2 text-base font-bold bg-base-300 border-base-300 border-0"
                     tooltip_side=ToolTipSide::Top
                 />
             </TooltipProvider>

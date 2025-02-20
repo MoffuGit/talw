@@ -37,7 +37,7 @@ pub fn SideBar() -> impl IntoView {
                         tooltip_of_side=10.0
                         tip="Direct Messages"
                         arrow=true
-                        class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-400 border-base-400"
+                        class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-300 border-base-300"
                     />
                 </TooltipProvider>
                 <Inbox />

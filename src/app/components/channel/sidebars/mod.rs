@@ -4,6 +4,7 @@ use crate::app::components::ui::tool_tip::{
     ToolTipSide, TooltipContent, TooltipProvider, TooltipTrigger,
 };
 use icondata;
+use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_icons::Icon;
 use std::time::Duration;
@@ -15,17 +16,15 @@ use self::thread::ThreadMemberSideBar;
 #[derive(Debug, Clone)]
 pub struct SideBarContext(pub RwSignal<bool>);
 
- 
 #[component]
 pub fn MemberSideBar(server_id: Uuid, #[prop(optional)] thread_id: Option<Uuid>) -> impl IntoView {
     if let Some(thread_id) = thread_id {
-        return view! { <ThreadMemberSideBar server_id=server_id thread_id=thread_id /> }
-            .into_any();
-    };
-    view! { <ServerMemberSideBar server_id=server_id /> }.into_any()
+        Either::Left(view! { <ThreadMemberSideBar server_id=server_id thread_id=thread_id /> })
+    } else {
+        Either::Right(view! { <ServerMemberSideBar server_id=server_id /> })
+    }
 }
 
- 
 #[component]
 pub fn MemberSideBarTrigger() -> impl IntoView {
     let open = use_context::<SideBarContext>()
@@ -44,7 +43,7 @@ pub fn MemberSideBarTrigger() -> impl IntoView {
                 tooltip_of_side=10.0
                 tip="Member List"
                 tooltip_side=ToolTipSide::Bottom
-                class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-400 border-base-400"
+                class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-300 border-base-300"
             />
         </TooltipProvider>
     }

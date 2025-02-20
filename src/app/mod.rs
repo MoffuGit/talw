@@ -20,12 +20,11 @@ use routes::servers::Servers;
 use routes::signup::Signup;
 
 use crate::app::api::category::provide_category_context;
-use crate::app::routes::servers::thread::ThreadSplit;
+use crate::app::routes::servers::thread::split::ThreadSplit;
 
 use self::api::auth::use_auth;
-use self::routes::servers::thread::ThreadView;
+use self::routes::servers::thread::Thread;
 
- 
 #[component]
 pub fn App() -> impl IntoView {
     provide_meta_context();
@@ -46,39 +45,34 @@ pub fn App() -> impl IntoView {
             <main id="app" class="w-full h-full overflow-hidden">
                     <Routes fallback=|| "Not Found">
                         <Route path=StaticSegment("") view=Home />
-                            <ProtectedParentRoute
-                                condition=move || use_auth().auth.get().map(|r| r.ok().flatten().is_some())
-                                redirect_path=|| "/"
-                                path=StaticSegment("servers" )
-                                view=Servers
-                            >
-                                <Route path=StaticSegment("") view=move || view! { <div>"list of servers"</div> } />
-                                <Route path=StaticSegment("me") view=move || view! { <div>"user stuff"</div> } />
-                                <Route path=StaticSegment("discover") view=move || view! { <div>"search servers"</div> } />
-                                <ParentRoute path=ParamSegment("id") view=Server>
-                                    <Route path=StaticSegment("") view=EmptyServer/>
-                                    <Route path=ParamSegment("channel_id") view=ChannelView/>
+                        <ProtectedParentRoute
+                            condition=move || use_auth().auth.get().map(|r| r.ok().flatten().is_some())
+                            redirect_path=|| "/"
+                            path=StaticSegment("servers" )
+                            view=Servers
+                        >
+                            <Route path=StaticSegment("") view=move || view! { <div>"list of servers"</div> } />
+                            <Route path=StaticSegment("me") view=move || view! { <div>"user stuff"</div> } />
+                            <Route path=StaticSegment("discover") view=move || view! { <div>"search servers"</div> } />
+                            <ParentRoute path=ParamSegment("id") view=Server>
+                                <Route path=StaticSegment("") view=EmptyServer/>
+                                <ParentRoute path=ParamSegment("channel_id") view=ChannelView>
+                                    <Route path=ParamSegment("thread_id" ) view=ThreadSplit />
+                                    <Route path=StaticSegment("") view=|| view! { <div /> } />
                                 </ParentRoute>
-                            </ProtectedParentRoute>
-                            <Route path=StaticSegment("login" ) view=Login />
-                            <Route path=StaticSegment("signup" ) view=Signup />
+                                <Route
+                                    path=(StaticSegment("thread"), ParamSegment("channel_id"), ParamSegment("thread_id"))
+                                    view=Thread
+                                />
+                            </ParentRoute>
+                        </ProtectedParentRoute>
+                        <Route path=StaticSegment("login" ) view=Login />
+                        <Route path=StaticSegment("signup" ) view=Signup />
                     </Routes>
             </main>
         </Router>
     }
 }
-
-// <Route path=":id" view=|| view! { <Server /> }>
-//                             <Route path=":channel_id" view=|| view! { <ChannelView /> }>
-//                                 <Route path=":thread_id" view=|| view! { <ThreadSplit /> } />
-//                                 <Route path="" view=|| view! { <div /> } />
-//                             </Route>
-//                             <Route
-//                                 path="thread/:channel_id/:thread_id"
-//                                 view=|| view! { <ThreadView /> }
-//                             />
-//                             <Route path="" view=|| view! { <EmptyServer /> } />
-//                         </Route>
 
 pub fn shell(options: LeptosOptions) -> impl IntoView {
     view! {
@@ -94,7 +88,7 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
                 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet"/>
             </head>
-            <body>
+            <body class="w-full h-screen">
                 <App/>
             </body>
         </html>

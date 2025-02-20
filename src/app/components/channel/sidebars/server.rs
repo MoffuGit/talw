@@ -1,4 +1,4 @@
-use crate::app::api::member::{get_members_from_role, get_members_without_role};
+use crate::app::api::member::{self, get_members_from_role, get_members_without_role};
 use crate::app::api::server::get_server_roles;
 use crate::app::api::user::{get_user_profile, use_user};
 use crate::app::components::channel::member::banner::MemberBanner;
@@ -8,6 +8,7 @@ use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::member::Member;
 use crate::entities::role::Role;
+use leptos::either::Either;
 use leptos::prelude::*;
 use leptos::text_prop::TextProp;
 use leptos_icons::Icon;
@@ -21,63 +22,62 @@ pub fn ServerMemberSideBar(server_id: uuid::Uuid) -> impl IntoView {
     let roles = Resource::new(|| (), move |_| get_server_roles(server_id));
     let members_without_role = Resource::new(|| (), move |_| get_members_without_role(server_id));
     view! {
-        <Transition fallback=move || ()>
-            {move || {
-                match (open.get(), roles.get(), members_without_role.get()) {
-                    (true, Some(Ok(roles)), Some(Ok(members))) => {
-                        let member_count = members.len();
-                        let open = RwSignal::new(false);
-                        view! {
-                            <div class="h-full shrink-0 w-[240px] bg-base-300 flex flex-col items-stretch justify-between">
-                                <div class="flex flex-col overflow-y-scroll overflow-x-hidden items-stretch">
-                                    {roles
-                                        .iter()
-                                        .map(|role| view! { <Role role=role.clone() /> })
-                                        .collect_view()} <CollapsibleProvider open=open>
-                                        <CollapsibleTrigger class="pt-6 px-2 select-none text-base cursor-pointer box-border flex items-center justify-between">
-                                            <div class="flex flex-auto overflow-hidden items-center p-2 rounded-lg hover:bg-base-content/5">
-                                                <Icon
-                                                    icon=icondata::LuChevronRight
-                                                    // class=MaybeProp::derive(move || Some(
-                                                    //     TextProp::from(
-                                                    //         format!(
-                                                    //             "h-4 w-4 {}",
-                                                    //             {
-                                                    //                 match open.get() {
-                                                    //                     true => "rotate-90",
-                                                    //                     false => "",
-                                                    //                 }
-                                                    //             },
-                                                    //         ),
-                                                    //     ),
-                                                    // ))
-                                                />
-                                                <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-semibold tracking-wide mr-auto">
-                                                    {format!("Online - {}", member_count)}
-                                                </div>
+        <Show when=move || open.get()>
+            <div class="h-full shrink-0 w-[240px] bg-base-300 flex flex-col items-stretch justify-between">
+                <Transition>
+                    <div class="flex flex-col overflow-y-scroll overflow-x-hidden items-stretch">
+                        <For
+                            each=move || roles.get().and_then(Result::ok).unwrap_or_default()
+                            key=|role: &Role| role.id
+                            children=move |role: Role| {
+                                view!{
+                                    <Role role=role.clone() />
+                                }
+                            }
+                        />
+                        <CollapsibleProvider open=open>
+                            <CollapsibleTrigger class="pt-6 px-2 select-none text-base cursor-pointer box-border flex items-center justify-between">
+                                <div class="flex flex-auto overflow-hidden items-center p-2 rounded-lg hover:bg-base-content/5">
+                                    <Icon
+                                        icon=icondata::LuChevronRight
+                                        // class=MaybeProp::derive(move || Some(
+                                        //     TextProp::from(
+                                        //         format!(
+                                        //             "h-4 w-4 {}",
+                                        //             {
+                                        //                 match open.get() {
+                                        //                     true => "rotate-90",
+                                        //                     false => "",
+                                        //                 }
+                                        //             },
+                                        //         ),
+                                        //     ),
+                                        // ))
+                                    />
+                                        {move|| members_without_role.and_then(|members| view!{
+                                            <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-semibold tracking-wide mr-auto">
+                                                {format!("Online - {}", members.len())}
                                             </div>
-                                        </CollapsibleTrigger>
-                                        <CollapsibleContent>
-                                            {members
-                                                .iter()
-                                                .map(|member| {
-                                                    view! {
-                                                        <Member user_id=member.user_id member_id=member.id />
-                                                    }
-                                                })
-                                                .collect_view()}
-                                        </CollapsibleContent>
-                                    </CollapsibleProvider>
+                                        })}
                                 </div>
-                                <CurrentMember />
-                            </div>
-                        }
-                            .into_any()
-                    }
-                    _ => ().into_any(),
-                }
-            }}
-        </Transition>
+                            </CollapsibleTrigger>
+                            <CollapsibleContent>
+                                <For
+                                    each=move || members_without_role.get().and_then(Result::ok).unwrap_or_default()
+                                    key=|member: &Member| member.id
+                                    children=move | member: Member| {
+                                        view! {
+                                            <Member user_id=member.user_id member_id=member.id />
+                                        }
+                                    }
+                                />
+                            </CollapsibleContent>
+                        </CollapsibleProvider>
+                    </div>
+                </Transition>
+                <CurrentMember />
+            </div>
+        </Show>
     }
 }
 
@@ -91,7 +91,7 @@ pub fn CurrentMember() -> impl IntoView {
     let user_context = use_user();
     let profile = user_context.profile;
     view! {
-        <Transition fallback=move || ()>
+        <Transition>
             {move || {
                 Suspend::new(async move {
                     profile.await.map(|profile| {
@@ -108,18 +108,16 @@ pub fn CurrentMember() -> impl IntoView {
                             >
                                 <div class="p-1 hover:bg-base-content/5 rounded-lg flex items-center relative cursor-pointer select-none grow">
                                     {if let Some(url) = image_url {
-                                        view! {
+                                        Either::Left(view! {
                                             <img
                                                 class="rounded-full object-cover w-9 h-9 mr-2"
                                                 src=url
                                             />
-                                        }
-                                            .into_any()
+                                        })
                                     } else {
-                                        view! {
+                                        Either::Right(view! {
                                             <div class="rounded-full bg-base-content/10 w-9 h-9 mr-2" />
-                                        }
-                                            .into_any()
+                                        })
                                     }}
                                     <div>{name.get_value()}</div>
                                 </div>
@@ -136,51 +134,49 @@ pub fn CurrentMember() -> impl IntoView {
 pub fn Role(role: Role) -> impl IntoView {
     let members = Resource::new(|| (), move |_| get_members_from_role(role.id));
     let open = RwSignal::new(false);
+    let name = role.name.clone();
 
     view! {
-        {move || match members.get() {
-            Some(Ok(members)) if !members.is_empty() => {
-                let name = role.name.clone();
-                let member_count = members.len();
-                view! {
-                    <CollapsibleProvider open=open>
-                        <CollapsibleTrigger class="pt-6 pr-2 pl-3 text-base cursor-pointer box-border flex items-center justify-between">
-                            <div class="flex flex-auto overflow-hidden items-center">
-                                <Icon
-                                    icon=icondata::RiArrowDownSArrowsLine
-                                    // class=MaybeProp::derive(move || Some(
-                                    //     TextProp::from(
-                                    //         format!(
-                                    //             "h-4 w-4 text-base-content/75 group-hover:text-base-content {}",
-                                    //             {
-                                    //                 match open.get() {
-                                    //                     true => "",
-                                    //                     false => "-rotate-90",
-                                    //                 }
-                                    //             },
-                                    //         ),
-                                    //     ),
-                                    // ))
-                                />
-                                <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-bold tracking-wide text-base-content/75 group-hover:text-base-content mr-auto">
-                                    {format!("{} - {}", &name, member_count)}
+        <Transition>
+            <CollapsibleProvider open=open>
+                <CollapsibleTrigger class="pt-6 pr-2 pl-3 text-base cursor-pointer box-border flex items-center justify-between">
+                    <div class="flex flex-auto overflow-hidden items-center">
+                        <Icon
+                            icon=icondata::RiArrowDownSArrowsLine
+                            // class=MaybeProp::derive(move || Some(
+                            //     TextProp::from(
+                            //         format!(
+                            //             "h-4 w-4 text-base-content/75 group-hover:text-base-content {}",
+                            //             {
+                            //                 match open.get() {
+                            //                     true => "",
+                            //                     false => "-rotate-90",
+                            //                 }
+                            //             },
+                            //         ),
+                            //     ),
+                            // ))
+                        />
+                        <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-bold tracking-wide text-base-content/75 group-hover:text-base-content mr-auto">
+                            {move|| members.and_then(|members| view!{
+                                <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-semibold tracking-wide mr-auto">
+                                    {format!("{} - {}", role.name, members.len())}
                                 </div>
-                            </div>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            {members
-                                .iter()
-                                .map(|member| {
-                                    view! { <Member member_id=member.id user_id=member.user_id /> }
-                                })
-                                .collect_view()}
-                        </CollapsibleContent>
-                    </CollapsibleProvider>
-                }
-                    .into_any()
-            }
-            _ => ().into_any(),
-        }}
+                            })}
+                        </div>
+                    </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                    <For
+                        each=move || members.get().and_then(Result::ok).unwrap_or_default()
+                        key=|member: &Member| member.id
+                        children = move |member: Member| {
+                            view! { <Member member_id=member.id user_id=member.user_id /> }
+                        }
+                    />
+                </CollapsibleContent>
+            </CollapsibleProvider>
+        </Transition>
     }
 }
 
@@ -204,21 +200,18 @@ pub fn Member(user_id: Uuid, member_id: Uuid) -> impl IntoView {
                                 profile=profile.clone()
                             >
                                 {if let Some(url) = image_url {
-                                    view! {
+                                    Either::Left(view! {
                                         <img
                                             class="rounded-full object-cover w-9 h-9 mr-2"
                                             src=url
                                         />
-                                    }
-                                        .into_any()
+                                    })
                                 } else {
-                                    view! {
+                                    Either::Right(view! {
                                         <div class="rounded-full bg-base-content/10 w-9 h-9 mr-2" />
-                                    }
-                                        .into_any()
+                                    })
                                 }}
-                                //WARNING: check this
-                                // <div>{move || name.get()}</div>
+                                <div>{move || name.get_value()}</div>
                             </MemberBanner>
                         }
                     })

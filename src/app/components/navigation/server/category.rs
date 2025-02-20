@@ -83,7 +83,7 @@ pub fn Category(category: StoredValue<Category>) -> impl IntoView {
                 </ContextMenuTrigger>
                 <ContextMenuContent
                     ignore=vec![create_channel_node, edit_category_node, delete_category_node]
-                    class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
+                    class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
                 >
                     <CreateChannelModal
                         content_ref=create_channel_node

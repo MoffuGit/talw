@@ -30,7 +30,7 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
                 align=MenuAlign::End
                 class="w-auto h-auto z-40"
             >
-                <div class="w-[510px] h-auto bg-base-400 flex flex-col rounded-md border border-base-100 p-2">
+                <div class="w-[510px] h-auto bg-base-300 flex flex-col rounded-md border border-base-100 p-2">
                     <div class="w-full h-auto flex items-center rounded-t-md mb-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-tree mr-2">
                             <path d="M21 12h-8"/>

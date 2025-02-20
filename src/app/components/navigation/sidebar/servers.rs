@@ -52,13 +52,13 @@ pub fn Servers() -> impl IntoView {
                         tip="Servers"
                         tooltip_of_side=10.0
                         arrow=true
-                        class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-400 border-base-400"
+                        class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-300 border-base-300"
                     />
                 </TooltipProvider>
             </ContextMenuTrigger>
             <ContextMenuContent
                 ignore=vec![create_server_modal_ref]
-                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
+                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
             >
                 <CreateServerModal
                     on_open=Signal::derive(move || hidden.set(true))
@@ -136,7 +136,7 @@ pub fn ServerNavigation(server: Server) -> impl IntoView {
                     tip=name
                     tooltip_of_side=10.0
                     arrow=true
-                    class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-400 border-base-400"
+                    class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-300 border-base-300"
                 />
             </TooltipProvider>
         </div>

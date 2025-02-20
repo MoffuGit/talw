@@ -36,26 +36,26 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
 
             </div>
             <div class="h-auto relative flex items-center px-4 space-x-2.5">
-                {if thread.is_none() {
-                    view! {
-                        <TooltipProvider>
-                            <TooltipTrigger
-                                close_on_click=true
-                            >
-                                <ThreadMenu channel_id=channel.id server_id=channel.server_id />
-                            </TooltipTrigger>
-                            <TooltipContent
-                                tooltip_of_side=10.0
-                                tip="Threads"
-                                arrow=true
-                                class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-400 border-base-400"
-                                tooltip_side=ToolTipSide::Bottom
-                            />
-                        </TooltipProvider>
-                    }.into_any()
-                } else {
-                    ().into_any()
-                }}
+                {
+                    thread.is_none().then(||
+                        view! {
+                            <TooltipProvider>
+                                <TooltipTrigger
+                                    close_on_click=true
+                                >
+                                    <ThreadMenu channel_id=channel.id server_id=channel.server_id />
+                                </TooltipTrigger>
+                                <TooltipContent
+                                    tooltip_of_side=10.0
+                                    tip="Threads"
+                                    arrow=true
+                                    class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-300 border-base-300"
+                                    tooltip_side=ToolTipSide::Bottom
+                                />
+                            </TooltipProvider>
+                        }
+                    )
+                }
                 <TooltipProvider>
                     <TooltipTrigger
                         close_on_click=true
@@ -67,7 +67,7 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                         tip="Pinned Messages"
                         tooltip_of_side=10.0
                         arrow=true
-                        class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-400 border-base-400"
+                        class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-300 border-base-300"
                         tooltip_side=ToolTipSide::Bottom
                     />
                 </TooltipProvider>
@@ -86,7 +86,7 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                         tooltip_of_side=10.0
                         tip="Search"
                         arrow=true
-                        class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-400 border-base-400"
+                        class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-300 border-base-300"
                         tooltip_side=ToolTipSide::Bottom
                     />
                 </TooltipProvider>

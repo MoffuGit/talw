@@ -38,7 +38,7 @@ pub fn ContextServerMenu(
                     create_category_node,
                     invite_people_node,
                 ]
-                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-400 z-40 rounded-md border border-base-100"
+                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
             >
                 <InvitePeopleModal
                     content_ref=invite_people_node

@@ -1,38 +1,49 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui";
+@plugin 'tailwind-scrollbar';
 
-@font-face {
-  font-family: 'Satoshi';
-  font-weight: 900;
-  src: url('../fonts/Satoshi-Black.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-   url('../fonts/Satoshi-Black.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+    --font-geist: "Geist, sans-serif"
+
+    --animate-tooltip-open: "tooltip-open 0.1s linear 1",
+    @keyframes tooltip-open {
+        from: {
+            opacity: "0",
+        }
+
+        ,
+        to: {
+            opacity: " 100%",
+        }
+
+        ,
+    }
 }
 
-@font-face {
-  font-family: 'Satoshi';
-  font-weight: 700;
-  src: url('../fonts/Satoshi-Bold.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-   url('../fonts/Satoshi-Bold.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    --color-primary: blue;
+    --color-secondary: teal;
+    --color-primary: "#b1b1ce",
+        --color-secondary: "#dadaec",
+        --color-accent: "#ad9497",
+        --color-neutral: "#222a2a",
+        --color-base-100: "#f6f6f8",
+        --color-base-200: "#eeeef0",
+        --color-base-300: "#e9e9ec",
 }
 
-@font-face {
-  font-family: 'Satoshi';
-  font-weight: 500;
-  src: url('../fonts/Satoshi-Medium.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-   url('../fonts/Satoshi-Medium.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
-}
-
-@font-face {
-  font-family: 'Satoshi';
-  font-weight: 400;
-  src: url('../fonts/Satoshi-Regular.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-   url('../fonts/Satoshi-Regular.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
-}
-
-@font-face {
-  font-family: 'Satoshi';
-  font-weight: 300;
-  src: url('../fonts/Satoshi-Light.woff') format('woff'), /* Chrome 6+, Firefox 3.6+, IE 9+, Safari 5.1+ */
-   url('../fonts/Satoshi-Light.ttf') format('truetype'); /* Chrome 4+, Firefox 3.5, Opera 10+, Safari 3—5 */
+@plugin "daisyui/theme" {
+    name: "dark";
+    prefersdark: true;
+    --color-primary: "#B5BFE7",
+        --color-secondary: "#1f1f1f",
+        --color-accent: "#a4b0f0",
+        --color-neutral: "#222a2a",
+        --color-base-100: "#27272a",
+        --color-base-200: "#18181b",
+        --color-base-300: "#09090b",
 }

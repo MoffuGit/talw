@@ -53,6 +53,16 @@ pub struct Profile {
 
 #[cfg(feature = "ssr")]
 impl User {
+    pub async fn get_password(user_id: Uuid, pool: &MySqlPool) -> Result<String, Error> {
+        Ok(
+            sqlx::query_as::<_, (String,)>("SELECT password FROM user WHERE id = ?")
+                .bind(user_id)
+                .fetch_one(pool)
+                .await?
+                .0,
+        )
+    }
+
     pub async fn get_banner(user_id: Uuid, pool: &MySqlPool) -> Result<Banner, Error> {
         Ok(
             sqlx::query_as::<_, Banner>("SELECT * FROM banners WHERE user_id = ?")

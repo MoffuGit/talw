@@ -70,7 +70,9 @@ pub async fn login(
         }
     };
 
-    match verify(password, &String::default()) {
+    let real_password = User::get_password(user.id, &pool).await?;
+
+    match verify(&password, &real_password) {
         Ok(true) => {
             auth.login_user(user.id);
             auth.remember_user(remember.is_some());

@@ -15,7 +15,6 @@ use self::profile::Profile;
 use self::search::Search;
 use self::servers::Servers;
 
- 
 #[component]
 pub fn SideBar() -> impl IntoView {
     view! {

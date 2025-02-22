@@ -13,7 +13,7 @@ use leptos_router::components::A;
 use uuid::Uuid;
 
 #[component]
- 
+
 pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -> impl IntoView {
     let hidden = RwSignal::new(false);
     let CurrentServerContext {
@@ -36,59 +36,61 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
 
             <ContextMenuContent
                 ignore=vec![edit_channel_node, delete_channel_node]
-                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
+                class="z-40 select-none"
             >
-                <InvitePeopleModal
-                    invite_code=server.invite_code
-                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                    on_click=Signal::derive(move || hidden.set(false))
-                >
-                    <div >"Invite People"</div>
-                </InvitePeopleModal>
-                {match member_can_edit {
-                    true => {
-                        view! {
-                            <EditChannelModal
-                                channel=channel.clone()
-                                class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                                on_click=Signal::derive(move || hidden.set(false))
-                            >
-                                <div >"Edit Channel"</div>
-                            </EditChannelModal>
-                            <DeleteChannel
-                                channel=channel.clone()
-                                server_id=server.id
-                                class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                                on_click=Signal::derive(move || hidden.set(false))
-                            >
-                                <div>"Delete Channel"</div>
-                            </DeleteChannel>
+                <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
+                    <InvitePeopleModal
+                        invite_code=server.invite_code
+                        class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                        on_click=Signal::derive(move || hidden.set(false))
+                    >
+                        <div >"Invite People"</div>
+                    </InvitePeopleModal>
+                    {match member_can_edit {
+                        true => {
+                            view! {
+                                <EditChannelModal
+                                    channel=channel.clone()
+                                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                                    on_click=Signal::derive(move || hidden.set(false))
+                                >
+                                    <div >"Edit Channel"</div>
+                                </EditChannelModal>
+                                <DeleteChannel
+                                    channel=channel.clone()
+                                    server_id=server.id
+                                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                                    on_click=Signal::derive(move || hidden.set(false))
+                                >
+                                    <div>"Delete Channel"</div>
+                                </DeleteChannel>
+                            }
+                                .into_any()
                         }
-                            .into_any()
-                    }
-                    false => view! {}.into_any(),
-                }}
-                {thread
-                    .map(|thread| {
-                        let thread = thread.get_value();
-                        view! {
-                            <A
-                                href=move || {
-                                    format!(
-                                        "/servers/{}/{}/{}",
-                                        server.id.simple(),
-                                        thread.channel_id.simple(),
-                                        thread.id.simple(),
-                                    )
-                                }
-                                on:click=move |_| hidden.set(false)
-                                {..}
-                                class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                            >
-                                "Open Split View"
-                            </A>
-                        }
-                    })}
+                        false => view! {}.into_any(),
+                    }}
+                    {thread
+                        .map(|thread| {
+                            let thread = thread.get_value();
+                            view! {
+                                <A
+                                    href=move || {
+                                        format!(
+                                            "/servers/{}/{}/{}",
+                                            server.id.simple(),
+                                            thread.channel_id.simple(),
+                                            thread.id.simple(),
+                                        )
+                                    }
+                                    on:click=move |_| hidden.set(false)
+                                    {..}
+                                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                                >
+                                    "Open Split View"
+                                </A>
+                            }
+                        })}
+                    </div>
             </ContextMenuContent>
         </ContextMenuProvider>
     }

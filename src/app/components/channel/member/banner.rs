@@ -4,6 +4,7 @@ use crate::app::components::overview::user::UserOverviewTrigger;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::user::Profile;
+use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_use::use_document;
 use uuid::Uuid;
@@ -29,14 +30,14 @@ pub fn MemberBanner(
         <DropdownProvider modal=false open=is_open>
             <DropdownTrigger class=class>{children()}</DropdownTrigger>
             <DropdownContent
-                class="w-72 h-auto z-50 rounded-lg bg-base-300"
+                class="w-72 h-auto z-50"
                 side=side
                 align=align
                 side_of_set=20.0
                 limit_y=limit_y
             >
-                {move || {
-                    if is_open.get() {
+                <Show when=move || is_open.get()>
+                    {move || {
                         let banner = Resource::new(move || (), move |_| get_user_banner(user_id));
                         view! {
                             <Transition>
@@ -46,34 +47,38 @@ pub fn MemberBanner(
                                             let about = StoredValue::new(banner.about.clone());
                                             let banner_url = StoredValue::new(banner.image_url.clone());
                                             view! {
-                                                <div class="relative w-full h-auto select-none">
-                                                    {if let Some(url) = banner_url.get_value() {
-                                                        view! {
-                                                            <img
-                                                                class="w-full h-28 object-cover rounded-t-lg"
-                                                                src=url
-                                                            />
-                                                        }
-                                                            .into_any()
+                                                <div class="relative w-full h-auto select-none w-56 origin-right starting:opacity-0 starting:translate-x-2 starting:scale-95 transition-all rounded-md bg-base-300">
+                                                    {move || if let Some(url) = banner_url.get_value() {
+                                                        Either::Left(
+                                                            view! {
+                                                                <img
+                                                                    class="w-full h-28 object-cover rounded-t-lg"
+                                                                    src=url
+                                                                />
+                                                            }
+                                                        )
                                                     } else {
-                                                        view! {
-                                                            <div class="w-full h-28 bg-base-primary rounded-t-lg" />
-                                                        }
-                                                            .into_any()
+                                                        Either::Right(
+                                                            view! {
+                                                                <div class="w-full h-28 bg-base-primary rounded-t-lg" />
+                                                            }
+                                                        )
                                                     }}
                                                     {if let Some(url) = image_url.get_value() {
-                                                        view! {
-                                                            <img
-                                                                class="w-[96px] h-[96px] object-cover absolute top-16 left-2 rounded-full border-[6px] border-base-300"
-                                                                src=url
-                                                            />
-                                                        }
-                                                            .into_any()
+                                                        Either::Left(
+                                                            view! {
+                                                                <img
+                                                                    class="w-[96px] h-[96px] object-cover absolute top-16 left-2 rounded-full border-[6px] border-base-300"
+                                                                    src=url
+                                                                />
+                                                            }
+                                                        )
                                                     } else {
-                                                        view! {
-                                                            <div class="w-[96px] h-[96px] absolute top-16 left-2 rounded-full border-[6px] bg-base-content/10 border-base-300" />
-                                                        }
-                                                            .into_any()
+                                                        Either::Right(
+                                                            view! {
+                                                                <div class="w-[96px] h-[96px] absolute top-16 left-2 rounded-full border-[6px] bg-base-content/10 border-base-300" />
+                                                            }
+                                                        )
                                                     }}
                                                     <div class="relative w-auto mt-14 m-4">
                                                         <div class="text-xl font-semibold">
@@ -81,41 +86,45 @@ pub fn MemberBanner(
                                                         </div>
                                                         <MutualServers user_id=user_id />
                                                         <MemberRoles member_id=member_id />
-                                                        {if let Some(about) = about.get_value() {
-                                                            view! { <div>{about}</div> }.into_any()
-                                                        } else {
-                                                            ().into_any()
-                                                        }}
+                                                        {
+                                                            move || {
+                                                                about.get_value().map(|about| {
+                                                                    view! { <div>{about}</div> }
+                                                                })
+                                                            }
+                                                        }
                                                         {
                                                             move || if member_id != user_member {
-                                                                view!{
-                                                                    <div class="flex mt-4 border border-base-100 hover:bg-base-content/10 rounded-md w-full h-12 px-4 items-center cursor-pointer">
-                                                                        <div class="text-base">
-                                                                            {format!("Message @{}", name.get_value())}
+                                                                Either::Left(
+                                                                    view!{
+                                                                        <div class="flex mt-4 border border-base-100 hover:bg-base-content/10 rounded-md w-full h-12 px-4 items-center cursor-pointer">
+                                                                            <div class="text-base">
+                                                                                {format!("Message @{}", name.get_value())}
+                                                                            </div>
                                                                         </div>
-                                                                    </div>
-                                                                }.into_any()
+                                                                    }
+                                                                )
                                                             } else {
-                                                                view!{
-                                                                    <UserOverviewTrigger
-                                                                        class="flex mt-4 rounded-md border border-base-100 hover:bg-base-content/10 w-full h-12 px-4 items-center cursor-pointer">
-                                                                            "Open Settings"
-                                                                    </UserOverviewTrigger>
-                                                                }.into_any()
+                                                                Either::Right(
+                                                                    view!{
+                                                                        <UserOverviewTrigger
+                                                                            class="flex mt-4 rounded-md border border-base-100 hover:bg-base-content/10 w-full h-12 px-4 items-center cursor-pointer">
+                                                                                "Open Settings"
+                                                                        </UserOverviewTrigger>
+                                                                    }
+                                                                )
                                                             }
                                                         }
                                                     </div>
                                                 </div>
                                             }
-                                        })
+                                        }
+                                    )
                                 }}
                             </Transition>
                         }
-                            .into_any()
-                    } else {
-                        ().into_any()
-                    }
-                }}
+                    }}
+                </Show>
             </DropdownContent>
         </DropdownProvider>
     }
@@ -136,7 +145,6 @@ pub fn MutualServers(user_id: Uuid) -> impl IntoView {
                         view! {
                             <div class="flex items-center mt-4">
                                 <div class="flex justify-start -space-x-2 mr-1">
-                                //WARNING: check this again
                                     // {mutual.clone()
                                     //     .iter()
                                     //     .map(|url| {

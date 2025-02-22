@@ -12,12 +12,14 @@ use crate::app::routes::servers::server::CurrentServerContext;
 use leptos::prelude::*;
 use uuid::Uuid;
 
+use crate::entities::category::Category as EntCategory;
+use crate::entities::channel::Channel as EntChannel;
+
 #[derive(Clone)]
 pub struct ServerSideBarContext {
     pub open: RwSignal<bool>,
 }
 
- 
 #[component]
 pub fn ServerSideBar() -> impl IntoView {
     let use_channel = use_channel();
@@ -59,37 +61,30 @@ pub fn ServerSideBar() -> impl IntoView {
         .open;
     view! {
         <div
-            class="flex w-[240px] h-full relative inset-y-0 bg-base-300 z-40 border-l-base-100 border-l border-0"
-            style=move || if open.get() { "" } else { "visibility: collapse;" }
+            class="flex h-full relative inset-y-0 bg-base-300 z-40 ease-linear duration-200 transition-[width] overflow-hidden border-l-base-100 border-l border-0"
+            style=move || if open.get() { "width: 240px" } else { "width: 0px" }
         >
-            <div class="w-full h-full flex flex-col items-center relative scrollbar-none overflow-y-scroll overflow-x-hidden">
+            <div class="w-[240px] h-full flex flex-col items-center relative scrollbar-none overflow-y-scroll overflow-x-hidden shrink-0">
                 <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
                     <ServerMenu />
                     <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
                         <Transition>
-                            {move || {
-                                channels.and_then(|channels| {
-                                    channels
-                                        .iter()
-                                        .map(|channel| {
-                                            view! { <Channel channel=channel.clone() /> }
-                                        })
-                                        .collect_view()
-                                })
-                            }}
+                            <For
+                                each=move || channels.get().and_then(Result::ok).unwrap_or_default()
+                                key=|channel| channel.id
+                                children=move | channel: EntChannel| {
+                                    view! { <Channel channel=channel.clone() /> }
+                                }
+                            />
                         </Transition>
                         <Transition>
-                            {move || {
-                                categories.and_then(|categories| {
-                                    categories
-                                        .iter()
-                                        .map(|category| {
-                                            let category = StoredValue::new(category.clone());
-                                            view! { <Category category=category /> }
-                                        })
-                                        .collect_view()
-                                })
-                            }}
+                            <For
+                                each=move || categories.get().and_then(Result::ok).unwrap_or_default()
+                                key=|category| category.id
+                                children=move | category: EntCategory| {
+                                    view! { <Category category=category.clone() /> }
+                                }
+                            />
                         </Transition>
                     </div>
                 </div>
@@ -125,24 +120,26 @@ fn SideBarContextMenu(server_id: Uuid) -> impl IntoView {
             <ContextMenuTrigger class="h-full w-full bg-none" />
             <ContextMenuContent
                 ignore=vec![create_channel_node, create_category_node]
-                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
+                class="z-40 select-none"
             >
-                <CreateChannelModal
-                    content_ref=create_channel_node
-                    server_id=server_id
-                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                    on_click=Signal::derive(move || hidden.set(false))
-                >
-                    <div>"Create Channel"</div>
-                </CreateChannelModal>
-                <CreateCategoryModal
-                    content_ref=create_category_node
-                    server_id=server_id
-                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                    on_click=Signal::derive(move || hidden.set(false))
-                >
-                    <div>"Create Category"</div>
-                </CreateCategoryModal>
+                <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
+                    <CreateChannelModal
+                        content_ref=create_channel_node
+                        server_id=server_id
+                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                        on_click=Signal::derive(move || hidden.set(false))
+                    >
+                        <div>"Create Channel"</div>
+                    </CreateChannelModal>
+                    <CreateCategoryModal
+                        content_ref=create_category_node
+                        server_id=server_id
+                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                        on_click=Signal::derive(move || hidden.set(false))
+                    >
+                        <div>"Create Category"</div>
+                    </CreateCategoryModal>
+                </div>
             </ContextMenuContent>
         </ContextMenuProvider>
     }

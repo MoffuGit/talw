@@ -38,9 +38,9 @@ pub fn Servers() -> impl IntoView {
         <ContextMenuProvider open=open hidden=hidden>
             <ContextMenuTrigger>
                 <TooltipProvider delay_duration=Duration::new(0, 0)>
-                    <TooltipTrigger class="relative my-0.5">
+                    <TooltipTrigger class="relative my-1">
                         <A href="" {..} class=" flex relative items-center">
-                            <div class="flex transition-all items-center justify-center text-base-content w-8 h-8">
+                            <div class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer">
                                 <Icon
                                     icon=icondata::LuCommand
                                     // class="h-5 w-5 stroke-base-content"
@@ -52,40 +52,42 @@ pub fn Servers() -> impl IntoView {
                         tip="Servers"
                         tooltip_of_side=10.0
                         arrow=true
-                        class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-300 border-base-300"
+                        class="rounded-md w-auto h-auto py-1.5 px-2.5 text-sm text-base-100 bg-base-content border-base-content"
                     />
                 </TooltipProvider>
             </ContextMenuTrigger>
             <ContextMenuContent
                 ignore=vec![create_server_modal_ref]
-                class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
+                class="z-40 select-none"
             >
-                <CreateServerModal
-                    on_open=Signal::derive(move || hidden.set(true))
-                    content_ref=create_server_modal_ref
-                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                >
-                    <div>"Create Server"</div>
-                    <Icon icon=icondata::RiAddSystemFill /* class="w-5 h-5" */ />
-                </CreateServerModal>
-                <A
-                    href="discover"
-                    {..}
-                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                    on:click=move |_| open.set(false)
-                >
-                    <div>"Discover Servers"</div>
-                    <Icon icon=icondata::RiCompass3MapFill /* class="w-5 h-5" */ />
-                </A>
-                <A
-                    href=""
-                    {..}
-                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                    on:click=move |_| open.set(false)
-                >
-                    <div>"Show Servers"</div>
-                    <Icon icon=icondata::RiCheckboxCircleSystemFill /* class="w-5 h-5" */ />
-                </A>
+                <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
+                    <CreateServerModal
+                        on_open=Signal::derive(move || hidden.set(true))
+                        content_ref=create_server_modal_ref
+                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                    >
+                        <div>"Create Server"</div>
+                        <Icon icon=icondata::RiAddSystemFill /* class="w-5 h-5" */ />
+                    </CreateServerModal>
+                    <A
+                        href="discover"
+                        {..}
+                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                        on:click=move |_| open.set(false)
+                    >
+                        <div>"Discover Servers"</div>
+                        <Icon icon=icondata::RiCompass3MapFill /* class="w-5 h-5" */ />
+                    </A>
+                    <A
+                        href=""
+                        {..}
+                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                        on:click=move |_| open.set(false)
+                    >
+                        <div>"Show Servers"</div>
+                        <Icon icon=icondata::RiCheckboxCircleSystemFill /* class="w-5 h-5" */ />
+                    </A>
+                </div>
             </ContextMenuContent>
         </ContextMenuProvider>
         <Transition>
@@ -102,7 +104,6 @@ pub fn Servers() -> impl IntoView {
     }
 }
 
- 
 #[component]
 pub fn ServerNavigation(server: Server) -> impl IntoView {
     let current_server =
@@ -136,7 +137,7 @@ pub fn ServerNavigation(server: Server) -> impl IntoView {
                     tip=name
                     tooltip_of_side=10.0
                     arrow=true
-                    class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-300 border-base-300"
+                    class="rounded-md w-auto h-auto py-1.5 px-2.5 text-sm text-base-100 bg-base-content border-base-content"
                 />
             </TooltipProvider>
         </div>

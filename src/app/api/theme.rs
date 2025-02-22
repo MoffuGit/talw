@@ -76,7 +76,6 @@ pub fn use_theme() -> ThemeContext {
     use_context::<ThemeContext>().expect("theme context")
 }
 
- 
 #[component]
 pub fn Theme() -> impl IntoView {
     let theme_context = use_theme();

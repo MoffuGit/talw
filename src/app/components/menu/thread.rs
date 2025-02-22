@@ -31,7 +31,7 @@ pub fn ThreadMenuContent(
     let is_split = Memo::new(move |_| use_params_map().with(|map| map.get("thread").is_none()));
     view! {
         <Transition>
-            <div class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100">
+            <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
                 {move || {
                     check_member_on_thread
                         .and_then(|exist| {
@@ -40,7 +40,7 @@ pub fn ThreadMenuContent(
                                     <LeaveThread
                                         thread_id=thread.id
                                         server_id=current_server_context.server.id
-                                        class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                     />
                                 })
                             } else {
@@ -48,7 +48,7 @@ pub fn ThreadMenuContent(
                                     <JoinThread
                                         thread_id=thread.id
                                         server_id=current_server_context.server.id
-                                        class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                     />
                                 })
                             }
@@ -69,7 +69,7 @@ pub fn ThreadMenuContent(
                                     }
                                     on:click=move |_| open.set(false)
                                     {..}
-                                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                                    class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                 >
                                     "Open Full View"
                                 </A>
@@ -84,7 +84,7 @@ pub fn ThreadMenuContent(
                                     }
                                     on:click=move |_| open.set(false)
                                     {..}
-                                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                                    class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                 >
                                     "Open Split View"
                                 </A>
@@ -109,7 +109,7 @@ pub fn ThreadMenuContent(
                                             }
                                             on:click=move |_| open.set(false)
                                             {..}
-                                            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                                            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                         >
                                             "Open Full View"
                                         </A>
@@ -127,7 +127,7 @@ pub fn ThreadMenuContent(
                                             }
                                             on:click=move |_| open.set(false)
                                             {..}
-                                            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                                            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                         >
                                             "Open Split View"
                                         </A>
@@ -145,7 +145,7 @@ pub fn ThreadMenuContent(
                             thread_id=thread.id
                             thread_name=thread_name.get_value()
                             server_id=current_server_context.server.id
-                            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                             >
                             "Delete Thread"
                             </DeleteThreadModal>

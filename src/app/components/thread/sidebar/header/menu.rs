@@ -26,7 +26,7 @@ pub fn ThreadMenu() -> impl IntoView {
                     tip="Options"
                     tooltip_side=ToolTipSide::Bottom
                     tooltip_of_side=10.0
-                    class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-300 border-base-300"
+                    class="rounded-md w-auto h-auto py-1.5 px-2.5 text-sm text-base-100 bg-base-content border-base-content"
                 />
             </TooltipProvider>
             <DropdownContent

@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::app::components::navigation::server::use_current_thread;
 use crate::app::components::ui::context_menu::*;
-use crate::entities::thread::Thread;
+use crate::entities::thread::Thread as EntThread;
 
 #[component]
 pub fn Thread(channel_id: Uuid) -> impl IntoView {
@@ -30,30 +30,24 @@ pub fn Thread(channel_id: Uuid) -> impl IntoView {
     view! {
         <Transition fallback=move || ()>
             <div class="ml-6 border-0 border-l border-l-base-100">
-                {
-                    move || {
-                        threads
-                            .and_then(|threads| {
-                                threads
-                                    .iter()
-                                    .map(|thread| {
-                                        view! {
-                                            <div class="flex h-auto ml-2 items-center">
-                                                <ThreadMenu thread=thread.clone() />
-                                            </div>
-                                        }
-                                    })
-                                .collect_view()
-                        })
+                <For
+                    each=move || threads.get().and_then(Result::ok).unwrap_or_default()
+                    key=|thread| thread.id
+                    children=move |thread: EntThread| {
+                        view! {
+                            <div class="flex h-auto ml-2 items-center">
+                                <ThreadMenu thread=thread.clone() />
+                            </div>
+                        }
                     }
-                }
+                />
             </div>
         </Transition>
     }
 }
 
 #[component]
-pub fn ThreadMenu(thread: Thread) -> impl IntoView {
+pub fn ThreadMenu(thread: EntThread) -> impl IntoView {
     let open = RwSignal::new(false);
     let use_current_thread = use_current_thread();
     let is_current_thread = move || {
@@ -70,11 +64,11 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
                             format!("thread/{}/{}", thread.channel_id.simple(), thread.id.simple())
                         }
                         {..}
-                        class="relative box-border flex flex-col cursor-pointer hover:bg-base-content/5 rounded-lg"
+                        class="relative box-border flex flex-col cursor-pointer hover:bg-base-100 rounded-lg"
                     >
                         <div class="relative flex flex-row group items-center py-[6px] px-2">
                             <div
-                                class="whitespace-nowrap overflow-hidden text-ellipsis text-[16px] mr-auto font-bold text-base-content/50 leading-5 flex-auto relative"
+                                class="whitespace-nowrap overflow-hidden text-ellipsis mr-auto leading-5 flex-auto relative text-sm"
                             >
                                 {name.get_value()}
                             </div>
@@ -85,7 +79,7 @@ pub fn ThreadMenu(thread: Thread) -> impl IntoView {
                             open.set(true);
                         }
                         class=move || {
-                            format!("absolute right-1 top-1.5 p-0.5 hover:bg-base-content/5 rounded {}", if is_current_thread() {
+                            format!("absolute right-1 top-1.5 p-0.5 hover:bg-base-100 rounded {}", if is_current_thread() {
                                 "opacity-100"
                             }else {
                                 "opacity-0 group-hover:opacity-100"

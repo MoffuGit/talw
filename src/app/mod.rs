@@ -35,12 +35,29 @@ pub fn App() -> impl IntoView {
     provide_category_context();
     provide_thread_context();
 
+    //NOTE:
+    //work in the server overview
+    //work in the messages already pls,
+    //fix the ui of the modals and user overview
+    //add things to user stuff and search stuff servers stuff
+    //add notifications
+    //add inbox
+    //add friends
+    //add pinned channels and conversations
+    //add the voice channel, stream sound and meaby video
+    //add the optin to change the width of the sidebar
+    //keep working in the profile settings
+    //add the email and phone number to the user, give the posibility of change the password
+    //add the option to edit the theme of the app, give some default options and more complex
+    //settings
+    //check tauri for creating a desktop app and cellphone app
+
     view! {
         <Stylesheet id="leptos" href="/pkg/TALW.css" />
 
         <Title text="Welcome to Leptos" />
 
-        // <Theme />
+        <Theme />
         <Router>
             <main id="app" class="w-full h-full overflow-hidden">
                     <Routes fallback=|| "Not Found">

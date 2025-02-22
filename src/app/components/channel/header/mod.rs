@@ -18,7 +18,7 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
     view! {
         <div class="relative bg-base-300 shadow shadow-base-300/80 h-11 w-full flex justify-between align-middle">
             <div class="relative flex-auto flex items-center overflow-hidden py-2">
-                <ServerSideBarTrigger class="relative flex items-center ml-3 mr-1 hover:bg-base-content/5 rounded-lg p-1 cursor-pointer">
+                <ServerSideBarTrigger class="relative flex items-center ml-3 mr-1 hover:bg-base-100 rounded-md p-1 cursor-pointer">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-panel-left">
                         <rect width="18" height="18" x="3" y="3" rx="2"/>
                         <path d="M9 3v18"/>
@@ -49,7 +49,7 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                                     tooltip_of_side=10.0
                                     tip="Threads"
                                     arrow=true
-                                    class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-300 border-base-300"
+                                    class="rounded-md w-auto h-auto py-1.5 px-2.5 text-sm text-base-100 bg-base-content border-base-content"
                                     tooltip_side=ToolTipSide::Bottom
                                 />
                             </TooltipProvider>
@@ -59,7 +59,7 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                 <TooltipProvider>
                     <TooltipTrigger
                         close_on_click=true
-                        class="hover:bg-base-content/5 rounded-lg p-1 cursor-pointer"
+                        class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
                     >
                          <Icon icon=icondata::LuPin /* class="w-5 h-5" */ />
                     </TooltipTrigger>
@@ -67,7 +67,7 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                         tip="Pinned Messages"
                         tooltip_of_side=10.0
                         arrow=true
-                        class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-300 border-base-300"
+                        class="rounded-md w-auto h-auto py-1.5 px-2.5 text-sm text-base-100 bg-base-content border-base-content"
                         tooltip_side=ToolTipSide::Bottom
                     />
                 </TooltipProvider>
@@ -75,7 +75,7 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                 <TooltipProvider>
                     <TooltipTrigger
                         close_on_click=true
-                        class="hover:bg-base-content/5 rounded-lg p-1 cursor-pointer"
+                        class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
                     >
                         <Icon
                             icon=icondata::LuSearch
@@ -86,7 +86,7 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                         tooltip_of_side=10.0
                         tip="Search"
                         arrow=true
-                        class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-300 border-base-300"
+                        class="rounded-md w-auto h-auto py-1.5 px-2.5 text-sm text-base-100 bg-base-content border-base-content"
                         tooltip_side=ToolTipSide::Bottom
                     />
                 </TooltipProvider>

@@ -17,7 +17,6 @@ use std::time::Duration;
 
 use super::thread::Thread;
 
- 
 #[component]
 pub fn Channel(channel: Channel) -> impl IntoView {
     let Channel { id: channel_id, .. } = channel;
@@ -57,11 +56,11 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                         href=move || id.simple().to_string()
                         {..}
                         class=move || {
-                            format!("relative flex group items-center py-1.5 px-2 rounded-lg {}", {
+                            format!("relative flex group items-center py-1.5 px-2 rounded-md {}", {
                                 if is_current_channel() {
-                                    "bg-base-content/5"
+                                    "bg-base-100"
                                 } else {
-                                    "hover:bg-base-content/5"
+                                    "hover:bg-base-100"
                                 }
                             })
                         }
@@ -81,10 +80,10 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                             open.set(true);
                         }
                         class=move || {
-                            format!("absolute right-1 top-1.5 p-0.5 hover:bg-base-content/5 rounded {}", if is_current_channel() {
-                                "opacity-100"
+                            format!("absolute right-1 top-1.5 p-0.5 rounded {}", if is_current_channel() {
+                                "opacity-100 hover:bg-base-content/5"
                             }else {
-                                "opacity-0 group-hover:opacity-100"
+                                "opacity-0 group-hover:opacity-100 hover:bg-base-100"
                             })
                         }
                     >
@@ -94,139 +93,47 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
 
                 <ContextMenuContent
                     ignore=vec![invite_people_node, edit_channel_node, delete_channel_node]
-                    class="transition-all ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
+                    class="select-none z-40"
                 >
-                    <InvitePeopleModal
-                        content_ref=invite_people_node
-                        invite_code=server.invite_code
-                        class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                        on_click=Signal::derive(move || hidden.set(false))
-                    >
-                        <div>"Invite People"</div>
-                    </InvitePeopleModal>
-                    {match member_can_edit {
-                        true => {
-                            view! {
-                                <EditChannelModal
-                                    content_ref=edit_channel_node
-                                    channel=stored_channel.get_value()
-                                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                                    on_click=Signal::derive(move || hidden.set(false))
-                                >
-                                    <div>
-                                        "Edit Channel"
-                                    </div>
-                                </EditChannelModal>
-                                <DeleteChannel
-                                    content_ref=delete_channel_node
-                                    channel=stored_channel.get_value()
-                                    server_id=server.id
-                                    class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-                                    on_click=Signal::derive(move || hidden.set(false))
-                                >
-                                    <div>
-                                        "Delete Channel"
-                                    </div>
-                                </DeleteChannel>
-                            }
-                                .into_any()
+                    <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
+                        <InvitePeopleModal
+                            content_ref=invite_people_node
+                            invite_code=server.invite_code
+                            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                            on_click=Signal::derive(move || hidden.set(false))
+                        >
+                            <div>"Invite People"</div>
+                        </InvitePeopleModal>
+                        {
+                            member_can_edit.then(|| {
+                                view! {
+                                     <EditChannelModal
+                                         content_ref=edit_channel_node
+                                         channel=stored_channel.get_value()
+                                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                                         on_click=Signal::derive(move || hidden.set(false))
+                                     >
+                                         <div>
+                                             "Edit Channel"
+                                         </div>
+                                     </EditChannelModal>
+                                     <DeleteChannel
+                                         content_ref=delete_channel_node
+                                         channel=stored_channel.get_value()
+                                         server_id=server.id
+                                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                                         on_click=Signal::derive(move || hidden.set(false))
+                                     >
+                                         <div>
+                                             "Delete Channel"
+                                         </div>
+                                     </DeleteChannel>
+                                 }
+                            })
                         }
-                        _ => view! {}.into_any(),
-                    }}
+                    </div>
                 </ContextMenuContent>
             </ContextMenuProvider>
         </div>
     }
 }
-
-// {move || match (member_can_edit, is_current_channel()) {
-//     (true, true) => {
-//         view! {
-//             <TooltipProvider delay_duration=Duration::new(0, 0)>
-//                 <TooltipTrigger class="w-auto h-auto mr-0.5">
-//                     <EditChannelModal
-//                         channel=stored_channel.get_value()
-//                         class="w-auto h-auto"
-//                     >
-//                         <Icon
-//                             icon=icondata::RiSettings5SystemFill
-//                             class="w-[18px] h-[18px] fill-base-content/50 hover:fill-base-content/75"
-//                         />
-//                     </EditChannelModal>
-//                 </TooltipTrigger>
-//                 <TooltipContent
-//                     tip="Rename Channel".to_string()
-//                     tooltip_side=ToolTipSide::Top
-//                     tooltip_of_side=22.0
-//                     class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-t-[#dfdfe2] dark:after:border-t-[#0d0d0d]"
-//                 />
-//             </TooltipProvider>
-//             <TooltipProvider delay_duration=Duration::new(0, 0)>
-//                 <TooltipTrigger class="w-auto h-auto mr-0.5">
-//                     <DeleteChannel
-//                         channel=stored_channel.get_value()
-//                         server_id=server.id
-//                         class="w-auto h-auto"
-//                     >
-//                         <Icon
-//                             icon=icondata::RiDeleteBinSystemFill
-//                             class="w-[18px] h-[18px] fill-base-content/50 hover:fill-base-content/75"
-//                         />
-//                     </DeleteChannel>
-//                 </TooltipTrigger>
-//                 <TooltipContent
-//                     tip="Delete Channel".to_string()
-//                     tooltip_side=ToolTipSide::Top
-//                     tooltip_of_side=22.0
-//                     class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-t-[#dfdfe2] dark:after:border-t-[#0d0d0d]"
-//                 />
-//             </TooltipProvider>
-//         }
-//             .into_view()
-//     }
-//     (true, false) => {
-//         view! {
-//             <TooltipProvider delay_duration=Duration::new(0, 0)>
-//                 <TooltipTrigger class="w-auto h-auto mr-0.5">
-//                     <EditChannelModal
-//                         channel=stored_channel.get_value()
-//                         class="w-[18px] h-[18px] group-hover:flex hidden"
-//                     >
-//                         <Icon
-//                             icon=icondata::RiSettings5SystemFill
-//                             class="w-[18px] h-[18px] group-hover:fill-base-content/50"
-//                         />
-//                     </EditChannelModal>
-//                 </TooltipTrigger>
-//                 <TooltipContent
-//                     tip="Rename Channel".to_string()
-//                     tooltip_side=ToolTipSide::Top
-//                     tooltip_of_side=22.0
-//                     class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-t-[#dfdfe2] dark:after:border-t-[#0d0d0d]"
-//                 />
-//             </TooltipProvider>
-//             <TooltipProvider delay_duration=Duration::new(0, 0)>
-//                 <TooltipTrigger class="w-auto h-auto mr-0.5">
-//                     <DeleteChannel
-//                         channel=stored_channel.get_value()
-//                         server_id=server.id
-//                         class="w-auto h-auto"
-//                     >
-//                         <Icon
-//                             icon=icondata::RiDeleteBinSystemFill
-//                             class="w-[18px] h-[18px] group-hover:block group-hover:fill-base-content/50 hidden"
-//                         />
-//                     </DeleteChannel>
-//                 </TooltipTrigger>
-//                 <TooltipContent
-//                     tip="Delete Channel".to_string()
-//                     tooltip_side=ToolTipSide::Top
-//                     tooltip_of_side=22.0
-//                     class="rounded w-auto h-auto py-1 px-2 text-base font-bold bg-[#dfdfe2] dark:bg-[#0d0d0d] after:content-[' '] after:absolute after:top-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-t-[#dfdfe2] dark:after:border-t-[#0d0d0d]"
-//                 />
-//             </TooltipProvider>
-//         }
-//             .into_view()
-//     }
-//     _ => view! {}.into_view(),
-// }}

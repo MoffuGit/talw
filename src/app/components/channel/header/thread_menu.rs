@@ -21,7 +21,7 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
     let delete_thread_modal_ref = NodeRef::<html::Div>::new();
     view! {
         <DropdownProvider open=open modal=false>
-            <DropdownTrigger class="hover:bg-base-content/5 rounded-lg p-1 cursor-pointer select-none p-1">
+            <DropdownTrigger class="hover:bg-base-100 rounded-md p-1 cursor-pointer select-none p-1">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-tree"><path d="M21 12h-8"/><path d="M21 6H8"/><path d="M21 18h-8"/><path d="M3 6v4c0 1.1.9 2 2 2h3"/><path d="M3 10v6c0 1.1.9 2 2 2h3"/></svg>
             </DropdownTrigger>
             <DropdownContent
@@ -30,7 +30,7 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
                 align=MenuAlign::End
                 class="w-auto h-auto z-40"
             >
-                <div class="w-[510px] h-auto bg-base-300 flex flex-col rounded-md border border-base-100 p-2">
+                <div class="w-[510px] h-auto bg-base-300 flex flex-col rounded-md border border-base-100 p-2 origin-top-right starting:opacity-0 starting:translate-x-2 starting:-translate-y-2 starting:scale-95 transition-all">
                     <div class="w-full h-auto flex items-center rounded-t-md mb-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-tree mr-2">
                             <path d="M21 12h-8"/>
@@ -177,7 +177,7 @@ pub fn ThreadLink(
                                 </ContextMenuTrigger>
                                 <ContextMenuContent
                                     ignore=vec![delete_thread_modal_ref]
-                                    class="z-50".into()
+                                    class="z-50 select-none".into()
                                 >
                                     <ThreadMenuContent
                                         delete_thread_modal_ref=delete_thread_modal_ref

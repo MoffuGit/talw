@@ -30,7 +30,6 @@ pub fn Servers() -> impl IntoView {
                 view! {
                     <UserOverview/>
                     <ServerOverview/>
-                    //NOTE:
                     <div class="h-full w-full relative z-40 flex">
                         <div class="flex w-12 h-full z-30 fixed inset-y-0">
                             <SideBar />

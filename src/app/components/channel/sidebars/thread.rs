@@ -26,6 +26,7 @@ pub fn ThreadMemberSideBar(server_id: Uuid, thread_id: Uuid) -> impl IntoView {
         },
         move |_| get_server_roles(server_id),
     );
+    //WARNING: this fail in the server
     // let members_without_role = Resource::new(
     //     move || {
     //         (

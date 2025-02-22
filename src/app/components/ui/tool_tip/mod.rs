@@ -14,7 +14,6 @@ struct TooltipProviderContext {
     trigger_ref: NodeRef<html::Div>,
 }
 
- 
 #[component]
 pub fn TooltipProvider(
     children: Children,
@@ -101,7 +100,6 @@ pub fn TooltipProvider(
     }
 }
 
- 
 #[component]
 pub fn TooltipTrigger(
     children: Children,
@@ -193,7 +191,6 @@ pub fn get_tooltip_position(
     }
 }
 
- 
 #[component]
 pub fn TooltipContent(
     #[prop(into)] tip: Signal<String>,
@@ -241,26 +238,43 @@ pub fn TooltipContent(
         }
     });
 
+    let arrow = if arrow {
+        match tooltip_side {
+            ToolTipSide::Bottom => "after:content-[' '] after:absolute after:bottom-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-b-inherit",
+            ToolTipSide::Right => "after:content-[' '] after:absolute after:right-[100%] after:top-[50%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-inherit",
+            ToolTipSide::Left => "after:content-[' '] after:absolute after:left-[100%] after:top-[50%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-l-inherit",
+            ToolTipSide::Top => "after:content-[' '] after:absolute after:top-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-t-inherit",
+        }
+    } else {
+        ""
+    };
+
+    let animation = match tooltip_side {
+        ToolTipSide::Bottom => {
+            "starting:opacity-0 transition-all starting:scale-95 origin-top starting:-translate-y-2"
+        }
+        ToolTipSide::Left => {
+            "starting:opacity-0 transition-all starting:scale-95 origin-right starting:translate-x-2"
+        }
+        ToolTipSide::Right => {
+            "starting:opacity-0 transition-all starting:scale-95 origin-left starting:-translate-x-2"
+        }
+        ToolTipSide::Top => {
+            "starting:opacity-0 transition-all starting:scale-95 origin-bottom starting:translate-y-2"
+        }
+    };
+
     view! {
         <Show when=move || is_open.get()>
             <Portal mount=document().get_element_by_id("app").unwrap()>
                 <div
                     node_ref=content_ref
                     style=move || format!("translate: {}px {}px;", position().0, position().1)
-                    class=format!("absolute z-50 left-0 top-0 animate-tooltip-open {} {}", class, {
-                        if arrow {
-                            match tooltip_side {
-                                ToolTipSide::Bottom => "after:content-[' '] after:absolute after:bottom-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-b-inherit",
-                                ToolTipSide::Right => "after:content-[' '] after:absolute after:right-[100%] after:top-[50%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-r-inherit",
-                                ToolTipSide::Left => "after:content-[' '] after:absolute after:left-[100%] after:top-[50%] after:mt-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-l-inherit",
-                                ToolTipSide::Top => "after:content-[' '] after:absolute after:top-[100%] after:left-[50%] after:ml-[-5px] after:border-[5px] after:border-solid after:border-transparent after:border-t-inherit",
-                            }.to_string()
-                        } else {
-                            "".to_string()
-                        }
-                    })
+                    class=format!("absolute z-50 left-0 top-0")
                 >
-                    {move || tip.get()}
+                    <div class=format!("{} {} {}", class, animation, arrow)>
+                        {move || tip.get()}
+                    </div>
                 </div>
             </Portal>
         </Show>

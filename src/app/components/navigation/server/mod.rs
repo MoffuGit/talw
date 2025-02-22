@@ -10,7 +10,6 @@ pub mod server_menu;
 pub mod sidebar;
 pub mod thread;
 
-//WARNING: check where you use this
 pub fn use_current_channel() -> Memo<Option<Uuid>> {
     Memo::new(move |_| {
         use_params_map().with(|map| {
@@ -20,7 +19,6 @@ pub fn use_current_channel() -> Memo<Option<Uuid>> {
     })
 }
 
-//WARNING: check where you use this
 pub fn use_current_thread() -> Memo<Option<Uuid>> {
     Memo::new(move |_| {
         use_params_map().with(|map| {

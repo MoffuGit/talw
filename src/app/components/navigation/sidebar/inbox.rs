@@ -8,9 +8,9 @@ use std::time::Duration;
 pub fn Inbox() -> impl IntoView {
     view! {
         <TooltipProvider delay_duration=Duration::new(0, 0)>
-            <TooltipTrigger class="relative my-0.5">
+            <TooltipTrigger class="relative my-1">
                 <div class="flex relative items-center">
-                    <div class="flex transition-all items-center justify-center text-base-content w-8 h-8">
+                    <div class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer">
                         <Icon icon=icondata::LuInbox /* class="h-5 w-5 stroke-base-content" */ />
                     </div>
                 </div>
@@ -19,7 +19,7 @@ pub fn Inbox() -> impl IntoView {
                 tooltip_of_side=10.0
                 tip="Inbox"
                 arrow=true
-                class="rounded-lg w-auto h-auto py-1.5 px-2.5 text-sm bg-base-300 border-base-300"
+                class="rounded-md w-auto h-auto py-1.5 px-2.5 text-sm text-base-100 bg-base-content border-base-content"
             />
         </TooltipProvider>
     }

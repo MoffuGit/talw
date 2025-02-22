@@ -11,7 +11,6 @@ use leptos::html;
 use leptos::prelude::*;
 use leptos_icons::*;
 
- 
 #[component]
 pub fn ServerMenu() -> impl IntoView {
     let open = RwSignal::new(false);
@@ -29,7 +28,7 @@ pub fn ServerMenu() -> impl IntoView {
     view! {
         <div class="relative w-full px-2 py-1.5">
             <DropdownProvider open=open modal=false hidden=hidden>
-                <DropdownTrigger class="relative w-full cursor-pointer font-medium py-1 px-1 hover:bg-base-content/5 rounded-lg">
+                <DropdownTrigger class="relative w-full cursor-pointer font-medium py-1 px-1 hover:bg-base-100 rounded-md">
                     <div class="h-6 flex items-center">
                         <div class="mr-1" />
                         <p class="block mr-auto text-base overflow-hidden font-semibold text-ellipsis whitespace-nowrap min-w-0">
@@ -48,15 +47,15 @@ pub fn ServerMenu() -> impl IntoView {
                         create_category_node,
                         leave_server_node,
                     ]
-                    class="transition-transform scale-100 origin-top ease-out w-56 flex flex-col h-auto p-1 bg-base-300 z-40 rounded-md border border-base-100"
+                    class="w-auto h-auto z-40"
                     side=MenuSide::Bottom
                     side_of_set=2.0
                 >
-                    <div class="transition-transform scale-100 origin-top">
+                    <div class="w-56 origin-top starting:opacity-0 starting:-translate-y-2 starting:scale-95 transition-all flex flex-col h-auto p-1 bg-base-300 rounded-md border border-base-100 select-none">
                         <InvitePeopleModal
                             content_ref=invite_people_node
                             invite_code=server.invite_code
-                            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+                            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                             on_click=Signal::derive(move || open.set(false))
                         >
                             <div>"Invite People"</div>
@@ -74,7 +73,7 @@ pub fn ServerMenu() -> impl IntoView {
                         } else {
                             ().into_any()
                         }}
-                        <div class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
+                        <div class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
                             <div>"Edit Server Profile"</div>
                         </div>
                         {if !member_can_edit {
@@ -94,7 +93,6 @@ pub fn ServerMenu() -> impl IntoView {
     }
 }
 
- 
 #[component]
 fn ServerMenuAdminItems(
     on_click: Signal<()>,
@@ -103,7 +101,7 @@ fn ServerMenuAdminItems(
 ) -> impl IntoView {
     let CurrentServerContext { server, .. } = use_current_server_context();
     view! {
-        <ServerOverviewTrigger server_id=server.id class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
+        <ServerOverviewTrigger server_id=server.id class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
             "Server Settings"
         </ServerOverviewTrigger>
 
@@ -111,7 +109,7 @@ fn ServerMenuAdminItems(
             content_ref=create_channel_node
             on_click=on_click
             server_id=server.id
-            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
         >
             <div>"Create Channel"</div>
         </CreateChannelModal>
@@ -120,7 +118,7 @@ fn ServerMenuAdminItems(
             content_ref=create_category_node
             on_click=on_click
             server_id=server.id
-            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
         >
             <div>"Create Category"</div>
         </CreateCategoryModal>
@@ -128,7 +126,6 @@ fn ServerMenuAdminItems(
     }
 }
 
- 
 #[component]
 fn ServerMenuGuestItems(
     on_click: Signal<()>,
@@ -140,7 +137,7 @@ fn ServerMenuGuestItems(
         <LeaveServer
             content_ref=leave_server_node
             server=server
-            class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
             on_click=on_click
         >
             <div>"Leave Server"</div>

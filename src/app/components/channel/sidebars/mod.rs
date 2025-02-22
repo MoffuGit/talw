@@ -33,7 +33,7 @@ pub fn MemberSideBarTrigger() -> impl IntoView {
     view! {
         <TooltipProvider delay_duration=Duration::new(0, 0)>
             <TooltipTrigger
-                class="hover:bg-base-content/5 rounded-lg p-1 cursor-pointer"
+                class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
                 on_click=Signal::derive(move || open.update(|open| *open = !*open))
             >
                 <Icon icon=icondata::LuUsers /* class="w-5 h-5" */ />
@@ -43,7 +43,7 @@ pub fn MemberSideBarTrigger() -> impl IntoView {
                 tooltip_of_side=10.0
                 tip="Member List"
                 tooltip_side=ToolTipSide::Bottom
-                class="rounded-lg w-auto h-auto py-1 px-2 text-sm bg-base-300 border-base-300"
+                class="rounded-md w-auto h-auto py-1.5 px-2.5 text-sm text-base-100 bg-base-content border-base-content"
             />
         </TooltipProvider>
     }

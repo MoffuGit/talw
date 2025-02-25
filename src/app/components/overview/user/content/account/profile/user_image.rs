@@ -59,19 +59,19 @@ pub fn UserImage() -> impl IntoView {
                                     let _ = Url::revoke_object_url(&url.get_value());
                                 }
                             />
-                        }
+                        },
                     )
                 }
                 None => {
                     Either::Right(
                         view! {
                             <div class="w-36 h-36 absolute top-16 left-6 rounded-full border-8 bg-base-content/5 border-base-300 z-40" />
-                        }
+                        },
                     )
                 }
             }}
             <div class="w-32 h-32 absolute top-[136px] left-8 rounded-full border-8 border-transparent transition opacity-0 group-hover:opacity-100 bg-base-content/10 z-50 flex items-center justify-center">
-                <Icon icon=icondata::RiPencilDesignFill /* class="w-6 h-6" */ />
+                <Icon icon=icondata::RiPencilDesignFill />
             </div>
         </form>
     }

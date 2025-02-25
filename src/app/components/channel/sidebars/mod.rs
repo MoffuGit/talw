@@ -36,7 +36,7 @@ pub fn MemberSideBarTrigger() -> impl IntoView {
                 class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
                 on_click=Signal::derive(move || open.update(|open| *open = !*open))
             >
-                <Icon icon=icondata::LuUsers /* class="w-5 h-5" */ />
+                <Icon icon=icondata::LuUsers />
             </TooltipTrigger>
             <TooltipContent
                 arrow=true

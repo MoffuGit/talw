@@ -32,45 +32,49 @@ pub fn ServerMemberSideBar(server_id: uuid::Uuid) -> impl IntoView {
                         each=move || roles.get().and_then(Result::ok).unwrap_or_default()
                         key=|role: &Role| role.id
                         children=move |role: Role| {
-                            view!{
-                                <Role role=role.clone() />
-                            }
+                            view! { <Role role=role.clone() /> }
                         }
                     />
                     <CollapsibleProvider>
                         <div class="pt-6 px-2 select-none text-base cursor-pointer box-border flex items-center justify-between">
                             <CollapsibleTrigger class="flex flex-auto overflow-hidden items-center p-2 rounded-md hover:bg-base-100">
-                                <Icon
-                                    icon=icondata::LuChevronRight
-                                    // class=MaybeProp::derive(move || Some(
-                                    //     TextProp::from(
-                                    //         format!(
-                                    //             "h-4 w-4 {}",
-                                    //             {
-                                    //                 match open.get() {
-                                    //                     true => "rotate-90",
-                                    //                     false => "",
-                                    //                 }
-                                    //             },
-                                    //         ),
-                                    //     ),
-                                    // ))
-                                />
-                                    {move|| members_without_role.and_then(|members| view!{
-                                        <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-semibold tracking-wide mr-auto">
-                                            {format!("Online - {}", members.len())}
-                                        </div>
-                                    })}
+                                <Icon icon=icondata::LuChevronRight />
+                                // class=MaybeProp::derive(move || Some(
+                                // TextProp::from(
+                                // format!(
+                                // "h-4 w-4 {}",
+                                // {
+                                // match open.get() {
+                                // true => "rotate-90",
+                                // false => "",
+                                // }
+                                // },
+                                // ),
+                                // ),
+                                // ))
+                                {move || {
+                                    members_without_role
+                                        .and_then(|members| {
+                                            view! {
+                                                <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-semibold tracking-wide mr-auto">
+                                                    {format!("Online - {}", members.len())}
+                                                </div>
+                                            }
+                                        })
+                                }}
                             </CollapsibleTrigger>
                         </div>
                         <CollapsibleContent>
                             <For
-                                each=move || members_without_role.get().and_then(Result::ok).unwrap_or_default()
+                                each=move || {
+                                    members_without_role
+                                        .get()
+                                        .and_then(Result::ok)
+                                        .unwrap_or_default()
+                                }
                                 key=|member: &Member| member.id
-                                children=move | member: Member| {
-                                    view! {
-                                        <Member user_id=member.user_id member_id=member.id />
-                                    }
+                                children=move |member: Member| {
+                                    view! { <Member user_id=member.user_id member_id=member.id /> }
                                 }
                             />
                         </CollapsibleContent>
@@ -95,36 +99,41 @@ pub fn CurrentMember() -> impl IntoView {
         <Transition>
             {move || {
                 Suspend::new(async move {
-                    profile.await.map(|profile| {
-                        let name = StoredValue::new(profile.name.clone());
-                        let image_url = profile.image_url.clone();
-                        view! {
-                            <MemberBanner
-                                side=MenuSide::Left
-                                align=MenuAlign::Start
-                                class="p-2 relative flex items-center border-0 border-t border-t-base-100"
-                                user_id=user_id
-                                member_id=member_id
-                                profile=profile.clone()
-                            >
-                                <div class="px-1 py-2 hover:bg-base-100 rounded-md flex items-center relative cursor-pointer select-none grow">
-                                    {if let Some(url) = image_url {
-                                        Either::Left(view! {
-                                            <img
-                                                class="rounded-full object-cover w-9 h-9 mr-2"
-                                                src=url
-                                            />
-                                        })
-                                    } else {
-                                        Either::Right(view! {
-                                            <div class="rounded-full bg-base-content/10 w-9 h-9 mr-2" />
-                                        })
-                                    }}
-                                    <div>{name.get_value()}</div>
-                                </div>
-                            </MemberBanner>
-                        }
-                    })
+                    profile
+                        .await
+                        .map(|profile| {
+                            let name = StoredValue::new(profile.name.clone());
+                            let image_url = profile.image_url.clone();
+                            view! {
+                                <MemberBanner
+                                    side=MenuSide::Left
+                                    align=MenuAlign::Start
+                                    class="p-2 relative flex items-center border-0 border-t border-t-base-100"
+                                    user_id=user_id
+                                    member_id=member_id
+                                    profile=profile.clone()
+                                >
+                                    <div class="px-1 py-2 hover:bg-base-100 rounded-md flex items-center relative cursor-pointer select-none grow">
+                                        {if let Some(url) = image_url {
+                                            Either::Left(
+                                                view! {
+                                                    <img
+                                                        class="rounded-full object-cover w-9 h-9 mr-2"
+                                                        src=url
+                                                    />
+                                                },
+                                            )
+                                        } else {
+                                            Either::Right(
+                                                view! {
+                                                    <div class="rounded-full bg-base-content/10 w-9 h-9 mr-2" />
+                                                },
+                                            )
+                                        }} <div>{name.get_value()}</div>
+                                    </div>
+                                </MemberBanner>
+                            }
+                        })
                 })
             }}
         </Transition>
@@ -142,36 +151,39 @@ pub fn Role(role: Role) -> impl IntoView {
             <CollapsibleProvider open=open>
                 <div class="pt-6 px-2 select-none text-base cursor-pointer box-border flex items-center justify-between">
                     <CollapsibleTrigger class="flex flex-auto overflow-hidden items-center p-2 rounded-md hover:bg-base-100">
-                            <Icon
-                                icon=icondata::RiArrowDownSArrowsLine
-                                // class=MaybeProp::derive(move || Some(
-                                //     TextProp::from(
-                                //         format!(
-                                //             "h-4 w-4 text-base-content/75 group-hover:text-base-content {}",
-                                //             {
-                                //                 match open.get() {
-                                //                     true => "",
-                                //                     false => "-rotate-90",
-                                //                 }
-                                //             },
-                                //         ),
-                                //     ),
-                                // ))
-                            />
-                            <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-bold tracking-wide text-base-content/75 group-hover:text-base-content mr-auto">
-                                {move|| members.and_then(|members| view!{
-                                    <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-semibold tracking-wide mr-auto">
-                                        {format!("{} - {}", role.name, members.len())}
-                                    </div>
-                                })}
-                            </div>
+                        <Icon icon=icondata::RiArrowDownSArrowsLine />
+                        // class=MaybeProp::derive(move || Some(
+                        // TextProp::from(
+                        // format!(
+                        // "h-4 w-4 text-base-content/75 group-hover:text-base-content {}",
+                        // {
+                        // match open.get() {
+                        // true => "",
+                        // false => "-rotate-90",
+                        // }
+                        // },
+                        // ),
+                        // ),
+                        // ))
+                        <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-bold tracking-wide text-base-content/75 group-hover:text-base-content mr-auto">
+                            {move || {
+                                members
+                                    .and_then(|members| {
+                                        view! {
+                                            <div class="box-border ml-0.5 text-ellipsis whitespace-nowrap overflow-hidden uppercase text-[12px] leading-4 font-semibold tracking-wide mr-auto">
+                                                {format!("{} - {}", role.name, members.len())}
+                                            </div>
+                                        }
+                                    })
+                            }}
+                        </div>
                     </CollapsibleTrigger>
                 </div>
                 <CollapsibleContent>
                     <For
                         each=move || members.get().and_then(Result::ok).unwrap_or_default()
                         key=|member: &Member| member.id
-                        children = move |member: Member| {
+                        children=move |member: Member| {
                             view! { <Member member_id=member.id user_id=member.user_id /> }
                         }
                     />
@@ -201,16 +213,20 @@ pub fn Member(user_id: Uuid, member_id: Uuid) -> impl IntoView {
                                 profile=profile.clone()
                             >
                                 {if let Some(url) = image_url {
-                                    Either::Left(view! {
-                                        <img
-                                            class="rounded-full object-cover w-9 h-9 mr-2"
-                                            src=url
-                                        />
-                                    })
+                                    Either::Left(
+                                        view! {
+                                            <img
+                                                class="rounded-full object-cover w-9 h-9 mr-2"
+                                                src=url
+                                            />
+                                        },
+                                    )
                                 } else {
-                                    Either::Right(view! {
-                                        <div class="rounded-full bg-base-content/10 w-9 h-9 mr-2" />
-                                    })
+                                    Either::Right(
+                                        view! {
+                                            <div class="rounded-full bg-base-content/10 w-9 h-9 mr-2" />
+                                        },
+                                    )
                                 }}
                                 <div>{move || name.get_value()}</div>
                             </MemberBanner>

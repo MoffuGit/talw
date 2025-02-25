@@ -56,22 +56,21 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                         href=move || id.simple().to_string()
                         {..}
                         class=move || {
-                            format!("relative flex group items-center py-1.5 px-2 rounded-md {}", {
-                                if is_current_channel() {
-                                    "bg-base-100"
-                                } else {
-                                    "hover:bg-base-100"
-                                }
-                            })
+                            format!(
+                                "relative flex group items-center py-1.5 px-2 rounded-md {}",
+                                {
+                                    if is_current_channel() {
+                                        "bg-base-100"
+                                    } else {
+                                        "hover:bg-base-100"
+                                    }
+                                },
+                            )
                         }
                     >
-                        <Icon
-                            icon=Icon::from(channel_type)
-                            // class="relative w-4 h-4 shrink-0 mr-1.5 fill-base-content"
-                        />
-                        <div
-                            class="whitespace-nowrap overflow-hidden text-ellipsis mr-auto leading-5 flex-auto relative text-sm"
-                        >
+                        <Icon icon=Icon::from(channel_type) />
+                        // class="relative w-4 h-4 shrink-0 mr-1.5 fill-base-content"
+                        <div class="whitespace-nowrap overflow-hidden text-ellipsis mr-auto leading-5 flex-auto relative text-sm">
                             {name.clone()}
                         </div>
                     </A>
@@ -80,14 +79,32 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                             open.set(true);
                         }
                         class=move || {
-                            format!("absolute right-1 top-1.5 p-0.5 rounded {}", if is_current_channel() {
-                                "opacity-100 hover:bg-base-content/5"
-                            }else {
-                                "opacity-0 group-hover:opacity-100 hover:bg-base-100"
-                            })
+                            format!(
+                                "absolute right-1 top-1.5 p-0.5 rounded {}",
+                                if is_current_channel() {
+                                    "opacity-100 hover:bg-base-content/5"
+                                } else {
+                                    "opacity-0 group-hover:opacity-100 hover:bg-base-100"
+                                },
+                            )
                         }
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-ellipsis"
+                        >
+                            <circle cx="12" cy="12" r="1" />
+                            <circle cx="19" cy="12" r="1" />
+                            <circle cx="5" cy="12" r="1" />
+                        </svg>
                     </div>
                 </ContextMenuTrigger>
 
@@ -104,33 +121,28 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                         >
                             <div>"Invite People"</div>
                         </InvitePeopleModal>
-                        {
-                            member_can_edit.then(|| {
+                        {member_can_edit
+                            .then(|| {
                                 view! {
-                                     <EditChannelModal
-                                         content_ref=edit_channel_node
-                                         channel=stored_channel.get_value()
-                                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
-                                         on_click=Signal::derive(move || hidden.set(false))
-                                     >
-                                         <div>
-                                             "Edit Channel"
-                                         </div>
-                                     </EditChannelModal>
-                                     <DeleteChannel
-                                         content_ref=delete_channel_node
-                                         channel=stored_channel.get_value()
-                                         server_id=server.id
-                                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
-                                         on_click=Signal::derive(move || hidden.set(false))
-                                     >
-                                         <div>
-                                             "Delete Channel"
-                                         </div>
-                                     </DeleteChannel>
-                                 }
-                            })
-                        }
+                                    <EditChannelModal
+                                        content_ref=edit_channel_node
+                                        channel=stored_channel.get_value()
+                                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                                        on_click=Signal::derive(move || hidden.set(false))
+                                    >
+                                        <div>"Edit Channel"</div>
+                                    </EditChannelModal>
+                                    <DeleteChannel
+                                        content_ref=delete_channel_node
+                                        channel=stored_channel.get_value()
+                                        server_id=server.id
+                                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                                        on_click=Signal::derive(move || hidden.set(false))
+                                    >
+                                        <div>"Delete Channel"</div>
+                                    </DeleteChannel>
+                                }
+                            })}
                     </div>
                 </ContextMenuContent>
             </ContextMenuProvider>

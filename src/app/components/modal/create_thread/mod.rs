@@ -37,13 +37,11 @@ pub fn CreatethreadModal(
                 <div class="text-start p-[16px] w-full">
                     <h1 class="font-bold text-[24px] leading-[30px]">"Create Thread"</h1>
                     <ModalClose class="absolute right-2 top-2 flex items-center group bg-none">
-                        <Icon
-                            icon=icondata::RiCloseSystemLine
-                            // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
-                        />
+                        <Icon icon=icondata::RiCloseSystemLine />
+                    // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                     </ModalClose>
                 </div>
-                <ActionForm action=create_thread node_ref=form_ref  /* class="w-full" */>
+                <ActionForm action=create_thread node_ref=form_ref>
                     <div class="px-[16px] w-full">
                         <div class="text-[12px] mb-0.5 leading-[18px] uppercase font-bold text-base-content">
                             "category name"

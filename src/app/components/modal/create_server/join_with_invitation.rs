@@ -30,10 +30,8 @@ pub fn JoinWithInvitation() -> impl IntoView {
                         attr:r#type="reset"
                         class="absolute right-2 top-2 flex items-center group bg-none"
                     >
-                        <Icon
-                            icon=icondata::RiCloseSystemLine
-                            // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
-                        />
+                        <Icon icon=icondata::RiCloseSystemLine />
+                    // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                     </ModalClose>
                 </div>
                 <div class="px-4">
@@ -48,7 +46,8 @@ pub fn JoinWithInvitation() -> impl IntoView {
                                             Err(ServerFnError::ServerError(err)) => {
                                                 view! {
                                                     <p class="text-error mb-2 text-xs italic">{err}</p>
-                                                }.into_any()
+                                                }
+                                                    .into_any()
                                             }
                                             _ => ().into_any(),
                                         }
@@ -80,7 +79,7 @@ pub fn JoinWithInvitation() -> impl IntoView {
                         class="rounded-lg bg-base-300/30 hover:bg-base-content/30 mb-4 flex items-center p-3 text-left"
                     >
                         <div class="mr-3 w-[40px] h-[40px] bg-primary rounded-full flex items-center justify-center">
-                            <Icon icon=icondata::RiCompassMapLine /* class="h-8 w-8" */ />
+                            <Icon icon=icondata::RiCompassMapLine />
                         </div>
                         <div>
                             <h2 class="text-[16px] leading-[20px] font-bold">
@@ -90,7 +89,7 @@ pub fn JoinWithInvitation() -> impl IntoView {
                                 Check out Discoverable communities in Server Discovery.
                             </div>
                         </div>
-                        <Icon icon=icondata::RiArrowRightSArrowsLine /* class="ml-auto mr-3 h-6 w-6" */ />
+                        <Icon icon=icondata::RiArrowRightSArrowsLine />
                     </A>
                 </div>
                 <div class="relative p-4 overflow-x-auto flex justify-between items-center bg-base-300/60">

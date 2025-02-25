@@ -22,7 +22,24 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
     view! {
         <DropdownProvider open=open modal=false>
             <DropdownTrigger class="hover:bg-base-100 rounded-md p-1 cursor-pointer select-none p-1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-tree"><path d="M21 12h-8"/><path d="M21 6H8"/><path d="M21 18h-8"/><path d="M3 6v4c0 1.1.9 2 2 2h3"/><path d="M3 10v6c0 1.1.9 2 2 2h3"/></svg>
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="lucide lucide-list-tree"
+                >
+                    <path d="M21 12h-8" />
+                    <path d="M21 6H8" />
+                    <path d="M21 18h-8" />
+                    <path d="M3 6v4c0 1.1.9 2 2 2h3" />
+                    <path d="M3 10v6c0 1.1.9 2 2 2h3" />
+                </svg>
             </DropdownTrigger>
             <DropdownContent
                 ignore=vec![context_menu_ref, create_thread_node, delete_thread_modal_ref]
@@ -32,12 +49,23 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
             >
                 <div class="w-[510px] h-auto bg-base-300 flex flex-col rounded-md border border-base-100 p-2 origin-top-right starting:opacity-0 starting:translate-x-2 starting:-translate-y-2 starting:scale-95 transition-all">
                     <div class="w-full h-auto flex items-center rounded-t-md mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-list-tree mr-2">
-                            <path d="M21 12h-8"/>
-                            <path d="M21 6H8"/>
-                            <path d="M21 18h-8"/>
-                            <path d="M3 6v4c0 1.1.9 2 2 2h3"/>
-                            <path d="M3 10v6c0 1.1.9 2 2 2h3"/>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-list-tree mr-2"
+                        >
+                            <path d="M21 12h-8" />
+                            <path d="M21 6H8" />
+                            <path d="M21 18h-8" />
+                            <path d="M3 6v4c0 1.1.9 2 2 2h3" />
+                            <path d="M3 10v6c0 1.1.9 2 2 2h3" />
                         </svg>
                         <div class="font-semibold text-lg mr-auto">"Threads"</div>
                         <div class="hover:bg-base-content/10 rounded-md p-1 fill-base-content ml-[10px]">
@@ -87,8 +115,7 @@ pub fn ActiveThreads(
         <div class="w-full h-auto relative">
             <div class="flex w-full justify-between items-center my-2">
                 <div class="h-6 w-[200px] border border-base-100 rounded p-1.5 flex items-center justify-between">
-                    "Search"
-                    <Icon icon=icondata::LuSearch /* class="h-4 w-4 stroke-base-content" */ />
+                    "Search" <Icon icon=icondata::LuSearch />
                 </div>
                 <CreatethreadModal
                     content_ref=create_thread_node

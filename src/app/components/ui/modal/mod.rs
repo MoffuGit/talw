@@ -122,9 +122,7 @@ pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView 
     Effect::new(move |_| show.update(|value| *value = true));
     view! {
         <Show when=move || show.get()>
-            <Portal
-                mount=document().get_element_by_id("app").expect("acces to the app")
-            >
+            <Portal mount=document().get_element_by_id("app").expect("acces to the app")>
                 <dialog
                     class="modal"
                     node_ref=dialog_ref

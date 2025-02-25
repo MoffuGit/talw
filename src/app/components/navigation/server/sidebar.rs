@@ -72,16 +72,18 @@ pub fn ServerSideBar() -> impl IntoView {
                             <For
                                 each=move || channels.get().and_then(Result::ok).unwrap_or_default()
                                 key=|channel| channel.id
-                                children=move | channel: EntChannel| {
+                                children=move |channel: EntChannel| {
                                     view! { <Channel channel=channel.clone() /> }
                                 }
                             />
                         </Transition>
                         <Transition>
                             <For
-                                each=move || categories.get().and_then(Result::ok).unwrap_or_default()
+                                each=move || {
+                                    categories.get().and_then(Result::ok).unwrap_or_default()
+                                }
                                 key=|category| category.id
-                                children=move | category: EntCategory| {
+                                children=move |category: EntCategory| {
                                     view! { <Category category=category.clone() /> }
                                 }
                             />

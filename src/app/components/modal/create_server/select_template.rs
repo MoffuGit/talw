@@ -20,10 +20,8 @@ pub fn SelectTemplate() -> impl IntoView {
                 attr:r#type="reset"
                 class="absolute right-2 top-2 flex items-center group bg-none"
             >
-                <Icon
-                    icon=icondata::RiCloseSystemLine
-                    // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
-                />
+                <Icon icon=icondata::RiCloseSystemLine />
+            // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
             </ModalClose>
         </div>
         <div class="overflow-x-hidden overflow-y-scroll mt-6 h-[330px] px-4 pb-2 relative">
@@ -69,7 +67,7 @@ fn Templates(template: ServerTemplate, children: Children) -> impl IntoView {
             >
                 <div class="w-[66px] h-[66px]" />
                 <div class="text-base leading-[20px] font-bold">{children()}</div>
-                <Icon icon=icondata::RiArrowRightSArrowsLine /* class="ml-auto mr-3 h-6 w-6" */ />
+                <Icon icon=icondata::RiArrowRightSArrowsLine />
             </div>
         </SlideForward>
     }

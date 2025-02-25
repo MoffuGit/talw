@@ -18,19 +18,19 @@ pub fn MembersSettings() -> impl IntoView {
 
     view! {
         <div class="relative w-full h-full flex flex-col items-start">
-        <Transition>
-            {
-                move || {
-                    members.and_then(|members| {
-                        members.iter().map(|member|{
-                            view!{
-                                <p/>
-                            }
-                        }).collect_view()
-                    })
-                }
-            }
-        </Transition>
+            <Transition>
+                {move || {
+                    members
+                        .and_then(|members| {
+                            members
+                                .iter()
+                                .map(|member| {
+                                    view! { <p /> }
+                                })
+                                .collect_view()
+                        })
+                }}
+            </Transition>
         </div>
     }
 }
@@ -38,14 +38,12 @@ pub fn MembersSettings() -> impl IntoView {
 #[component]
 fn MemberData(member: Member) -> impl IntoView {
     view! {
-        //profile
-        //  name
-        //  image
-        //  banner
-        //  date of creation
-        //  kick out
-        <div>
-            {member.id.to_string()}
-        </div>
+        // profile
+        // name
+        // image
+        // banner
+        // date of creation
+        // kick out
+        <div>{member.id.to_string()}</div>
     }
 }

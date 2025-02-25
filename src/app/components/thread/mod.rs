@@ -29,7 +29,9 @@ pub fn LeaveThread(thread_id: Uuid, server_id: Uuid, class: &'static str) -> imp
 pub fn JoinThread(thread_id: Uuid, server_id: Uuid, class: &'static str) -> impl IntoView {
     view! {
         <div
-            on:click=move |_| {use_thread().join_thread.dispatch(JoinThread { thread_id, server_id });}
+            on:click=move |_| {
+                use_thread().join_thread.dispatch(JoinThread { thread_id, server_id });
+            }
             class=class
         >
             "Join Thread"

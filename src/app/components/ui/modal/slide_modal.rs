@@ -28,9 +28,7 @@ pub fn SlideProvider(
         height,
         width,
     });
-    view! {{
-        children()
-    }}
+    view! { {children()} }
 }
 
 #[component]
@@ -59,10 +57,7 @@ pub fn SlideForward(
         .slides;
 
     view! {
-        <button
-            on:click=move |_| slides.update(move |slides| slides.push(value))
-            class=class
-        >
+        <button on:click=move |_| slides.update(move |slides| slides.push(value)) class=class>
             {children()}
         </button>
     }

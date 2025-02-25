@@ -17,16 +17,16 @@ pub fn Profile() -> impl IntoView {
                                 Either::Left(
                                     view! {
                                         <img
-                                        class="w-8 h-8 rounded-full cursor-pointer object-cover"
-                                        src=url.clone()
+                                            class="w-8 h-8 rounded-full cursor-pointer object-cover"
+                                            src=url.clone()
                                         />
-                                    }
+                                    },
                                 )
                             } else {
                                 Either::Right(
                                     view! {
-                                        <div class="w-8 h-8 rounded-full cursor-pointer bg-base-100/40"/>
-                                    }
+                                        <div class="w-8 h-8 rounded-full cursor-pointer bg-base-100/40" />
+                                    },
                                 )
                             }
                         })

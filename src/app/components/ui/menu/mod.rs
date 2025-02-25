@@ -153,12 +153,8 @@ pub fn MenuContent(
 
     view! {
         <Provider value=context.clone()>
-            <Show when=move || {
-                context.open.get()
-            }>
-                <Portal
-                    mount=document().get_element_by_id("app").expect("acces to app")
-                >
+            <Show when=move || { context.open.get() }>
+                <Portal mount=document().get_element_by_id("app").expect("acces to app")>
                     <div
                         style=move || style.get()
                         class=move || {

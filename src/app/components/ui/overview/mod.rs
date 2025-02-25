@@ -70,10 +70,11 @@ pub fn OverviewContent(
     let children = StoredValue::new(children);
     view! {
         <Show when=move || open.get()>
-            <Portal
-                mount=document().get_element_by_id("app").expect("acces to the app")
-            >
-                <div class=format!("z-[999] absolute inset-0 {}", class)>{children.get_value()()}</div>
+            <Portal mount=document().get_element_by_id("app").expect("acces to the app")>
+                <div class=format!(
+                    "z-[999] absolute inset-0 {}",
+                    class,
+                )>{children.get_value()()}</div>
             </Portal>
         </Show>
     }

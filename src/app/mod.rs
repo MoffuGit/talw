@@ -37,8 +37,10 @@ pub fn App() -> impl IntoView {
 
     //NOTE:
     //work in the server overview
+    //add roles
     //work in the messages already pls,
     //fix the ui of the modals and user overview
+    //add flallbacks for the transitions
     //add things to user stuff and search stuff servers stuff
     //add notifications
     //add inbox
@@ -60,32 +62,45 @@ pub fn App() -> impl IntoView {
         <Theme />
         <Router>
             <main id="app" class="w-full h-full overflow-hidden">
-                    <Routes fallback=|| "Not Found">
-                        <Route path=StaticSegment("") view=Home />
-                        <ProtectedParentRoute
-                            condition=move || use_auth().auth.get().map(|r| r.ok().flatten().is_some())
-                            redirect_path=|| "/"
-                            path=StaticSegment("servers" )
-                            view=Servers
-                        >
-                            <Route path=StaticSegment("") view=move || view! { <div>"list of servers"</div> } />
-                            <Route path=StaticSegment("me") view=move || view! { <div>"user stuff"</div> } />
-                            <Route path=StaticSegment("discover") view=move || view! { <div>"search servers"</div> } />
-                            <ParentRoute path=ParamSegment("id") view=Server>
-                                <Route path=StaticSegment("") view=EmptyServer/>
-                                <ParentRoute path=ParamSegment("channel_id") view=ChannelView>
-                                    <Route path=ParamSegment("thread_id" ) view=ThreadSplit />
-                                    <Route path=StaticSegment("") view=|| view! { <div /> } />
-                                </ParentRoute>
-                                <Route
-                                    path=(StaticSegment("thread"), ParamSegment("channel_id"), ParamSegment("thread_id"))
-                                    view=Thread
-                                />
+                <Routes fallback=|| "Not Found">
+                    <Route path=StaticSegment("") view=Home />
+                    <ProtectedParentRoute
+                        condition=move || use_auth().auth.get().map(|r| r.ok().flatten().is_some())
+                        redirect_path=|| "/"
+                        path=StaticSegment("servers")
+                        view=Servers
+                    >
+                        <Route
+                            path=StaticSegment("")
+                            view=move || view! { <div>"list of servers"</div> }
+                        />
+                        <Route
+                            path=StaticSegment("me")
+                            view=move || view! { <div>"user stuff"</div> }
+                        />
+                        <Route
+                            path=StaticSegment("discover")
+                            view=move || view! { <div>"search servers"</div> }
+                        />
+                        <ParentRoute path=ParamSegment("id") view=Server>
+                            <Route path=StaticSegment("") view=EmptyServer />
+                            <ParentRoute path=ParamSegment("channel_id") view=ChannelView>
+                                <Route path=ParamSegment("thread_id") view=ThreadSplit />
+                                <Route path=StaticSegment("") view=|| view! { <div /> } />
                             </ParentRoute>
-                        </ProtectedParentRoute>
-                        <Route path=StaticSegment("login" ) view=Login />
-                        <Route path=StaticSegment("signup" ) view=Signup />
-                    </Routes>
+                            <Route
+                                path=(
+                                    StaticSegment("thread"),
+                                    ParamSegment("channel_id"),
+                                    ParamSegment("thread_id"),
+                                )
+                                view=Thread
+                            />
+                        </ParentRoute>
+                    </ProtectedParentRoute>
+                    <Route path=StaticSegment("login") view=Login />
+                    <Route path=StaticSegment("signup") view=Signup />
+                </Routes>
             </main>
         </Router>
     }
@@ -96,17 +111,20 @@ pub fn shell(options: LeptosOptions) -> impl IntoView {
         <!DOCTYPE html>
         <html lang="en">
             <head>
-                <meta charset="utf-8"/>
-                <meta name="viewport" content="width=device-width, initial-scale=1"/>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1" />
                 <AutoReload options=options.clone() />
-                <HydrationScripts options/>
-                <MetaTags/>
-                <link rel="preconnect" href="https://fonts.googleapis.com"/>
-                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-                <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet"/>
+                <HydrationScripts options />
+                <MetaTags />
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap"
+                    rel="stylesheet"
+                />
             </head>
             <body class="w-full h-screen">
-                <App/>
+                <App />
             </body>
         </html>
     }

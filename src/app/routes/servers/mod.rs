@@ -28,8 +28,8 @@ pub fn Servers() -> impl IntoView {
                     provide_server_overview_context();
                 });
                 view! {
-                    <UserOverview/>
-                    <ServerOverview/>
+                    <UserOverview />
+                    <ServerOverview />
                     <div class="h-full w-full relative z-40 flex">
                         <div class="flex w-12 h-full z-30 fixed inset-y-0">
                             <SideBar />
@@ -43,9 +43,5 @@ pub fn Servers() -> impl IntoView {
         })
     };
 
-    view! {
-        <Transition>
-            {inner_view}
-        </Transition>
-    }
+    view! { <Transition>{inner_view}</Transition> }
 }

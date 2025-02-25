@@ -27,18 +27,18 @@ impl Thread {
     ) -> Result<Vec<Member>, Error> {
         Ok(sqlx::query_as::<_, Member>(
             r#"
-                    SELECT m.id, m.user_id, m.server_id, m.name, m.image_url
-                    FROM members m
-                    JOIN threads_members 
-                    ON m.id = threads_members.member_id
-                    JOIN threads 
-                    ON threads.id = threads_members.thread_id
-                    WHERE threads.id = ?
-                    AND NOT EXISTS (
-                        SELECT 1
-                        FROM member_roles mr
-                        WHERE mr.member_id = m.id
-                    )
+            SELECT DISTINCT m.id,
+                m.user_id,
+                m.server_id
+FROM members m
+INNER JOIN threads_members tm ON m.id = tm.member_id
+INNER JOIN threads t ON t.id = tm.thread_id
+WHERE t.id = ?
+  AND NOT EXISTS (
+    SELECT 1
+    FROM member_roles mr
+    WHERE mr.member_id = m.id
+  );
                     "#,
         )
         .bind(thread_id)
@@ -53,7 +53,7 @@ impl Thread {
     ) -> Result<Vec<Member>, Error> {
         Ok(sqlx::query_as::<_, Member>(
             r#"
-                    SELECT DISTINCT m.id, m.user_id, m.server_id, m.name, m.image_url
+                    SELECT DISTINCT m.id, m.user_id, m.server_id 
                     FROM members m
                     JOIN threads_members ON m.id = threads_members.member_id
                     JOIN threads ON threads.id = threads_members.thread_id

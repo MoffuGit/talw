@@ -11,12 +11,16 @@ pub fn Home() -> impl IntoView {
         <Transition>
             {move || {
                 Suspend::new(async move {
-                    use_auth().auth.await.map(|user| {
-                        match user {
-                            Some(user) => view! { <div>{user.name}</div> }.into_any(),
-                            _ => view! { <div>"error with auth"</div> }.into_any(),
-                        }
-                    }).into_any()
+                    use_auth()
+                        .auth
+                        .await
+                        .map(|user| {
+                            match user {
+                                Some(user) => view! { <div>{user.name}</div> }.into_any(),
+                                _ => view! { <div>"error with auth"</div> }.into_any(),
+                            }
+                        })
+                        .into_any()
                 })
             }}
         </Transition>

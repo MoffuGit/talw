@@ -36,68 +36,35 @@ pub fn ThreadMenuContent(
                     check_member_on_thread
                         .and_then(|exist| {
                             if *exist {
-                                Either::Left(view! {
-                                    <LeaveThread
-                                        thread_id=thread.id
-                                        server_id=current_server_context.server.id
-                                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
-                                    />
-                                })
+                                Either::Left(
+                                    view! {
+                                        <LeaveThread
+                                            thread_id=thread.id
+                                            server_id=current_server_context.server.id
+                                            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                                        />
+                                    },
+                                )
                             } else {
-                                Either::Right(view! {
-                                    <JoinThread
-                                        thread_id=thread.id
-                                        server_id=current_server_context.server.id
-                                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
-                                    />
-                                })
+                                Either::Right(
+                                    view! {
+                                        <JoinThread
+                                            thread_id=thread.id
+                                            server_id=current_server_context.server.id
+                                            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                                        />
+                                    },
+                                )
                             }
                         })
                 }}
-                {
-                    move || {
-                        current_thread.with(|current| current.is_none_or(|current| current != thread.id).then(|| {
-                            view!{
-                                <A
-                                    href=move || {
-                                        format!(
-                                            "/servers/{}/thread/{}/{}",
-                                            current_server_context.server.id.simple(),
-                                            thread.channel_id.simple(),
-                                            thread.id.simple(),
-                                        )
-                                    }
-                                    on:click=move |_| open.set(false)
-                                    {..}
-                                    class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
-                                >
-                                    "Open Full View"
-                                </A>
-                                <A
-                                    href=move || {
-                                        format!(
-                                            "/servers/{}/{}/{}",
-                                            current_server_context.server.id.simple(),
-                                            thread.channel_id.simple(),
-                                            thread.id.simple(),
-                                        )
-                                    }
-                                    on:click=move |_| open.set(false)
-                                    {..}
-                                    class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
-                                >
-                                    "Open Split View"
-                                </A>
-                            }
-                        }))
-                    }
-                }
-                {
-                    move || {
-                        current_thread.with(|current| {
-                            current.is_some_and(|current| current == thread.id).then(||{
-                                if is_split.get() {
-                                    Either::Left(view!{
+                {move || {
+                    current_thread
+                        .with(|current| {
+                            current
+                                .is_none_or(|current| current != thread.id)
+                                .then(|| {
+                                    view! {
                                         <A
                                             href=move || {
                                                 format!(
@@ -113,9 +80,6 @@ pub fn ThreadMenuContent(
                                         >
                                             "Open Full View"
                                         </A>
-                                    })
-                                } else {
-                                    Either::Right(view! {
                                         <A
                                             href=move || {
                                                 format!(
@@ -131,27 +95,75 @@ pub fn ThreadMenuContent(
                                         >
                                             "Open Split View"
                                         </A>
-                                    })
-                                }
-                            })
+                                    }
+                                })
                         })
-                    }
-                }
-                {
-                    (current_server_context.member_can_edit || current_server_context.member.id == thread.created_by).then(||
+                }}
+                {move || {
+                    current_thread
+                        .with(|current| {
+                            current
+                                .is_some_and(|current| current == thread.id)
+                                .then(|| {
+                                    if is_split.get() {
+                                        Either::Left(
+                                            view! {
+                                                <A
+                                                    href=move || {
+                                                        format!(
+                                                            "/servers/{}/thread/{}/{}",
+                                                            current_server_context.server.id.simple(),
+                                                            thread.channel_id.simple(),
+                                                            thread.id.simple(),
+                                                        )
+                                                    }
+                                                    on:click=move |_| open.set(false)
+                                                    {..}
+                                                    class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                                                >
+                                                    "Open Full View"
+                                                </A>
+                                            },
+                                        )
+                                    } else {
+                                        Either::Right(
+                                            view! {
+                                                <A
+                                                    href=move || {
+                                                        format!(
+                                                            "/servers/{}/{}/{}",
+                                                            current_server_context.server.id.simple(),
+                                                            thread.channel_id.simple(),
+                                                            thread.id.simple(),
+                                                        )
+                                                    }
+                                                    on:click=move |_| open.set(false)
+                                                    {..}
+                                                    class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                                                >
+                                                    "Open Split View"
+                                                </A>
+                                            },
+                                        )
+                                    }
+                                })
+                        })
+                }}
+                {(current_server_context.member_can_edit
+                    || current_server_context.member.id == thread.created_by)
+                    .then(|| {
                         view! {
                             <DeleteThreadModal
-                            content_ref=delete_thread_modal_ref
-                            thread_id=thread.id
-                            thread_name=thread_name.get_value()
-                            server_id=current_server_context.server.id
-                            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+                                content_ref=delete_thread_modal_ref
+                                thread_id=thread.id
+                                thread_name=thread_name.get_value()
+                                server_id=current_server_context.server.id
+                                class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                             >
-                            "Delete Thread"
+                                "Delete Thread"
                             </DeleteThreadModal>
                         }
-                    )
-                }
+                    })}
             </div>
         </Transition>
     }

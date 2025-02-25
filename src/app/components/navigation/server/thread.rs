@@ -67,9 +67,7 @@ pub fn ThreadMenu(thread: EntThread) -> impl IntoView {
                         class="relative box-border flex flex-col cursor-pointer hover:bg-base-100 rounded-lg"
                     >
                         <div class="relative flex flex-row group items-center py-[6px] px-2">
-                            <div
-                                class="whitespace-nowrap overflow-hidden text-ellipsis mr-auto leading-5 flex-auto relative text-sm"
-                            >
+                            <div class="whitespace-nowrap overflow-hidden text-ellipsis mr-auto leading-5 flex-auto relative text-sm">
                                 {name.get_value()}
                             </div>
                         </div>
@@ -79,14 +77,32 @@ pub fn ThreadMenu(thread: EntThread) -> impl IntoView {
                             open.set(true);
                         }
                         class=move || {
-                            format!("absolute right-1 top-1.5 p-0.5 hover:bg-base-100 rounded {}", if is_current_thread() {
-                                "opacity-100"
-                            }else {
-                                "opacity-0 group-hover:opacity-100"
-                            })
+                            format!(
+                                "absolute right-1 top-1.5 p-0.5 hover:bg-base-100 rounded {}",
+                                if is_current_thread() {
+                                    "opacity-100"
+                                } else {
+                                    "opacity-0 group-hover:opacity-100"
+                                },
+                            )
                         }
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-ellipsis"
+                        >
+                            <circle cx="12" cy="12" r="1" />
+                            <circle cx="19" cy="12" r="1" />
+                            <circle cx="5" cy="12" r="1" />
+                        </svg>
                     </div>
                 </div>
             </ContextMenuTrigger>

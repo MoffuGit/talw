@@ -8,7 +8,7 @@ pub fn Signup() -> impl IntoView {
     let signup = use_auth().signup;
     // on_cleanup(move || signup.value().set(None));
     view! {
-        <ActionForm action=signup /* class="w-full h-full flex flex-col items-center" */>
+        <ActionForm action=signup>
             <A href="/" {..} class="btn btn-ghost btn-sm m-1">
                 "go back"
             </A>

@@ -24,7 +24,7 @@ pub fn ThreadHeader() -> impl IntoView {
                     {..}
                     class="inline-block p-1 hover:bg-base-content/5 rounded-lg"
                 >
-                    <Icon icon=icondata::LuX /* class="w-5 h-5" */ />
+                    <Icon icon=icondata::LuX />
                 </A>
             </div>
         </div>
@@ -37,7 +37,7 @@ pub fn ThreadTitle() -> impl IntoView {
         use_context::<CurrentThreadContext>().expect("SHould return the current thrread context");
     view! {
         <div class="relative flex items-center p-1.5 text-base select-none">
-            <Icon icon=icondata::RiDiscussCommunicationFill /* class="w-5 h-5 mr-2" */ />
+            <Icon icon=icondata::RiDiscussCommunicationFill />
             <div>{current_thread.thread.name}</div>
         </div>
     }

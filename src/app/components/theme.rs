@@ -24,14 +24,14 @@ pub fn Toggle_Theme(
     let prefers_theme = theme_context.prefers_theme;
 
     view! {
-        <ActionForm action=toggle_theme /* class=class */>
+        <ActionForm action=toggle_theme>
             <input type="hidden" name="theme" value=move || (!prefers_theme.get()).to_string() />
             <button type="submit" class="w-full h-full flex items-center justify-center">
                 {icons
                     .clone()
                     .map(|icons| move || match prefers_theme.get() {
-                        true => view! { <Icon icon=icons.dark /* class=icons.class */ /> },
-                        false => view! { <Icon icon=icons.light /* class=icons.class */ /> },
+                        true => view! { <Icon icon=icons.dark /> },
+                        false => view! { <Icon icon=icons.light /> },
                     })}
             </button>
         </ActionForm>
@@ -43,18 +43,16 @@ pub fn SelectTheme(dark_mode: bool) -> impl IntoView {
     let theme_context = use_theme();
     let tip = if dark_mode { "Dark" } else { "Light" };
     view! {
-        <ActionForm
-            action=theme_context.toggle_theme
+        <ActionForm action=theme_context.toggle_theme>
             // class=move || {
-            //     if theme_context.prefers_theme.get() == dark_mode {
-            //         "rounded-full w-16 h-16 border-2 border-primary"
-            //     } else {
-            //         "rounded-full w-16 h-16 "
-            //     }
+            // if theme_context.prefers_theme.get() == dark_mode {
+            // "rounded-full w-16 h-16 border-2 border-primary"
+            // } else {
+            // "rounded-full w-16 h-16 "
             // }
-        >
+            // }
             <input type="hidden" name="theme" value=dark_mode.to_string() />
-            <TooltipProvider delay_duration=Duration::new(0,0)>
+            <TooltipProvider delay_duration=Duration::new(0, 0)>
                 <TooltipTrigger close_on_click=true class="w-full h-full">
                     <button
                         type="submit"

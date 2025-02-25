@@ -34,10 +34,8 @@ pub fn ServerMenu() -> impl IntoView {
                         <p class="block mr-auto text-base overflow-hidden font-semibold text-ellipsis whitespace-nowrap min-w-0">
                             {server.name}
                         </p>
-                        <Icon
-                            icon=icondata::LuChevronDown
-                            // class="relative"
-                        />
+                        <Icon icon=icondata::LuChevronDown />
+                    // class="relative"
                     </div>
                 </DropdownTrigger>
                 <DropdownContent
@@ -82,7 +80,8 @@ pub fn ServerMenu() -> impl IntoView {
                                     leave_server_node=leave_server_node
                                     on_click=on_click_item
                                 />
-                            }.into_any()
+                            }
+                                .into_any()
                         } else {
                             ().into_any()
                         }}
@@ -101,7 +100,10 @@ fn ServerMenuAdminItems(
 ) -> impl IntoView {
     let CurrentServerContext { server, .. } = use_current_server_context();
     view! {
-        <ServerOverviewTrigger server_id=server.id class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
+        <ServerOverviewTrigger
+            server_id=server.id
+            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+        >
             "Server Settings"
         </ServerOverviewTrigger>
 

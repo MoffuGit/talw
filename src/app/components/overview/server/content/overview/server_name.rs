@@ -29,7 +29,7 @@ pub fn ServerName() -> impl IntoView {
         }
     });
     view! {
-        <ActionForm action=edit_server_name /* class="relative ml-44 flex items-center" */>
+        <ActionForm action=edit_server_name>
             <label class="relative form-control">
                 <span
                     class="invisible text-xl absolute px-2 rounded-md whitespace-pre"
@@ -38,9 +38,11 @@ pub fn ServerName() -> impl IntoView {
                     {move || name_preview.get()}
                 </span>
                 <div class="label p-0 pb-0.5 transition">
-                    <span class="label-text-alt text-sm px-0 pt-0 font-semibold">"Server Name"</span>
+                    <span class="label-text-alt text-sm px-0 pt-0 font-semibold">
+                        "Server Name"
+                    </span>
                 </div>
-                <input type="hidden" value=server.id.to_string() name="server_id"/>
+                <input type="hidden" value=server.id.to_string() name="server_id" />
                 <input
                     value=move || name_preview.get()
                     on:input=handle_input

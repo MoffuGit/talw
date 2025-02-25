@@ -95,9 +95,7 @@ pub fn TooltipProvider(
         trigger_ref,
     });
 
-    view! {
-        {children()}
-    }
+    view! { {children()} }
 }
 
 #[component]
@@ -272,9 +270,12 @@ pub fn TooltipContent(
                     style=move || format!("translate: {}px {}px;", position().0, position().1)
                     class=format!("absolute z-50 left-0 top-0")
                 >
-                    <div class=format!("{} {} {}", class, animation, arrow)>
-                        {move || tip.get()}
-                    </div>
+                    <div class=format!(
+                        "{} {} {}",
+                        class,
+                        animation,
+                        arrow,
+                    )>{move || tip.get()}</div>
                 </div>
             </Portal>
         </Show>

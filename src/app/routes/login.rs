@@ -9,7 +9,7 @@ pub fn Login() -> impl IntoView {
 
     // on_cleanup(move || login.value().set(None));
     view! {
-        <ActionForm action=login /* class="w-full h-full flex flex-col items-center" */>
+        <ActionForm action=login>
             <A href="/" {..} class="btn btn-ghost btn-sm m-1">
                 "go back"
             </A>

@@ -7,7 +7,7 @@ use super::ServerSettings;
 #[component]
 pub fn ServerSettingsSideBar() -> impl IntoView {
     view! {
-        <div class="w-3/5 min-w-[218px] h-full flex bg-base-300 justify-end pt-8 pr-1">
+        <div class="w-1/3 min-w-[218px] h-full flex bg-base-300 justify-end pt-8 pr-1">
             <div class="flex flex-col overflow-scroll">
                 <div class="font-semibold mb-0.5">"Server Settings"</div>
                 <ServerSettingsSelect select=ServerSettings::Overview />

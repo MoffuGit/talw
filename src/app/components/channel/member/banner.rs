@@ -36,7 +36,9 @@ pub fn MemberBanner(
                 side_of_set=20.0
                 limit_y=limit_y
             >
-                <Show when=move || is_open.get()>
+                <Show when=move || {
+                    is_open.get()
+                }>
                     {move || {
                         let banner = Resource::new(move || (), move |_| get_user_banner(user_id));
                         view! {
@@ -47,22 +49,24 @@ pub fn MemberBanner(
                                             let about = StoredValue::new(banner.about.clone());
                                             let banner_url = StoredValue::new(banner.image_url.clone());
                                             view! {
-                                                <div class="relative w-full h-auto select-none w-56 origin-right starting:opacity-0 starting:translate-x-2 starting:scale-95 transition-all rounded-md bg-base-300">
-                                                    {move || if let Some(url) = banner_url.get_value() {
-                                                        Either::Left(
-                                                            view! {
-                                                                <img
-                                                                    class="w-full h-28 object-cover rounded-t-lg"
-                                                                    src=url
-                                                                />
-                                                            }
-                                                        )
-                                                    } else {
-                                                        Either::Right(
-                                                            view! {
-                                                                <div class="w-full h-28 bg-base-primary rounded-t-lg" />
-                                                            }
-                                                        )
+                                                <div class="relative w-full h-full flex flex-col select-none w-56 origin-right starting:opacity-0 starting:translate-x-2 starting:scale-95 transition-all rounded-md bg-base-300">
+                                                    {move || {
+                                                        if let Some(url) = banner_url.get_value() {
+                                                            Either::Left(
+                                                                view! {
+                                                                    <img
+                                                                        class="w-full h-28 object-cover rounded-t-lg"
+                                                                        src=url
+                                                                    />
+                                                                },
+                                                            )
+                                                        } else {
+                                                            Either::Right(
+                                                                view! {
+                                                                    <div class="w-full h-28 bg-base-primary rounded-t-lg" />
+                                                                },
+                                                            )
+                                                        }
                                                     }}
                                                     {if let Some(url) = image_url.get_value() {
                                                         Either::Left(
@@ -71,55 +75,50 @@ pub fn MemberBanner(
                                                                     class="w-[96px] h-[96px] object-cover absolute top-16 left-2 rounded-full border-[6px] border-base-300"
                                                                     src=url
                                                                 />
-                                                            }
+                                                            },
                                                         )
                                                     } else {
                                                         Either::Right(
                                                             view! {
                                                                 <div class="w-[96px] h-[96px] absolute top-16 left-2 rounded-full border-[6px] bg-base-content/10 border-base-300" />
-                                                            }
+                                                            },
                                                         )
-                                                    }}
-                                                    <div class="relative w-auto mt-14 m-4">
-                                                        <div class="text-xl font-semibold">
-                                                            {name.get_value()}
-                                                        </div>
+                                                    }} <div class="relative w-auto mt-14 m-4">
+                                                        <div class="text-xl font-semibold">{name.get_value()}</div>
                                                         <MutualServers user_id=user_id />
                                                         <MemberRoles member_id=member_id />
-                                                        {
-                                                            move || {
-                                                                about.get_value().map(|about| {
+                                                        {move || {
+                                                            about
+                                                                .get_value()
+                                                                .map(|about| {
                                                                     view! { <div>{about}</div> }
                                                                 })
-                                                            }
-                                                        }
-                                                        {
-                                                            move || if member_id != user_member {
+                                                        }}
+                                                        {move || {
+                                                            if member_id != user_member {
                                                                 Either::Left(
-                                                                    view!{
-                                                                        <div class="flex mt-4 border border-base-100 hover:bg-base-content/10 rounded-md w-full h-12 px-4 items-center cursor-pointer">
+                                                                    view! {
+                                                                        <div class="flex my-4 border border-base-100 hover:bg-base-content/10 rounded-md w-full h-12 px-4 items-center cursor-pointer">
                                                                             <div class="text-base">
                                                                                 {format!("Message @{}", name.get_value())}
                                                                             </div>
                                                                         </div>
-                                                                    }
+                                                                    },
                                                                 )
                                                             } else {
                                                                 Either::Right(
-                                                                    view!{
-                                                                        <UserOverviewTrigger
-                                                                            class="flex mt-4 rounded-md border border-base-100 hover:bg-base-content/10 w-full h-12 px-4 items-center cursor-pointer">
-                                                                                "Open Settings"
+                                                                    view! {
+                                                                        <UserOverviewTrigger class="flex mt-4 rounded-md border border-base-100 hover:bg-base-content/10 w-full h-12 px-4 items-center cursor-pointer">
+                                                                            "Open Settings"
                                                                         </UserOverviewTrigger>
-                                                                    }
+                                                                    },
                                                                 )
                                                             }
-                                                        }
+                                                        }}
                                                     </div>
                                                 </div>
                                             }
-                                        }
-                                    )
+                                        })
                                 }}
                             </Transition>
                         }
@@ -132,49 +131,51 @@ pub fn MemberBanner(
 
 #[component]
 pub fn MutualServers(user_id: Uuid) -> impl IntoView {
-    let mutual_servers = Resource::new(|| (), move |_| get_mutual_servers_image_url(user_id));
+    let mutual_servers = Resource::new(
+        || (),
+        move |_| async move {
+            get_mutual_servers_image_url(user_id)
+                .await
+                .map(|servers| servers.into_iter().enumerate().collect::<Vec<_>>())
+        },
+    );
     view! {
-        <Transition fallback=move || ()>
-            {move || {
-                Suspend::new(async move {
-                    mutual_servers.await.map(|mutual| {
-                        let shared = mutual.len();
-                        if shared == 0 {
-                            return ().into_any();
+        <Transition>
+            <div class="flex items-center mt-4">
+                <div class="flex justify-start -space-x-2 mr-1">
+                    <For
+                        each=move || mutual_servers.get().and_then(Result::ok).unwrap_or_default()
+                        key=|(idx, _)| idx.clone()
+                        children=move |(_, url)| {
+                            if let Some(url) = url {
+                                Either::Left(
+                                    view! {
+                                        <img class="w-4 h-4 object-cover rounded-full" src=url />
+                                    },
+                                )
+                            } else {
+                                Either::Right(
+                                    view! {
+                                        <div class="w-4 h-4 rounded-full bg-white border-base-200" />
+                                    },
+                                )
+                            }
                         }
-                        view! {
-                            <div class="flex items-center mt-4">
-                                <div class="flex justify-start -space-x-2 mr-1">
-                                    // {mutual.clone()
-                                    //     .iter()
-                                    //     .map(|url| {
-                                    //         if let Some(url) = url {
-                                    //             view! {
-                                    //                 <img class="w-4 h-4 object-cover rounded-full" src=url />
-                                    //             }.into_any()
-                                    //         } else {
-                                    //             view! {
-                                    //                 <div class="w-4 h-4 rounded-full bg-white border-base-200" />
-                                    //             }.into_any()
-                                    //         }
-                                    //     })
-                                    //     .collect_view()}
-                                </div>
-                                <div class="text-sm">
-                                    {format!(
-                                        "{} {}",
-                                        shared,
-                                        match shared {
-                                            1 => "Mutual Server",
-                                            _ => "Mutuals Servers",
-                                        },
-                                    )}
-                                </div>
-                            </div>
-                        }.into_any()
-                    })
-                })
-            }}
+                    />
+                </div>
+                <div class="text-sm">
+                    {move || {
+                        mutual_servers
+                            .and_then(|mutual| {
+                                match mutual.len() {
+                                    0 => None,
+                                    1 => Some("1 Mutual Server".to_string()),
+                                    many => Some(format!("{many} Mutuals Servers")),
+                                }
+                            })
+                    }}
+                </div>
+            </div>
         </Transition>
     }
 }

@@ -60,28 +60,29 @@ pub fn ServerOverview() -> impl IntoView {
     } = use_server_overview();
     view! {
         <OverviewContent open=open class="w-full h-full flex items-center">
-            {
-                move || {
-                    server.get().map(|server|  {
+            {move || {
+                server
+                    .get()
+                    .map(|server| {
                         let get_server = Resource::new(move || (), move |_| get_server(server));
-                        view!{
+                        view! {
                             <Transition>
-                                {
-                                    move || {
-                                        get_server.and_then(|server| {
-                                            provide_context(ServerSettingsData { server:server.clone() });
-                                            view!{
-                                                <ServerSettingsSideBar/>
-                                                <ServerSettingsContent/>
+                                {move || {
+                                    get_server
+                                        .and_then(|server| {
+                                            provide_context(ServerSettingsData {
+                                                server: server.clone(),
+                                            });
+                                            view! {
+                                                <ServerSettingsSideBar />
+                                                <ServerSettingsContent />
                                             }
                                         })
-                                    }
-                                }
+                                }}
                             </Transition>
                         }
                     })
-                }
-            }
+            }}
         </OverviewContent>
     }
 }
@@ -98,13 +99,15 @@ pub fn ServerOverviewTrigger(
     let open = overview_context.open;
     view! {
         <OverviewTrigger
-            on_click=Signal::derive(move ||  {
+            on_click=Signal::derive(move || {
                 overview_context.server.set(Some(server_id));
                 if let Some(select_setting) = select_setting {
                     overview_context.settings.set(select_setting)
                 }
             })
-            open=open class=class>
+            open=open
+            class=class
+        >
             {children()}
         </OverviewTrigger>
     }

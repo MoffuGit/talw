@@ -50,34 +50,35 @@ pub fn ContextServerMenu(
                     </InvitePeopleModal>
                     <Transition>
                         {move || {
-                            member_can_update.and_then(|can_edit| {
-                                if *can_edit {
-                                    Either::Left(
-                                        view! {
-                                            <div class="bg-base-100 h-px my-1 -mx-1" />
-                                            <ServerMenuAdminItems
-                                                nodes=ServerMenuNodes {
-                                                    create_channel_node,
-                                                    create_category_node,
-                                                }
-                                                server=server.get_value()
-                                                on_click=on_click_item
-                                            />
-                                        }
-                                    )
-                                } else {
-                                    Either::Right(
-                                        view! {
-                                            <div class="bg-base-100 h-px my-1 -mx-1" />
-                                            <ServerMenuGuestItems
-                                                leave_server_node=leave_server_node
-                                                server=server.get_value()
-                                                on_click=on_click_item
-                                            />
-                                        }
-                                    )
-                                }
-                            })
+                            member_can_update
+                                .and_then(|can_edit| {
+                                    if *can_edit {
+                                        Either::Left(
+                                            view! {
+                                                <div class="bg-base-100 h-px my-1 -mx-1" />
+                                                <ServerMenuAdminItems
+                                                    nodes=ServerMenuNodes {
+                                                        create_channel_node,
+                                                        create_category_node,
+                                                    }
+                                                    server=server.get_value()
+                                                    on_click=on_click_item
+                                                />
+                                            },
+                                        )
+                                    } else {
+                                        Either::Right(
+                                            view! {
+                                                <div class="bg-base-100 h-px my-1 -mx-1" />
+                                                <ServerMenuGuestItems
+                                                    leave_server_node=leave_server_node
+                                                    server=server.get_value()
+                                                    on_click=on_click_item
+                                                />
+                                            },
+                                        )
+                                    }
+                                })
                         }}
                     </Transition>
                 </div>
@@ -103,7 +104,10 @@ fn ServerMenuAdminItems(
         create_category_node,
     } = nodes;
     view! {
-        <ServerOverviewTrigger server_id=server.id class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md">
+        <ServerOverviewTrigger
+            server_id=server.id
+            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+        >
             "Server Settings"
         </ServerOverviewTrigger>
 

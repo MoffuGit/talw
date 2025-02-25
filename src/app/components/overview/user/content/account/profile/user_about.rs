@@ -47,21 +47,21 @@ pub fn UserAbout() -> impl IntoView {
                 <span class="label-text">"About me"</span>
             </div>
             <div class="relative h-fit w-full">
-                //WARNING: check this
+                // WARNING: check this
                 // <textarea
-                //     on:input=handle_input
-                //     on:focus=move |_| focus_textarea.set(true)
-                //     on:focusout=move |_| focus_textarea.set(false)
-                //     value=move || about_preview.get().unwrap_or_default()
-                //     name="new_about"
-                //     type="text"
-                //     class=move || {
-                //         format!(
-                //             "relative text-lg px-1 w-full resize-none z-50 bg-base-300/60 text-base-content rounded-md {}",
-                //             { if focus_textarea.get() { "opacity-100" } else { "opacity-0" } },
-                //         )
-                //     }
-                //     style=move || { format!("height: {}px", textarea_height.get()) }
+                // on:input=handle_input
+                // on:focus=move |_| focus_textarea.set(true)
+                // on:focusout=move |_| focus_textarea.set(false)
+                // value=move || about_preview.get().unwrap_or_default()
+                // name="new_about"
+                // type="text"
+                // class=move || {
+                // format!(
+                // "relative text-lg px-1 w-full resize-none z-50 bg-base-300/60 text-base-content rounded-md {}",
+                // { if focus_textarea.get() { "opacity-100" } else { "opacity-0" } },
+                // )
+                // }
+                // style=move || { format!("height: {}px", textarea_height.get()) }
                 // />
                 <span
                     node_ref=span_ref

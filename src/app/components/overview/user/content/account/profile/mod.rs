@@ -70,16 +70,12 @@ fn UserBanner(banner: Banner, profile: Profile) -> impl IntoView {
         format!("{from} {to} --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);")
     };
     view! {
-        <div
-            class="relative w-[600px] bg-base-300 flex flex-col rounded-lg p-1.5 bg-gradient-to-b"
+        <div class="relative w-[600px] bg-base-300 flex flex-col rounded-lg p-1.5 bg-gradient-to-b">
             // style=banner_style
-        >
             <ImageBanner primary_color_preview=primary_color_preview />
             <UserImage />
-            <ActionForm
-                action=use_user().edit_user_data
+            <ActionForm action=use_user().edit_user_data>
                 // class="flex flex-col items-start w-full relative pb-16"
-            >
                 <UserName />
                 <UserAbout />
                 <button

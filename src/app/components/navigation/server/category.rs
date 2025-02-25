@@ -56,16 +56,29 @@ pub fn Category(category: EntCategory) -> impl IntoView {
                 <ContextMenuTrigger class="relative mt-0.5 ml-2 py-px group select-none">
                     <CollapsibleTrigger class="cursor-pointer box-border flex items-center justify-between">
                         <div class="flex flex-auto overflow-hidden items-center py-1.5 px-2 hover:bg-base-100 rounded-lg h-8">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class=move || format!(
-                                "h-4 w-4 text-base-content/75 group-hover:text-base-content mr-1.5 transition-transform {}",
-                                {
-                                    match collapsible_open.get() {
-                                        true => "rotate-90",
-                                        false => "",
-                                    }
-                                },
-                            )>
-                                <path d="m9 18 6-6-6-6"/>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class=move || {
+                                    format!(
+                                        "h-4 w-4 text-base-content/75 group-hover:text-base-content mr-1.5 transition-transform {}",
+                                        {
+                                            match collapsible_open.get() {
+                                                true => "rotate-90",
+                                                false => "",
+                                            }
+                                        },
+                                    )
+                                }
+                            >
+                                <path d="m9 18 6-6-6-6" />
                             </svg>
                             <div class="box-border ml-0.5 text-ellipsis text-sm whitespace-nowrap overflow-hidden leading-4 tracking-wide mr-auto">
                                 {name.get_value()}
@@ -78,7 +91,22 @@ pub fn Category(category: EntCategory) -> impl IntoView {
                         }
                         class="absolute right-1 top-1.5 p-0.5 hover:bg-base-100 rounded opacity-0 group-hover:opacity-100"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-ellipsis"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-ellipsis"
+                        >
+                            <circle cx="12" cy="12" r="1" />
+                            <circle cx="19" cy="12" r="1" />
+                            <circle cx="5" cy="12" r="1" />
+                        </svg>
                     </div>
                 </ContextMenuTrigger>
                 <ContextMenuContent
@@ -102,7 +130,7 @@ pub fn Category(category: EntCategory) -> impl IntoView {
                             on_click=Signal::derive(move || hidden_context_menu.set(false))
                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                         >
-                            <div >"Rename Category"</div>
+                            <div>"Rename Category"</div>
                         </EditCategoryModal>
                         <DeleteCategoryModal
                             content_ref=delete_category_node

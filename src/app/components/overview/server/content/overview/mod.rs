@@ -11,8 +11,8 @@ pub fn OverviewSettings() -> impl IntoView {
         <div class="relative w-full h-full flex flex-col items-start">
             <div class="font-bold text-xl mb-3">"Server Data"</div>
             <div class="relative w-full h-auto flex items-center">
-                <ServerImage/>
-                <ServerName/>
+                <ServerImage />
+                <ServerName />
             </div>
         </div>
     }

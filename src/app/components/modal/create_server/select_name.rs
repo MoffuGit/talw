@@ -49,10 +49,8 @@ pub fn SelectName() -> impl IntoView {
                     attr:r#type="reset"
                     class="absolute right-2 top-2 flex items-center group bg-none"
                 >
-                    <Icon
-                        icon=icondata::RiCloseSystemLine
-                        // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
-                    />
+                    <Icon icon=icondata::RiCloseSystemLine />
+                // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                 </ModalClose>
             </div>
             <div class="px-2 my-4">
@@ -81,16 +79,12 @@ pub fn SelectName() -> impl IntoView {
                                 view! {
                                     <div class="indicator w-20 h-20 flex flex-col justify-center items-center rounded-full border-2 border-base-content border-dashed relative z-30">
                                         <span class="indicator-item badge badge-primary translate-x-[11%] translate-y-[20%] w-[20px] h-[20px] p-0">
-                                            <Icon
-                                                icon=icondata::RiAddSystemFill
-                                                // class="fill-primary-content w-4 h-4"
-                                            />
+                                            <Icon icon=icondata::RiAddSystemFill />
+                                        // class="fill-primary-content w-4 h-4"
                                         </span>
                                         <div class="flex flex-col items-center">
-                                            <Icon
-                                                icon=icondata::RiCameraMediaFill
-                                                // class="fill-base-content w-6 h-6 "
-                                            />
+                                            <Icon icon=icondata::RiCameraMediaFill />
+                                            // class="fill-base-content w-6 h-6 "
                                             <p class="uppercase fill-base-content text-xs font-bold">
                                                 upload
                                             </p>
@@ -122,7 +116,8 @@ pub fn SelectName() -> impl IntoView {
                             .get()
                             .map(|res| match res {
                                 Err(ServerFnError::ServerError(err)) => {
-                                    view! { <p class="text-error mb-2 text-xs italic">{err}</p> }.into_any()
+                                    view! { <p class="text-error mb-2 text-xs italic">{err}</p> }
+                                        .into_any()
                                 }
                                 _ => ().into_any(),
                             })

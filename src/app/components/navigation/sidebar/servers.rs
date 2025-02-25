@@ -41,10 +41,8 @@ pub fn Servers() -> impl IntoView {
                     <TooltipTrigger class="relative my-1">
                         <A href="" {..} class=" flex relative items-center">
                             <div class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer">
-                                <Icon
-                                    icon=icondata::LuCommand
-                                    // class="h-5 w-5 stroke-base-content"
-                                />
+                                <Icon icon=icondata::LuCommand />
+                            // class="h-5 w-5 stroke-base-content"
                             </div>
                         </A>
                     </TooltipTrigger>
@@ -56,10 +54,7 @@ pub fn Servers() -> impl IntoView {
                     />
                 </TooltipProvider>
             </ContextMenuTrigger>
-            <ContextMenuContent
-                ignore=vec![create_server_modal_ref]
-                class="z-40 select-none"
-            >
+            <ContextMenuContent ignore=vec![create_server_modal_ref] class="z-40 select-none">
                 <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
                     <CreateServerModal
                         on_open=Signal::derive(move || hidden.set(true))
@@ -67,7 +62,7 @@ pub fn Servers() -> impl IntoView {
                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                     >
                         <div>"Create Server"</div>
-                        <Icon icon=icondata::RiAddSystemFill /* class="w-5 h-5" */ />
+                        <Icon icon=icondata::RiAddSystemFill />
                     </CreateServerModal>
                     <A
                         href="discover"
@@ -76,7 +71,7 @@ pub fn Servers() -> impl IntoView {
                         on:click=move |_| open.set(false)
                     >
                         <div>"Discover Servers"</div>
-                        <Icon icon=icondata::RiCompass3MapFill /* class="w-5 h-5" */ />
+                        <Icon icon=icondata::RiCompass3MapFill />
                     </A>
                     <A
                         href=""
@@ -85,7 +80,7 @@ pub fn Servers() -> impl IntoView {
                         on:click=move |_| open.set(false)
                     >
                         <div>"Show Servers"</div>
-                        <Icon icon=icondata::RiCheckboxCircleSystemFill /* class="w-5 h-5" */ />
+                        <Icon icon=icondata::RiCheckboxCircleSystemFill />
                     </A>
                 </div>
             </ContextMenuContent>
@@ -95,9 +90,7 @@ pub fn Servers() -> impl IntoView {
                 each=move || servers.get().and_then(Result::ok).unwrap_or_default()
                 key=|server| server.id
                 children=move |server: Server| {
-                    view!{
-                        <ServerNavigation server=server/>
-                    }
+                    view! { <ServerNavigation server=server /> }
                 }
             />
         </Transition>
@@ -127,9 +120,16 @@ pub fn ServerNavigation(server: Server) -> impl IntoView {
             } />
             <TooltipProvider delay_duration=Duration::new(0, 0)>
                 <TooltipTrigger class="relative my-0.5">
-                    <A href=server.id.simple().to_string() {..} class="group flex relative items-center">
+                    <A
+                        href=server.id.simple().to_string()
+                        {..}
+                        class="group flex relative items-center"
+                    >
                         <ContextServerMenu server=server>
-                            {image_url.map(|url| view! { <img class="w-full h-full object-cover " src=url /> })}
+                            {image_url
+                                .map(|url| {
+                                    view! { <img class="w-full h-full object-cover " src=url /> }
+                                })}
                         </ContextServerMenu>
                     </A>
                 </TooltipTrigger>

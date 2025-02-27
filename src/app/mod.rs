@@ -36,12 +36,12 @@ pub fn App() -> impl IntoView {
     provide_thread_context();
 
     //NOTE:
-    //work in the server overview
-    //add roles
     //work in the messages already pls,
     //fix the ui of the modals and user overview
     //add flallbacks for the transitions
     //add things to user stuff and search stuff servers stuff
+    //work in the server overview
+    //add roles
     //add notifications
     //add inbox
     //add friends

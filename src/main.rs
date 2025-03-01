@@ -1,21 +1,27 @@
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
+    use std::sync::Arc;
+
     use axum::extract::State;
     use axum_session_sqlx::SessionMySqlPool;
+    use axum::routing::any;
     use dotenvy::dotenv;
     use leptos::logging::log;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
+    use log::debug;
     use sqlx::mysql::MySqlPoolOptions;
     use start_axum::entities::user::AuthSession;
     use start_axum::entities::user::User;
+    use start_axum::msg_broker::MsgBroker;
     use start_axum::state::AppState;
     use start_axum::uploadthing::UploadThing;
-    // use start_axum::ws::ws_handler;
-    // use start_axum::ws::WsChannels;
+    use start_axum::ws::server::ws_handler;
+    use start_axum::ws::server::WsChannels;
 
     use start_axum::app::*;
+    use tracing::subscriber;
     use uuid::Uuid;
 
     use axum::{
@@ -33,6 +39,8 @@ async fn main() {
     use sqlx::MySqlPool;
 
     use tower_cookies::{CookieManagerLayer, Cookies};
+    use zeromq::Socket;
+    use zeromq::SocketRecv;
 
     async fn server_fn_handler(
         State(app_state): State<AppState>,
@@ -99,19 +107,37 @@ async fn main() {
     let addr = leptos_options.site_addr;
     let routes = generate_route_list(App);
 
-    // let ws_channels = WsChannels::default();
+    let ws_channels = WsChannels::default();
     let uploadthing = UploadThing::default();
+    let msg_broker = MsgBroker::new().await;
 
     let app_state = AppState {
+        msg_broker: msg_broker.clone(),
         leptos_options,
         routes: routes.clone(),
         pool: pool.clone(),
-        // ws_channels,
+        ws_channels,
         uploadthing,
     };
 
+    let subscriber = msg_broker.subscriber.clone();
+    tokio::spawn(async move {
+        loop {
+            let mut subscriber = subscriber.lock().await;
+            let msg = subscriber.recv().await;
+            match msg {
+                Ok(msg) => {
+                    debug!("we got a message in the msg_broker: {:?}", msg);
+                },
+                Err(_) => {
+                    debug!("something go wrong when recv msg from the msg broker");
+                },
+            }
+        }
+    });
+
     let app = Router::new()
-        // .route("/ws/:room", get(ws_handler))
+        .route("/ws/:room", any(ws_handler))
         .route(
             "/api/*fn_name",
             get(server_fn_handler).post(server_fn_handler),

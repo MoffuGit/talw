@@ -1,9 +1,12 @@
+pub mod messages;
 pub mod app;
+#[cfg(feature = "ssr")]
+pub mod msg_broker;
 pub mod entities;
 #[cfg(feature = "ssr")]
 pub mod state;
 pub mod uploadthing;
-// pub mod ws;
+pub mod ws;
 
 #[cfg(feature = "hydrate")]
 #[wasm_bindgen::prelude::wasm_bindgen]

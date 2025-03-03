@@ -4,8 +4,8 @@ async fn main() {
     use std::sync::Arc;
 
     use axum::extract::State;
-    use axum_session_sqlx::SessionMySqlPool;
     use axum::routing::any;
+    use axum_session_sqlx::SessionMySqlPool;
     use dotenvy::dotenv;
     use leptos::logging::log;
     use leptos::prelude::*;
@@ -16,6 +16,7 @@ async fn main() {
     use start_axum::entities::user::User;
     use start_axum::msg_broker::MsgBroker;
     use start_axum::state::AppState;
+    use start_axum::subs::Subscriptions;
     use start_axum::uploadthing::UploadThing;
     use start_axum::ws::server::ws_handler;
     use start_axum::ws::server::WsChannels;
@@ -110,8 +111,10 @@ async fn main() {
     let ws_channels = WsChannels::default();
     let uploadthing = UploadThing::default();
     let msg_broker = MsgBroker::new().await;
+    let subscriptions = Subscriptions::default();
 
     let app_state = AppState {
+        subscriptions,
         msg_broker: msg_broker.clone(),
         leptos_options,
         routes: routes.clone(),
@@ -128,16 +131,16 @@ async fn main() {
             match msg {
                 Ok(msg) => {
                     debug!("we got a message in the msg_broker: {:?}", msg);
-                },
+                }
                 Err(_) => {
                     debug!("something go wrong when recv msg from the msg broker");
-                },
+                }
             }
         }
     });
 
     let app = Router::new()
-        .route("/ws/:room", any(ws_handler))
+        .route("/ws", any(ws_handler))
         .route(
             "/api/*fn_name",
             get(server_fn_handler).post(server_fn_handler),

@@ -1,9 +1,4 @@
-use std::sync::Arc;
-use zeromq::SocketSend;
-use log::debug;
-use async_broadcast::{broadcast, Sender, Receiver};
-use futures::{SinkExt, StreamExt};
-use uuid::Uuid;
+use async_broadcast::{broadcast, Receiver, Sender};
 use axum::{
     extract::{
         ws::{Message as WsMessage, WebSocket},
@@ -11,36 +6,46 @@ use axum::{
     },
     response::IntoResponse,
 };
+use futures::{SinkExt, StreamExt};
+use http::StatusCode;
+use log::debug;
 use std::collections::HashMap;
+use std::sync::Arc;
+use uuid::Uuid;
+use zeromq::SocketSend;
 
-use crate::state::AppState;
+use crate::{
+    entities::user::{AuthSession, User},
+    state::AppState,
+};
 
-#[cfg(feature = "ssr")]
 pub type WsChannels = HashMap<Uuid, (Sender<String>, Receiver<String>)>;
 
-#[cfg(feature = "ssr")]
 pub async fn ws_handler(
+    auth_session: AuthSession,
     ws: WebSocketUpgrade,
     State(state): State<AppState>,
-    Path(user): Path<Uuid>,
 ) -> impl IntoResponse {
-    ws.on_upgrade(move |socket| handle_socket(socket, state, user))
+    if let Some(user) = auth_session.current_user {
+        return ws.on_upgrade(move |socket| handle_socket(socket, state, user));
+    }
+    (StatusCode::FORBIDDEN, "Unauthorized WebSocket connection").into_response()
 }
 
-#[cfg(feature = "ssr")]
-async fn handle_socket(socket: WebSocket, state: AppState, user: Uuid) {
+async fn handle_socket(socket: WebSocket, mut state: AppState, user: User) {
+    use crate::messages::Messages;
 
     let (mut sender, mut receiver) = socket.split();
     let publisher = state.msg_broker.publisher.clone();
     let (tx, mut rx) = {
         let mut channels = state.ws_channels;
-        match channels.get(&user) {
+        match channels.get(&user.id) {
             Some(s) => s.clone(),
             None => {
                 let (tx, rx) = broadcast(1000);
                 //the tx get used in the aggregation service for receiving data from the message
                 //broker and send the important data into the rx sub
-                channels.insert(user, (tx.clone(), rx.clone()));
+                channels.insert(user.id, (tx.clone(), rx.clone()));
                 (tx, rx)
             }
         }
@@ -55,20 +60,26 @@ async fn handle_socket(socket: WebSocket, state: AppState, user: Uuid) {
     });
 
     let mut recv_task: tokio::task::JoinHandle<Result<(), anyhow::Error>> =
-        tokio::spawn(
-            async move {
-                while let Some(Ok(WsMessage::Text(msg))) = receiver.next().await {
-                    let mut publisher = publisher.lock().await;
-                    debug!("received ws message: {}", msg);
-                    //send data to the message broker
-                    match publisher.send(msg.into()).await  {
-                        Ok(_) => debug!("the data got sended into the msg_broker"),
-                        Err(_) => debug!("something go wrong when sending the data to the msg_broker"),
+        tokio::spawn(async move {
+            while let Some(Ok(WsMessage::Text(msg))) = receiver.next().await {
+                if let Ok(msg) = serde_json::from_str::<Messages>(&msg) {
+                    match msg {
+                        Messages::Subscribe { topic } => {
+                            debug!("Subscriptions to topic: {:?}", topic);
+                            state.subscriptions.subscribe(user.id, topic)
+                        }
+                        Messages::Unsubscribe { topic } => {
+                            debug!("Unsubscriptions to topic: {:?}", topic);
+                            state.subscriptions.unsubscribe(user.id, topic)
+                        }
+                        _ => debug!("not impl"), // Messages::Unsubscribe { topic } => todo!(),
+                                                 // Messages::ChatMessage { sender_id, chat_id, content, timestamp } => todo!(),
+                                                 // Messages::Typing { user_id, chat_id, is_typing } => todo!(),
                     }
                 }
-                Ok(())
             }
-        );
+            Ok(())
+        });
 
     tokio::select! {
         _ = (&mut send_task) => recv_task.abort(),

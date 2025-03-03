@@ -11,7 +11,7 @@ use crate::app::components::overview::user::provide_user_overview_context;
 use crate::app::components::overview::user::UserOverview;
 use crate::messages::Messages;
 use crate::ws::client::provide_ws_context;
-use crate::ws::client::use_ws_context;
+use crate::ws::client::use_ws;
 use leptos::prelude::*;
 use leptos_router::components::Outlet;
 use leptos_router::components::Redirect;
@@ -30,7 +30,7 @@ pub fn Servers() -> impl IntoView {
                     provide_user_context(user.id);
                     provide_user_overview_context();
                     provide_server_overview_context();
-                    provide_ws_context(user.id);
+                    provide_ws_context();
                 });
                 view! {
                     <UserOverview />

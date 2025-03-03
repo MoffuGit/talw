@@ -1,10 +1,13 @@
-pub mod messages;
 pub mod app;
+pub mod entities;
+pub mod messages;
 #[cfg(feature = "ssr")]
 pub mod msg_broker;
-pub mod entities;
 #[cfg(feature = "ssr")]
 pub mod state;
+#[cfg(feature = "ssr")]
+pub mod subs;
+pub mod topic;
 pub mod uploadthing;
 pub mod ws;
 

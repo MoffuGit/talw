@@ -14,7 +14,7 @@ async fn main() {
     use sqlx::mysql::MySqlPoolOptions;
     use start_axum::entities::user::AuthSession;
     use start_axum::entities::user::User;
-    use start_axum::msg_broker::MsgBroker;
+    use start_axum::msg_sender::MsgSender;
     use start_axum::state::AppState;
     use start_axum::subs::Subscriptions;
     use start_axum::uploadthing::UploadThing;
@@ -40,8 +40,6 @@ async fn main() {
     use sqlx::MySqlPool;
 
     use tower_cookies::{CookieManagerLayer, Cookies};
-    use zeromq::Socket;
-    use zeromq::SocketRecv;
 
     async fn server_fn_handler(
         State(app_state): State<AppState>,
@@ -53,6 +51,7 @@ async fn main() {
         log!("path: {:?}", path);
         handle_server_fns_with_context(
             move || {
+                provide_context(app_state.msg_sender.clone());
                 provide_context(app_state.pool.clone());
                 provide_context(app_state.uploadthing.clone());
                 provide_context(cookies.clone());
@@ -74,6 +73,7 @@ async fn main() {
             app_state.routes.clone(),
             move || {
                 provide_context(cookies.clone());
+                provide_context(app_state.msg_sender.clone());
                 provide_context(app_state.pool.clone());
                 provide_context(app_state.uploadthing.clone());
                 provide_context(auth_session.clone())
@@ -110,34 +110,16 @@ async fn main() {
 
     let ws_channels = WsChannels::default();
     let uploadthing = UploadThing::default();
-    let msg_broker = MsgBroker::new().await;
-    let subscriptions = Subscriptions::default();
+    let msg_sender = MsgSender::new(ws_channels.clone()).await;
 
     let app_state = AppState {
-        subscriptions,
-        msg_broker: msg_broker.clone(),
+        msg_sender,
         leptos_options,
         routes: routes.clone(),
         pool: pool.clone(),
         ws_channels,
         uploadthing,
     };
-
-    let subscriber = msg_broker.subscriber.clone();
-    tokio::spawn(async move {
-        loop {
-            let mut subscriber = subscriber.lock().await;
-            let msg = subscriber.recv().await;
-            match msg {
-                Ok(msg) => {
-                    debug!("we got a message in the msg_broker: {:?}", msg);
-                }
-                Err(_) => {
-                    debug!("something go wrong when recv msg from the msg broker");
-                }
-            }
-        }
-    });
 
     let app = Router::new()
         .route("/ws", any(ws_handler))

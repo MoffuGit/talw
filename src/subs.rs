@@ -1,13 +1,14 @@
 use std::collections::{HashMap, HashSet};
 
+use log::debug;
 use uuid::Uuid;
 
 use crate::topic::Topic;
 
-#[derive(Default, Debug, Clone)]
+#[derive(Default, Debug)]
 pub struct Subscriptions {
-    topic_subscriptions: HashMap<Topic, HashSet<Uuid>>,
-    user_subscriptions: HashMap<Uuid, HashSet<Topic>>,
+    pub topic_subscriptions: HashMap<Topic, HashSet<Uuid>>,
+    pub user_subscriptions: HashMap<Uuid, HashSet<Topic>>,
 }
 
 impl Subscriptions {

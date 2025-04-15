@@ -36,7 +36,7 @@ pub fn App() -> impl IntoView {
     provide_thread_context();
 
     //NOTE:
-    //work in the messages already pls,
+    //check for reconnection and re sending messages for the websocket
     //fix the ui of the modals and user overview
     //add flallbacks for the transitions
     //add things to user stuff and search stuff servers stuff

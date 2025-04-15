@@ -2,7 +2,7 @@ pub mod app;
 pub mod entities;
 pub mod messages;
 #[cfg(feature = "ssr")]
-pub mod msg_broker;
+pub mod msg_sender;
 #[cfg(feature = "ssr")]
 pub mod state;
 #[cfg(feature = "ssr")]

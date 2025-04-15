@@ -7,6 +7,8 @@ pub mod theme;
 pub mod thread;
 pub mod user;
 
+use std::sync::Arc;
+
 use cfg_if::cfg_if;
 use leptos::prelude::*;
 
@@ -15,6 +17,7 @@ pub const SERVER_ERROR: &str = "Something go wrong in our servers";
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use crate::msg_sender::MsgSender;
         use crate::entities::user::AuthSession;
         use crate::entities::user::User;
         use crate::entities::member::Member;
@@ -33,6 +36,11 @@ cfg_if! {
 
         pub fn auth_user() -> Result<User, ServerFnError> {
             auth()?.current_user.ok_or_else(|| ServerFnError::new("You arent' authenticated, please log in or sign in"))
+        }
+
+        pub fn msg_sender() -> Result<MsgSender, ServerFnError> {
+            use_context::<MsgSender>()
+                .ok_or_else(|| ServerFnError::new(SERVER_ERROR.to_string()))
         }
 
         pub async fn user_can_edit (server: Uuid, user: Uuid, pool: &MySqlPool) -> Result<bool, ServerFnError> {

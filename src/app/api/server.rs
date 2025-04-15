@@ -1,7 +1,10 @@
 use crate::entities::role::Role;
 use crate::entities::server::Server;
+use crate::messages::Message;
+use crate::topic::Topic;
 use cfg_if::cfg_if;
 use leptos::prelude::*;
+use log::debug;
 use server_fn::codec::{MultipartData, MultipartFormData};
 use strum_macros::{Display, EnumIter};
 use uuid::Uuid;
@@ -19,9 +22,9 @@ cfg_if! {
         use leptos_axum::redirect;
         use http::uri::Scheme;
         use http::Uri;
+        use super::msg_sender;
         use super::auth_user;
         use super::pool;
-
     }
 }
 
@@ -171,8 +174,20 @@ pub async fn get_server_roles(server_id: Uuid) -> Result<Vec<Role>, ServerFnErro
 pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
+    let msg_sender = msg_sender()?;
+    let servers = Server::get_user_servers(user.id, &pool).await?;
 
-    Ok(Server::get_user_servers(user.id, &pool).await?)
+    msg_sender.send(Message::Batch(
+        servers
+            .iter()
+            .map(|server| Message::UserConnected {
+                user_id: user.id,
+                server_id: server.id,
+            })
+            .collect::<Vec<_>>(),
+    ));
+
+    Ok(servers)
 }
 
 #[server(JoinServerWithInvitation, "/api")]
@@ -193,13 +208,24 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
     }
     let pool = pool()?;
     let user = auth_user()?;
+    let msg_sender = msg_sender()?;
     let invitation = validate_invitation(invitation)
         .ok_or_else(|| ServerFnError::new("Your invitation is invalid"))?;
     match Member::check_member_from_invitation(user.id, invitation, &pool).await {
         Ok(uuid) => redirect(&format!("/servers/{}", uuid)),
         Err(crate::entities::Error::NotFound) => {
             match Member::create_member_from_invitation(user.id, invitation, &pool).await {
-                Ok(id) => redirect(&format!("/servers/{}", id)),
+                Ok(id) => {
+                    msg_sender.send(crate::messages::Message::Subscribe {
+                        topic: Topic::Server(id),
+                        user_id: user.id,
+                    });
+                    msg_sender.send(crate::messages::Message::UserJoinedServer {
+                        user_id: user.id,
+                        server_id: id,
+                    });
+                    redirect(&format!("/servers/{}", id))
+                }
                 Err(crate::entities::Error::NotFound) => {
                     return Err(ServerFnError::new("Your invitation is invalid"))
                 }
@@ -218,7 +244,7 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
 #[server(name = CreateServer, prefix = "/api", input = MultipartFormData)]
 pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError> {
     let pool = pool()?;
-    let auth = auth_user()?;
+    let user = auth_user()?;
     let mut data = data.into_inner().unwrap();
     let mut server_name: String = Default::default();
     let mut chunks: Option<Vec<u8>> = None;
@@ -259,7 +285,7 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         ));
     }
 
-    let server = Server::create(server_name, auth.id, &pool).await?;
+    let server = Server::create(server_name, user.id, &pool).await?;
     if let (Some(chunks), Some(file_name), Some(file_type)) = (chunks, file_name, file_type) {
         let uploadthing = use_context::<UploadThing>().expect("acces to upload thing");
         let size = chunks.len();
@@ -280,7 +306,7 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
             }
         }
     }
-    Member::create(auth.id, server, &pool).await?;
+    Member::create(user.id, server, &pool).await?;
     Channel::create(
         "general".to_string(),
         crate::entities::channel::ChannelType::TEXT,
@@ -306,6 +332,15 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
         &pool,
     )
     .await?;
+    let msg_sender = msg_sender()?;
+    msg_sender.send(crate::messages::Message::Subscribe {
+        topic: Topic::Server(server),
+        user_id: user.id,
+    });
+    msg_sender.send(crate::messages::Message::UserJoinedServer {
+        user_id: user.id,
+        server_id: server,
+    });
     redirect(&format!("/servers/{}", server.simple()));
     Ok(server.to_string())
 }

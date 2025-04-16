@@ -1,8 +1,6 @@
 use cfg_if::cfg_if;
 use leptos::prelude::*;
-use leptos_meta::{Body, Html, Script};
-
-use leptos::html::Head;
+use leptos_meta::{Body, Html};
 
 #[server(ToggleTheme, "/api")]
 pub async fn toggle_theme(theme: bool) -> Result<bool, ServerFnError> {

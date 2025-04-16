@@ -34,7 +34,9 @@ pub fn ProfilesSettings() -> impl IntoView {
                     (Some(Ok(profile)), Some(Ok(banner))) => {
                         view! { <UserBanner banner=banner profile=profile /> }.into_any()
                     }
-                    _ => view! {}.into_any(),
+                    _ => {
+                        ().into_any()
+                    },
                 }
             }}
         </Transition>
@@ -44,7 +46,6 @@ pub fn ProfilesSettings() -> impl IntoView {
 #[component]
 fn UserBanner(banner: Banner, profile: Profile) -> impl IntoView {
     let primary_color_preview = RwSignal::new(banner.primary_color.clone());
-    let accent_color_preview = RwSignal::new(banner.accent_color.clone());
     let user_data_change = RwSignal::new(false);
     //NOTE: Move the colors preview to its own component, this should wrapp the others and create
     //two components to select the color, one for primary, another for accent
@@ -54,24 +55,8 @@ fn UserBanner(banner: Banner, profile: Profile) -> impl IntoView {
         banner,
     });
 
-    let banner_style = move || {
-        let from = format!(
-            "--tw-gradient-from: {} var(--tw-gradient-from-position);",
-            primary_color_preview
-                .get()
-                .unwrap_or("hsl(var(--b2)/1)".into())
-        );
-        let to = format!(
-            "--tw-gradient-to: {} var(--tw-gradient-to-position);",
-            accent_color_preview
-                .get()
-                .unwrap_or("hsl(var(--b2) / 1)".into())
-        );
-        format!("{from} {to} --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);")
-    };
     view! {
         <div class="relative w-[600px] bg-base-300 flex flex-col rounded-lg p-1.5 bg-gradient-to-b">
-            // style=banner_style
             <ImageBanner primary_color_preview=primary_color_preview />
             <UserImage />
             <ActionForm action=use_user().edit_user_data>

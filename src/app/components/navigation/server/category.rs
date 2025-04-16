@@ -10,7 +10,6 @@ use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
 use leptos::html;
 use leptos::prelude::*;
-use std::time::Duration;
 
 use crate::app::api::channel::get_channels_with_category;
 use crate::entities::category::Category as EntCategory;
@@ -24,11 +23,7 @@ pub fn Category(category: EntCategory) -> impl IntoView {
     let create_channel_with_category = use_channel().create_channel_with_category;
     let delete_channel = use_channel().delete_channel;
     let rename_channel = use_channel().rename_channel;
-    let CurrentServerContext {
-        server,
-        member_can_edit,
-        ..
-    } = use_current_server_context();
+    let CurrentServerContext { server, .. } = use_current_server_context();
 
     let EntCategory { id, name, .. } = category.get_value();
     let name = StoredValue::new(name);

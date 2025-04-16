@@ -204,7 +204,7 @@ pub fn ThreadLink(
                                 </ContextMenuTrigger>
                                 <ContextMenuContent
                                     ignore=vec![delete_thread_modal_ref]
-                                    class="z-50 select-none".into()
+                                    class="z-50 select-none"
                                 >
                                     <ThreadMenuContent
                                         delete_thread_modal_ref=delete_thread_modal_ref

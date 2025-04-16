@@ -5,7 +5,6 @@ use crate::app::components::ui::tool_tip::*;
 use icondata::Icon;
 use leptos::prelude::*;
 use leptos_icons::*;
-use leptos_router::*;
 
 #[derive(Clone)]
 pub struct ThemeIcons {

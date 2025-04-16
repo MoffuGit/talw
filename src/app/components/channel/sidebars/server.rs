@@ -1,4 +1,4 @@
-use crate::app::api::member::{self, get_members_from_role, get_members_without_role};
+use crate::app::api::member::{get_members_from_role, get_members_without_role};
 use crate::app::api::server::get_server_roles;
 use crate::app::api::user::{get_user_profile, use_user};
 use crate::app::components::channel::member::banner::MemberBanner;
@@ -10,7 +10,6 @@ use crate::entities::member::Member;
 use crate::entities::role::Role;
 use leptos::either::Either;
 use leptos::prelude::*;
-use leptos::text_prop::TextProp;
 use leptos_icons::Icon;
 use uuid::Uuid;
 
@@ -144,7 +143,6 @@ pub fn CurrentMember() -> impl IntoView {
 pub fn Role(role: Role) -> impl IntoView {
     let members = Resource::new(|| (), move |_| get_members_from_role(role.id));
     let open = RwSignal::new(false);
-    let name = role.name.clone();
 
     view! {
         <Transition>

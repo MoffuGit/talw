@@ -134,7 +134,6 @@ pub async fn delete_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), Serve
     let user = auth_user()?;
 
     if user_can_edit(server_id, user.id, &pool).await? {
-        //add delte from thread_members and then delte
         Thread::delete_members(thread_id, &pool).await?;
         Thread::delete(thread_id, &pool).await?;
         return Ok(());

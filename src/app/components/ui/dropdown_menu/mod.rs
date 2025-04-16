@@ -23,8 +23,8 @@ pub fn DropdownProvider(
     #[prop(optional)] hidden: Option<RwSignal<bool>>,
 ) -> impl IntoView {
     let open = open.unwrap_or(RwSignal::new(false));
-    let trigger_ref = trigger_ref.unwrap_or(NodeRef::<html::Div>::new());
-    let content_ref = content_ref.unwrap_or(NodeRef::<html::Div>::new());
+    let trigger_ref = trigger_ref.unwrap_or_default();
+    let content_ref = content_ref.unwrap_or_default();
     let hidden = hidden.unwrap_or(RwSignal::new(false));
     view! {
         <Provider value=DropdownProviderContext {

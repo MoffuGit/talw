@@ -1,20 +1,13 @@
 pub mod split;
 
 use crate::app::api::channel::{get_channel, use_channel};
-use crate::app::api::thread::{get_thread, initial_width, toggle_thread_width, use_thread};
+use crate::app::api::thread::{get_thread, use_thread};
 use crate::app::components::channel::header::ChannelHeader;
 use crate::app::components::channel::sidebars::{MemberSideBar, SideBarContext};
 use crate::app::components::navigation::server::{use_current_channel, use_current_thread};
-use crate::app::components::thread::sidebar::ThreadSideBar;
 use crate::app::routes::servers::server::use_current_server_context;
-use leptos::html::Div;
 use leptos::prelude::*;
 use leptos_icons::Icon;
-use leptos_router::components::Redirect;
-use leptos_router::hooks::use_params_map;
-use leptos_use::core::Position;
-use leptos_use::use_draggable_with_options;
-use leptos_use::{use_window, UseDraggableCallbackArgs, UseDraggableOptions, UseDraggableReturn};
 
 #[component]
 pub fn Thread() -> impl IntoView {
@@ -32,7 +25,6 @@ pub fn Thread() -> impl IntoView {
                         .map(|(channel_id, thread_id)| {
                             let use_channel = use_channel();
                             let use_thread = use_thread();
-                            let params = use_params_map();
                             let channel = Resource::new(
                                 move || {
                                     (

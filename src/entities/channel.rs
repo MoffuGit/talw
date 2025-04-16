@@ -1,6 +1,5 @@
 use cfg_if::cfg_if;
 use icondata::Icon;
-use leptos::attr::IntoAttribute;
 use leptos::prelude::IntoRender;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;

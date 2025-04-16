@@ -5,9 +5,7 @@ mod overview;
 use self::members::MembersSettings;
 use self::overview::OverviewSettings;
 
-use crate::app::components::overview::server::{
-    ServerOverviewContext, ServerSettings, ServerSettingsData,
-};
+use crate::app::components::overview::server::{ServerOverviewContext, ServerSettings};
 
 #[component]
 pub fn ServerSettingsContent() -> impl IntoView {

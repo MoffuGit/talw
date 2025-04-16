@@ -7,7 +7,6 @@ use uuid::Uuid;
 
 use crate::app::api::channel::{get_all_channels, use_channel};
 
- 
 #[component]
 pub fn EmptyServer() -> impl IntoView {
     let params = use_params_map();
@@ -24,7 +23,9 @@ pub fn EmptyServer() -> impl IntoView {
     view! {
         <Transition fallback=move || ()>
             {move || match channels.get() {
-                None => view! {}.into_any(),
+                None => {
+                    ().into_any()
+                },
                 Some(Ok(channels)) if !channels.is_empty() => {
                     view! { <Redirect path=format!("{}", channels.first().unwrap().id.simple()) /> }
                         .into_any()

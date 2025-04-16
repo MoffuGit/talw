@@ -145,7 +145,7 @@ pub fn MutualServers(user_id: Uuid) -> impl IntoView {
                 <div class="flex justify-start -space-x-2 mr-1">
                     <For
                         each=move || mutual_servers.get().and_then(Result::ok).unwrap_or_default()
-                        key=|(idx, _)| idx.clone()
+                        key=|(idx, _)| *idx
                         children=move |(_, url)| {
                             if let Some(url) = url {
                                 Either::Left(

@@ -4,7 +4,6 @@ use crate::app::components::ui::dropdown_menu::*;
 use crate::app::components::ui::tool_tip::*;
 use leptos::html;
 use leptos::prelude::*;
-use leptos_icons::Icon;
 use std::time::Duration;
 
 #[component]

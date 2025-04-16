@@ -2,7 +2,6 @@ mod inbox;
 mod profile;
 mod search;
 mod servers;
-use crate::app::components::theme::{ThemeIcons, Toggle_Theme};
 use crate::app::components::ui::tool_tip::*;
 use icondata;
 use leptos::prelude::*;

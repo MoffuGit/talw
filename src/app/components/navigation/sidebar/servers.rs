@@ -1,15 +1,12 @@
 use crate::app::components::navigation::context_server_menu::ContextServerMenu;
 use crate::entities::server::Server;
-use crate::messages::Message;
-use crate::ws::client::use_ws;
 use std::time::Duration;
 
-use crate::app::api::server::{get_user_servers, use_server};
+use crate::app::api::server::{get_user_servers_and_subscribe, use_server};
 use crate::app::components::modal::create_server::CreateServerModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::components::ui::tool_tip::*;
 use icondata;
-use leptos::logging;
 use leptos::prelude::*;
 use leptos_icons::*;
 use leptos_router::components::A;
@@ -28,7 +25,7 @@ pub fn Servers() -> impl IntoView {
                 use_server.create_server.version().get(),
             )
         },
-        move |_| get_user_servers(),
+        move |_| get_user_servers_and_subscribe(),
     );
 
     let open = RwSignal::new(false);

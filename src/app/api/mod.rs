@@ -7,8 +7,6 @@ pub mod theme;
 pub mod thread;
 pub mod user;
 
-use std::sync::Arc;
-
 use cfg_if::cfg_if;
 use leptos::prelude::*;
 

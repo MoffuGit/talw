@@ -11,7 +11,7 @@ use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
 use crate::entities::member::Member;
 use crate::entities::role::Role;
 use leptos::either::Either;
-use leptos::{logging, prelude::*};
+use leptos::prelude::*;
 use leptos_icons::Icon;
 use uuid::Uuid;
 
@@ -111,7 +111,6 @@ pub fn Role(role: Role, thread_id: Uuid) -> impl IntoView {
         move |_| get_thread_members_with_role(role.id, thread_id),
     );
     let open = RwSignal::new(false);
-    let name = role.name.clone();
 
     view! {
         <Transition>

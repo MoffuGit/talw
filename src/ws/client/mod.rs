@@ -1,17 +1,12 @@
 use async_broadcast::{broadcast, Receiver, Sender};
-use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::futures::WebSocket as GlooWs;
 use gloo_net::websocket::Message as GlooMsg;
-use gloo_timers::callback::Interval;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use log::debug;
-use std::marker::Send;
 
 use crate::messages::Message;
-
-const CLOSE: &str = "CLOSE";
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum WsState {
@@ -54,7 +49,6 @@ pub fn provide_ws_context() {
     let (receiver_sb, receiver_rb) = broadcast::<Message>(1000);
 
     let connect = StoredValue::new({
-        let sender_sb = sender_sb.clone();
         move || {
             let ws = match GlooWs::open("ws://localhost:3000/ws") {
                 Ok(ws) => {
@@ -69,7 +63,6 @@ pub fn provide_ws_context() {
 
             let (mut sender_ws, mut receiver_ws) = ws.split();
 
-            let sender_sb = sender_sb.clone();
             let mut sender_rb = sender_rb.clone();
 
             let receiver_sb = receiver_sb.clone();
@@ -80,7 +73,7 @@ pub fn provide_ws_context() {
                         Ok(GlooMsg::Text(msg)) => {
                             let msg = serde_json::from_str(&msg).unwrap();
                             debug!("we got this msg from the server: {:?}", msg);
-                            receiver_sb.broadcast(msg).await;
+                            let _ = receiver_sb.broadcast(msg).await;
                         }
                         Ok(_) => {
                             debug!("not impl yet")
@@ -95,17 +88,16 @@ pub fn provide_ws_context() {
 
             spawn_local(async move {
                 while let Ok(message) = sender_rb.recv().await {
-                    if &message == &Message::Close {
-                        sender_ws.close().await;
+                    if let Message::Close = message {
+                        let _ = sender_ws.close().await;
                         ws_state.set(WsState::Closed);
-                    } else {
-                        if let Err(_) = sender_ws
-                            .send(GlooMsg::Text(serde_json::to_string(&message).unwrap()))
-                            .await
-                        {
-                            ws_state.set(WsState::Closed);
-                            break;
-                        }
+                    } else if (sender_ws
+                        .send(GlooMsg::Text(serde_json::to_string(&message).unwrap()))
+                        .await)
+                        .is_err()
+                    {
+                        ws_state.set(WsState::Closed);
+                        break;
                     }
                 }
             });

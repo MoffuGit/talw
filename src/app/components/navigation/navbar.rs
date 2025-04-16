@@ -1,9 +1,7 @@
 use crate::app::api::auth::use_auth;
-use crate::app::components::theme::Toggle_Theme;
 use leptos::prelude::*;
 use leptos_router::components::A;
 
- 
 #[component]
 pub fn Logout() -> impl IntoView {
     let logout = use_auth().logout;
@@ -16,7 +14,6 @@ pub fn Logout() -> impl IntoView {
     }
 }
 
- 
 #[component]
 pub fn Navbar() -> impl IntoView {
     view! {

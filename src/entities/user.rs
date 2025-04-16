@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use cfg_if::cfg_if;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -7,7 +5,7 @@ use uuid::Uuid;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use async_trait::async_trait;
-        use axum_session_auth::{Authentication, HasPermission};
+        use axum_session_auth::Authentication;
         use bcrypt::{hash, DEFAULT_COST};
         use sqlx::{FromRow, MySqlPool};
         use axum_session_sqlx::SessionMySqlPool;

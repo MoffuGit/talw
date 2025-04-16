@@ -13,7 +13,6 @@ use leptos_router::components::A;
 use uuid::Uuid;
 
 #[component]
-
 pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -> impl IntoView {
     let hidden = RwSignal::new(false);
     let CurrentServerContext {
@@ -46,8 +45,8 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
                     >
                         <div>"Invite People"</div>
                     </InvitePeopleModal>
-                    {match member_can_edit {
-                        true => {
+                    {
+                        member_can_edit.then(||
                             view! {
                                 <EditChannelModal
                                     channel=channel.clone()
@@ -65,10 +64,8 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
                                     <div>"Delete Channel"</div>
                                 </DeleteChannel>
                             }
-                                .into_any()
-                        }
-                        false => view! {}.into_any(),
-                    }}
+                        )
+                    }
                     {thread
                         .map(|thread| {
                             let thread = thread.get_value();

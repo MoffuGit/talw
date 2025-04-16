@@ -10,7 +10,7 @@ use api::theme::{provide_theme_context, Theme};
 use leptos::prelude::*;
 use leptos_meta::*;
 use leptos_router::components::{ParentRoute, ProtectedParentRoute, Route, Router, Routes};
-use leptos_router::{path, ParamSegment, StaticSegment};
+use leptos_router::{ParamSegment, StaticSegment};
 use routes::home::Home;
 use routes::login::Login;
 use routes::servers::channel::ChannelView;
@@ -37,6 +37,8 @@ pub fn App() -> impl IntoView {
 
     //NOTE:
     //check for reconnection and re sending messages for the websocket
+    //add the capacity to send channel messages
+    //this let you test what you add
     //fix the ui of the modals and user overview
     //add flallbacks for the transitions
     //add things to user stuff and search stuff servers stuff
@@ -82,21 +84,21 @@ pub fn App() -> impl IntoView {
                             path=StaticSegment("discover")
                             view=move || view! { <div>"search servers"</div> }
                         />
-                        <ParentRoute path=ParamSegment("id") view=Server>
-                            <Route path=StaticSegment("") view=EmptyServer />
-                            <ParentRoute path=ParamSegment("channel_id") view=ChannelView>
-                                <Route path=ParamSegment("thread_id") view=ThreadSplit />
-                                <Route path=StaticSegment("") view=|| view! { <div /> } />
-                            </ParentRoute>
-                            <Route
-                                path=(
-                                    StaticSegment("thread"),
-                                    ParamSegment("channel_id"),
-                                    ParamSegment("thread_id"),
-                                )
-                                view=Thread
-                            />
-                        </ParentRoute>
+                        // <ParentRoute path=ParamSegment("id") view=Server>
+                        //     <Route path=StaticSegment("") view=EmptyServer />
+                        //     <ParentRoute path=ParamSegment("channel_id") view=ChannelView>
+                        //         <Route path=ParamSegment("thread_id") view=ThreadSplit />
+                        //         <Route path=StaticSegment("") view=|| view! { <div /> } />
+                        //     </ParentRoute>
+                        //     <Route
+                        //         path=(
+                        //             StaticSegment("thread"),
+                        //             ParamSegment("channel_id"),
+                        //             ParamSegment("thread_id"),
+                        //         )
+                        //         view=Thread
+                        //     />
+                        // </ParentRoute>
                     </ProtectedParentRoute>
                     <Route path=StaticSegment("login") view=Login />
                     <Route path=StaticSegment("signup") view=Signup />

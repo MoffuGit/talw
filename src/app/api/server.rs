@@ -1,10 +1,8 @@
 use crate::entities::role::Role;
 use crate::entities::server::Server;
 use crate::messages::Message;
-use crate::topic::Topic;
 use cfg_if::cfg_if;
 use leptos::prelude::*;
-use log::debug;
 use server_fn::codec::{MultipartData, MultipartFormData};
 use strum_macros::{Display, EnumIter};
 use uuid::Uuid;
@@ -170,8 +168,8 @@ pub async fn get_server_roles(server_id: Uuid) -> Result<Vec<Role>, ServerFnErro
     Ok(Role::get_server_roles(server_id, &pool).await?)
 }
 
-#[server(GetUserServers, "/api")]
-pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
+#[server(GetUserServersAndSubcribe)]
+pub async fn get_user_servers_and_subscribe() -> Result<Vec<Server>, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
     let msg_sender = msg_sender()?;
@@ -180,11 +178,21 @@ pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     msg_sender.send(Message::Batch(
         servers
             .iter()
-            .map(|server| Message::UserConnected {
-                user_id: user.id,
+            .map(|server| Message::Subscribe {
                 server_id: server.id,
+                user_id: user.id,
             })
-            .collect::<Vec<_>>(),
+            .collect(),
+    ));
+
+    msg_sender.send(Message::Batch(
+        servers
+            .iter()
+            .map(|server| Message::UserConnected {
+                server_id: server.id,
+                user_id: user.id,
+            })
+            .collect(),
     ));
 
     Ok(servers)
@@ -199,7 +207,7 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
                 if uri.host().is_some_and(|host| host == "discord.gg")
                     && uri.scheme().is_some_and(|scheme| scheme == &Scheme::HTTPS)
                 {
-                    Uuid::parse_str(uri.path().split('/').last()?).ok()
+                    Uuid::parse_str(uri.path().split('/').next_back()?).ok()
                 } else {
                     None
                 }
@@ -217,14 +225,14 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
             match Member::create_member_from_invitation(user.id, invitation, &pool).await {
                 Ok(id) => {
                     msg_sender.send(crate::messages::Message::Subscribe {
-                        topic: Topic::Server(id),
+                        server_id: id.1,
                         user_id: user.id,
                     });
-                    msg_sender.send(crate::messages::Message::UserJoinedServer {
-                        user_id: user.id,
-                        server_id: id,
+                    msg_sender.send(crate::messages::Message::MemberJoinedServer {
+                        member_id: id.0,
+                        server_id: id.1,
                     });
-                    redirect(&format!("/servers/{}", id))
+                    redirect(&format!("/servers/{}", id.1))
                 }
                 Err(crate::entities::Error::NotFound) => {
                     return Err(ServerFnError::new("Your invitation is invalid"))
@@ -306,7 +314,7 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
             }
         }
     }
-    Member::create(user.id, server, &pool).await?;
+    let member_id = Member::create(user.id, server, &pool).await?;
     Channel::create(
         "general".to_string(),
         crate::entities::channel::ChannelType::TEXT,
@@ -334,11 +342,11 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
     .await?;
     let msg_sender = msg_sender()?;
     msg_sender.send(crate::messages::Message::Subscribe {
-        topic: Topic::Server(server),
+        server_id: server,
         user_id: user.id,
     });
-    msg_sender.send(crate::messages::Message::UserJoinedServer {
-        user_id: user.id,
+    msg_sender.send(crate::messages::Message::MemberJoinedServer {
+        member_id,
         server_id: server,
     });
     redirect(&format!("/servers/{}", server.simple()));
@@ -357,7 +365,17 @@ pub async fn get_server(server_id: Uuid) -> Result<Server, ServerFnError> {
 pub async fn leave_server(server_id: Uuid) -> Result<(), ServerFnError> {
     let pool = pool()?;
     let auth = auth_user()?;
+    let msg_sender = msg_sender()?;
+    msg_sender.send(crate::messages::Message::Unsubscribe {
+        server_id,
+        user_id: auth.id,
+    });
+    let member = Member::get_from_user_on_server(auth.id, server_id, &pool).await?;
     Member::delete_from_server(auth.id, server_id, &pool).await?;
+    msg_sender.send(crate::messages::Message::MemberLeftServer {
+        member_id: member.id,
+        server_id,
+    });
     redirect("/servers/me");
     Ok(())
 }

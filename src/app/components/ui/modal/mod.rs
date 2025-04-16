@@ -1,7 +1,6 @@
 pub mod slide_modal;
 
 use leptos::{
-    attr::Attribute,
     context::Provider,
     html::{self, Dialog, Div},
     logging::warn,
@@ -18,7 +17,6 @@ pub struct ModalProviderContext {
     trigger_ref: NodeRef<Div>,
 }
 
- 
 #[component]
 pub fn ModalProvider(
     children: Children,
@@ -29,9 +27,9 @@ pub fn ModalProvider(
     #[prop(optional)] dialog_ref: Option<NodeRef<html::Dialog>>,
 ) -> impl IntoView {
     let open = open.unwrap_or(RwSignal::new(false));
-    let trigger_ref = trigger_ref.unwrap_or(NodeRef::<html::Div>::new());
-    let content_ref = content_ref.unwrap_or(NodeRef::<html::Div>::new());
-    let dialog_ref = dialog_ref.unwrap_or(NodeRef::<html::Dialog>::new());
+    let trigger_ref = trigger_ref.unwrap_or_default();
+    let content_ref = content_ref.unwrap_or_default();
+    let dialog_ref = dialog_ref.unwrap_or_default();
 
     view! {
         <Provider value=ModalProviderContext {
@@ -44,7 +42,6 @@ pub fn ModalProvider(
     }
 }
 
- 
 #[component]
 pub fn ModalTrigger(
     children: Children,
@@ -71,7 +68,6 @@ pub fn ModalTrigger(
     }
 }
 
- 
 #[component]
 pub fn ModalClose(
     #[prop(optional)] children: Option<Children>,
@@ -96,7 +92,6 @@ pub fn ModalClose(
     }
 }
 
- 
 #[component]
 pub fn ModalContent(children: ChildrenFn, class: &'static str) -> impl IntoView {
     let modal_context = use_context::<ModalProviderContext>().expect("have context");

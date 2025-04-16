@@ -1,49 +1,48 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::entities::channel::Channel;
-use crate::topic::Topic;
-
 //NOTE:
 //they are missing more messages, like, message read, user banned but at this point im ok with only
 //more messages
 //reaction
 //category changes
 //private messages
-//allmost al the things that the user already can change should send a message to the server
-//i will be thinking what more to add when i return to the project, at this point i can think well
-//if i can see the state of the app
-//impl this messages
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum Message {
     Batch(Vec<Message>),
     Subscribe {
-        topic: Topic,
+        server_id: Uuid,
         user_id: Uuid,
     },
     Unsubscribe {
-        topic: Topic,
+        server_id: Uuid,
         user_id: Uuid,
     },
-    ChatMessage {
-        chat_id: Uuid,
+    ChannelMessage {
+        server_id: Uuid,
+        channel_id: Uuid,
+        content: String,
+        //content: Message
+    },
+    ThreadMessage {
+        server_id: Uuid,
+        thread_id: Uuid,
         content: String,
         //content: Message
     },
     UserConnected {
-        user_id: Uuid,
         server_id: Uuid,
+        user_id: Uuid,
     },
     UserDisconnected {
         user_id: Uuid,
+    },
+    MemberJoinedServer {
+        member_id: Uuid,
         server_id: Uuid,
     },
-    UserJoinedServer {
-        user_id: Uuid,
-        server_id: Uuid,
-    },
-    UserLeftServer {
-        user_id: Uuid,
+    MemberLeftServer {
+        member_id: Uuid,
         server_id: Uuid,
     },
     ServerDeleted {

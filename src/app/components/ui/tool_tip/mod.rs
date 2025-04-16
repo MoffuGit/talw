@@ -2,7 +2,7 @@ use leptos::html;
 use leptos::portal::Portal;
 use leptos::{leptos_dom::helpers::TimeoutHandle, prelude::*};
 use std::time::Duration;
-use web_sys::{HtmlDivElement, HtmlElement, PointerEvent};
+use web_sys::{HtmlDivElement, PointerEvent};
 
 #[derive(Clone)]
 struct TooltipProviderContext {
@@ -126,7 +126,7 @@ pub fn TooltipTrigger(
                 provider_context.on_trigger_leave.get_untracked();
                 is_hover.update_untracked(|value| *value = false)
             }
-            on:click=move |evt| {
+            on:click=move |_evt| {
                 if close_on_click {
                     provider_context.on_close.get_untracked();
                 }

@@ -7,17 +7,10 @@ use crate::app::api::server::use_server;
 use crate::app::components::navigation::server::sidebar::ServerSideBar;
 use crate::app::components::navigation::server::sidebar::ServerSideBarContext;
 use crate::entities::member::Member;
-use futures::future::join_all;
-use futures::join;
 use futures::try_join;
-use leptos::context::Provider;
-use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_router::components::Outlet;
-use leptos_router::components::Redirect;
 use leptos_router::hooks::use_params_map;
-use serde::Deserialize;
-use serde::Serialize;
 use uuid::Uuid;
 
 use crate::entities::server::Server as ServerEntitie;

@@ -1,8 +1,6 @@
 #[cfg(feature = "ssr")]
 #[tokio::main]
 async fn main() {
-    use std::sync::Arc;
-
     use axum::extract::State;
     use axum::routing::any;
     use axum_session_sqlx::SessionMySqlPool;
@@ -10,19 +8,16 @@ async fn main() {
     use leptos::logging::log;
     use leptos::prelude::*;
     use leptos_axum::{generate_route_list, handle_server_fns_with_context, LeptosRoutes};
-    use log::debug;
     use sqlx::mysql::MySqlPoolOptions;
     use start_axum::entities::user::AuthSession;
     use start_axum::entities::user::User;
     use start_axum::msg_sender::MsgSender;
     use start_axum::state::AppState;
-    use start_axum::subs::Subscriptions;
     use start_axum::uploadthing::UploadThing;
     use start_axum::ws::server::ws_handler;
     use start_axum::ws::server::WsChannels;
 
     use start_axum::app::*;
-    use tracing::subscriber;
     use uuid::Uuid;
 
     use axum::{

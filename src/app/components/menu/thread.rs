@@ -4,7 +4,7 @@ use leptos_router::hooks::use_params_map;
 
 use crate::app::api::thread::{check_member_on_thread, use_thread};
 use crate::app::components::modal::delete_thread::DeleteThreadModal;
-use crate::app::components::navigation::server::{use_current_channel, use_current_thread};
+use crate::app::components::navigation::server::use_current_thread;
 use crate::app::components::thread::{JoinThread, LeaveThread};
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::thread::Thread;
@@ -27,7 +27,6 @@ pub fn ThreadMenuContent(
     );
 
     let current_thread = use_current_thread();
-    let current_channel = use_current_channel();
     let is_split = Memo::new(move |_| use_params_map().with(|map| map.get("thread").is_none()));
     view! {
         <Transition>

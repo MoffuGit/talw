@@ -1,7 +1,7 @@
 use axum::{
     extract::{
         ws::{Message as WsMessage, WebSocket},
-        Path, State, WebSocketUpgrade,
+        State, WebSocketUpgrade,
     },
     response::IntoResponse,
 };
@@ -9,7 +9,6 @@ use dashmap::DashMap;
 use futures::{SinkExt, StreamExt};
 use http::StatusCode;
 use log::debug;
-use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::{
     broadcast::{self, Receiver, Sender},
@@ -36,18 +35,16 @@ pub async fn ws_handler(
     (StatusCode::FORBIDDEN, "Unauthorized WebSocket connection").into_response()
 }
 
-async fn handle_socket(socket: WebSocket, mut state: AppState, user: User) {
-    use crate::messages::Message;
-
+async fn handle_socket(socket: WebSocket, state: AppState, user: User) {
     let (mut sender, mut receiver) = socket.split();
 
-    let mut channels = state.ws_channels.clone();
+    let channels = state.ws_channels.clone();
 
-    let mut rx = {
+    let rx = {
         match channels.get(&user.id) {
             Some(channel) => channel.1.clone(),
             None => {
-                let (tx, mut rx) = broadcast::channel::<Message>(1000);
+                let (tx, rx) = broadcast::channel::<Message>(1000);
                 let rx = Arc::new(Mutex::new(rx));
                 channels.insert(user.id, (tx.clone(), rx.clone()));
                 rx
@@ -71,6 +68,7 @@ async fn handle_socket(socket: WebSocket, mut state: AppState, user: User) {
     let mut recv_task: tokio::task::JoinHandle<Result<(), anyhow::Error>> =
         tokio::spawn(async move {
             let msg_sender = state.msg_sender;
+            //if the receiver close connection send a UserDisconnectd to the msg_sender
             while let Some(Ok(WsMessage::Text(msg))) = receiver.next().await {
                 if let Ok(msg) = serde_json::from_str::<Message>(&msg) {
                     msg_sender.send(msg);
@@ -78,6 +76,8 @@ async fn handle_socket(socket: WebSocket, mut state: AppState, user: User) {
                     debug!("we got a msg but cant deserialize");
                 }
             }
+
+            msg_sender.send(Message::UserDisconnected { user_id: user.id });
             Ok(())
         });
 

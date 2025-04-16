@@ -3,7 +3,6 @@ use crate::app::components::modal::delete_channel::DeleteChannel;
 use crate::app::components::modal::edit_channel::EditChannelModal;
 use crate::app::components::modal::invite_people::InvitePeopleModal;
 use crate::app::components::ui::context_menu::*;
-use crate::app::components::ui::tool_tip::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
 use crate::entities::channel::Channel;
@@ -13,7 +12,6 @@ use leptos::html;
 use leptos::prelude::*;
 use leptos_icons::Icon;
 use leptos_router::components::A;
-use std::time::Duration;
 
 use super::thread::Thread;
 

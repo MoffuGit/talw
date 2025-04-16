@@ -24,7 +24,7 @@ pub fn MembersSettings() -> impl IntoView {
                         .and_then(|members| {
                             members
                                 .iter()
-                                .map(|member| {
+                                .map(|_member| {
                                     view! { <p /> }
                                 })
                                 .collect_view()

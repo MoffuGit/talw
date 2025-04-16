@@ -2,12 +2,8 @@ pub mod header;
 use self::header::ThreadHeader;
 use crate::app::api::thread::{get_thread, use_thread};
 use crate::app::components::navigation::server::{use_current_channel, use_current_thread};
-use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::thread::Thread;
 use leptos_icons::Icon;
-use leptos_router::components::Redirect;
-use std::str::FromStr;
-use uuid::Uuid;
 
 #[derive(Clone)]
 struct CurrentThreadContext {
@@ -18,7 +14,6 @@ use leptos::prelude::*;
 #[component]
 pub fn ThreadSideBar() -> impl IntoView {
     let current_thread = use_current_thread();
-    let server_id = use_current_server_context().server.id.simple();
     let channel_id = move || use_current_channel().with(|channel_id| channel_id.unwrap().simple());
     view! {
         {move || {

@@ -1,4 +1,3 @@
-use crate::app::api::thread::get_thread;
 use crate::app::api::thread::get_threads_for_member;
 use crate::app::api::thread::use_thread;
 use crate::app::components::menu::thread::ThreadMenuContent;
@@ -51,7 +50,7 @@ pub fn ThreadMenu(thread: EntThread) -> impl IntoView {
     let open = RwSignal::new(false);
     let use_current_thread = use_current_thread();
     let is_current_thread = move || {
-        use_current_thread.with(|url| url.is_some_and(|(thread_url)| thread_url == thread.id))
+        use_current_thread.with(|url| url.is_some_and(|thread_url| thread_url == thread.id))
     };
     let name = StoredValue::new(thread.name.clone());
     let delete_thread_modal_ref = NodeRef::<html::Div>::new();
@@ -106,7 +105,7 @@ pub fn ThreadMenu(thread: EntThread) -> impl IntoView {
                     </div>
                 </div>
             </ContextMenuTrigger>
-            <ContextMenuContent ignore=vec![delete_thread_modal_ref] class="z-40".into()>
+            <ContextMenuContent ignore=vec![delete_thread_modal_ref] class="z-40">
                 <ThreadMenuContent
                     delete_thread_modal_ref=delete_thread_modal_ref
                     thread=thread.clone()

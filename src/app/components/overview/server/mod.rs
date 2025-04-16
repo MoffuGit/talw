@@ -53,11 +53,7 @@ pub fn use_server_overview() -> ServerOverviewContext {
 
 #[component]
 pub fn ServerOverview() -> impl IntoView {
-    let ServerOverviewContext {
-        open,
-        server,
-        settings,
-    } = use_server_overview();
+    let ServerOverviewContext { open, server, .. } = use_server_overview();
     view! {
         <OverviewContent open=open class="w-full h-full flex items-center">
             {move || {

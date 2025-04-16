@@ -3,13 +3,10 @@ use std::str::FromStr;
 use crate::app::api::channel::{get_channel, use_channel};
 use crate::app::components::channel::header::ChannelHeader;
 use crate::app::components::channel::sidebars::{MemberSideBar, SideBarContext};
-use crate::app::routes::servers::server::{use_current_server_context, CurrentServerContext};
-use crate::messages::Message;
-use crate::ws::client::use_ws;
+use crate::app::routes::servers::server::use_current_server_context;
 use leptos::prelude::*;
-use leptos::task::spawn_local;
 use leptos_icons::Icon;
-use leptos_router::components::{Outlet, Redirect};
+use leptos_router::components::Outlet;
 use leptos_router::hooks::use_params_map;
 use uuid::Uuid;
 

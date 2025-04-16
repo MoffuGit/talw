@@ -1,38 +1,55 @@
 use std::collections::{HashMap, HashSet};
 
-use log::debug;
 use uuid::Uuid;
 
-use crate::topic::Topic;
+type ServerId = Uuid;
 
+//change name to server
 #[derive(Default, Debug)]
 pub struct Subscriptions {
-    pub topic_subscriptions: HashMap<Topic, HashSet<Uuid>>,
-    pub user_subscriptions: HashMap<Uuid, HashSet<Topic>>,
+    pub topic_subscriptions: HashMap<ServerId, HashSet<Uuid>>,
+    pub user_subscriptions: HashMap<Uuid, HashSet<ServerId>>,
 }
 
 impl Subscriptions {
-    pub fn subscribe(&mut self, user: Uuid, topic: Topic) {
+    pub fn unsubscribe_all(&mut self, user_id: Uuid) -> Option<Vec<Uuid>> {
+        let servers = self.user_subscriptions.get_mut(&user_id).map(|subs| {
+            let servers = subs.clone().into_iter().collect::<Vec<_>>();
+            subs.clear();
+            servers
+        });
+        if let Some(servers) = &servers {
+            for server in servers {
+                self.topic_subscriptions.entry(*server).and_modify(|users| {
+                    users.remove(&user_id);
+                });
+            }
+        }
+        servers
+    }
+    pub fn subscribe(&mut self, user: Uuid, server_id: ServerId) {
         self.user_subscriptions
-            .entry(user.clone())
+            .entry(user)
             .and_modify(|topics| {
-                topics.insert(topic.clone());
+                topics.insert(server_id);
             })
             .or_default();
         self.topic_subscriptions
-            .entry(topic)
+            .entry(server_id)
             .and_modify(|users| {
                 users.insert(user);
             })
             .or_default();
     }
 
-    pub fn unsubscribe(&mut self, user: Uuid, topic: Topic) {
+    pub fn unsubscribe(&mut self, user: Uuid, server_id: ServerId) {
         self.user_subscriptions.entry(user).and_modify(|topics| {
-            topics.remove(&topic);
+            topics.remove(&server_id);
         });
-        self.topic_subscriptions.entry(topic).and_modify(|users| {
-            users.remove(&user);
-        });
+        self.topic_subscriptions
+            .entry(server_id)
+            .and_modify(|users| {
+                users.remove(&user);
+            });
     }
 }

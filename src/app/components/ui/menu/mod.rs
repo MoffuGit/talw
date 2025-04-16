@@ -1,14 +1,7 @@
 use leptos::context::Provider;
-use leptos::ev::{contextmenu, MouseEvent};
 use leptos::portal::Portal;
-use leptos::{html, logging, prelude::*};
-use leptos_use::{
-    on_click_outside_with_options, use_document, use_event_listener,
-    use_event_listener_with_options, OnClickOutsideOptions, UseEventListenerOptions,
-};
-use wasm_bindgen::prelude::Closure;
-use wasm_bindgen::JsCast;
-use web_sys::{AddEventListenerOptions, EventListenerOptions};
+use leptos::{html, prelude::*};
+use leptos_use::{on_click_outside_with_options, OnClickOutsideOptions};
 
 #[derive(Clone)]
 pub struct MenuProviderContext {
@@ -38,8 +31,8 @@ pub fn MenuProvider(
 ) -> impl IntoView {
     let open = open.unwrap_or(RwSignal::new(false));
     let hidden = hidden.unwrap_or(RwSignal::new(false));
-    let trigger_ref = trigger_ref.unwrap_or(NodeRef::<html::Div>::new());
-    let content_ref = content_ref.unwrap_or(NodeRef::<html::Div>::new());
+    let trigger_ref = trigger_ref.unwrap_or_default();
+    let content_ref = content_ref.unwrap_or_default();
     view! {
         <Provider value=MenuProviderContext {
             open,
@@ -52,7 +45,6 @@ pub fn MenuProvider(
     }
 }
 
- 
 #[component]
 pub fn MenuTrigger(
     #[prop(optional)] class: &'static str,
@@ -111,7 +103,6 @@ pub fn MenuTrigger(
     }
 }
 
- 
 #[component]
 pub fn MenuContent(
     #[prop(optional)] class: String,

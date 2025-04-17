@@ -76,8 +76,6 @@ pub fn ServerSideBar() -> impl IntoView {
                                     view! { <Channel channel=channel.clone() /> }
                                 }
                             />
-                        </Transition>
-                        <Transition>
                             <For
                                 each=move || {
                                     categories.get().and_then(Result::ok).unwrap_or_default()

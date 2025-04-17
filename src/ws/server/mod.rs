@@ -55,7 +55,7 @@ async fn handle_socket(socket: WebSocket, state: AppState, user: User) {
     let mut send_task = tokio::spawn(async move {
         while let Ok(msg) = rx.lock().await.recv().await {
             if sender
-                .send(WsMessage::Text(serde_json::to_string(&msg).unwrap()))
+                .send(WsMessage::Text(serde_json::to_string(&msg).unwrap().into()))
                 .await
                 .is_err()
             {

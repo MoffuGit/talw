@@ -29,9 +29,9 @@ cfg_if! {
 #[derive(Clone, Copy)]
 pub struct ServerContext {
     pub join_with_invitation: ServerAction<JoinServerWithInvitation>,
-    pub create_server: Action<FormData, Result<String, ServerFnError>, LocalStorage>,
+    pub create_server: Action<FormData, Result<String, ServerFnError>>,
     pub leave_server: ServerAction<LeaveServer>,
-    pub edit_server_image: Action<FormData, Result<(), ServerFnError>, LocalStorage>,
+    pub edit_server_image: Action<FormData, Result<(), ServerFnError>>,
     pub edit_server_name: ServerAction<EditServerName>,
 }
 
@@ -178,7 +178,7 @@ pub async fn get_user_servers_and_subscribe() -> Result<Vec<Server>, ServerFnErr
     msg_sender.send(Message::Batch(
         servers
             .iter()
-            .map(|server| Message::Subscribe {
+            .map(|server| Message::UserConnected {
                 server_id: server.id,
                 user_id: user.id,
             })
@@ -188,7 +188,7 @@ pub async fn get_user_servers_and_subscribe() -> Result<Vec<Server>, ServerFnErr
     msg_sender.send(Message::Batch(
         servers
             .iter()
-            .map(|server| Message::UserConnected {
+            .map(|server| Message::Subscribe {
                 server_id: server.id,
                 user_id: user.id,
             })

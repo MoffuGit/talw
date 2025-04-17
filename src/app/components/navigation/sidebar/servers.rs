@@ -6,9 +6,9 @@ use crate::app::api::server::{get_user_servers_and_subscribe, use_server};
 use crate::app::components::modal::create_server::CreateServerModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::components::ui::tool_tip::*;
-use icondata;
+//use icondata;
 use leptos::prelude::*;
-use leptos_icons::*;
+//use leptos_icons::*;
 use leptos_router::components::A;
 use leptos_router::hooks::use_params_map;
 
@@ -39,7 +39,7 @@ pub fn Servers() -> impl IntoView {
                     <TooltipTrigger class="relative my-1">
                         <A href="" {..} class=" flex relative items-center">
                             <div class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer">
-                                <Icon icon=icondata::LuCommand />
+                                // <Icon icon=icondata::LuCommand />
                             // class="h-5 w-5 stroke-base-content"
                             </div>
                         </A>
@@ -60,7 +60,7 @@ pub fn Servers() -> impl IntoView {
                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                     >
                         <div>"Create Server"</div>
-                        <Icon icon=icondata::RiAddSystemFill />
+                        // <Icon icon=icondata::RiAddSystemFill />
                     </CreateServerModal>
                     <A
                         href="discover"
@@ -69,7 +69,7 @@ pub fn Servers() -> impl IntoView {
                         on:click=move |_| open.set(false)
                     >
                         <div>"Discover Servers"</div>
-                        <Icon icon=icondata::RiCompass3MapFill />
+                        // <Icon icon=icondata::RiCompass3MapFill />
                     </A>
                     <A
                         href=""
@@ -78,7 +78,7 @@ pub fn Servers() -> impl IntoView {
                         on:click=move |_| open.set(false)
                     >
                         <div>"Show Servers"</div>
-                        <Icon icon=icondata::RiCheckboxCircleSystemFill />
+                        // <Icon icon=icondata::RiCheckboxCircleSystemFill />
                     </A>
                 </div>
             </ContextMenuContent>

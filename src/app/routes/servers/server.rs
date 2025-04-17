@@ -74,7 +74,7 @@ pub fn Server() -> impl IntoView {
 
     view! {
         <div class="h-full w-full relative z-40 flex">
-            <Transition>{inner_view}</Transition>
+            <Suspense>{inner_view}</Suspense>
         </div>
     }
 }

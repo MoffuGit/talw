@@ -1,5 +1,5 @@
 use cfg_if::cfg_if;
-use icondata::Icon;
+// use icondata::Icon;
 use leptos::prelude::IntoRender;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -18,14 +18,14 @@ pub enum ChannelType {
     VOICE,
 }
 
-impl From<ChannelType> for Icon {
-    fn from(value: ChannelType) -> Self {
-        match value {
-            ChannelType::TEXT => icondata::LuHash,
-            ChannelType::VOICE => icondata::LuVolume2,
-        }
-    }
-}
+// impl From<ChannelType> for Icon {
+//     fn from(value: ChannelType) -> Self {
+//         match value {
+//             ChannelType::TEXT => icondata::LuHash,
+//             ChannelType::VOICE => icondata::LuVolume2,
+//         }
+//     }
+// }
 
 impl IntoRender for ChannelType {
     type Output = &'static str;

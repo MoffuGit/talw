@@ -3,10 +3,10 @@ mod thread;
 use crate::app::components::ui::tool_tip::{
     ToolTipSide, TooltipContent, TooltipProvider, TooltipTrigger,
 };
-use icondata;
+//use icondata;
 use leptos::either::Either;
 use leptos::prelude::*;
-use leptos_icons::Icon;
+//use leptos_icons::Icon;
 use std::time::Duration;
 use uuid::Uuid;
 
@@ -36,7 +36,8 @@ pub fn MemberSideBarTrigger() -> impl IntoView {
                 class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
                 on_click=Signal::derive(move || open.update(|open| *open = !*open))
             >
-                <Icon icon=icondata::LuUsers />
+                <div/>
+                // <Icon icon=icondata::LuUsers />
             </TooltipTrigger>
             <TooltipContent
                 arrow=true

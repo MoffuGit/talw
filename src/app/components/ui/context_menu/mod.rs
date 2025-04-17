@@ -59,16 +59,19 @@ pub fn ContextMenuContent(
 
     let context = use_context::<MenuProviderContext>().expect("acces to menu context");
 
-    let _ = use_event_listener_with_options(
-        use_document(),
-        contextmenu,
-        move |_| {
-            if context.open.get() {
-                context.open.set(false)
-            }
-        },
-        UseEventListenerOptions::default().capture(true),
-    );
+    #[cfg(feature = "hydrate")]
+    {
+        let _ = use_event_listener_with_options(
+            use_document(),
+            contextmenu,
+            move |_| {
+                if context.open.get() {
+                    context.open.set(false)
+                }
+            },
+            UseEventListenerOptions::default().capture(true),
+        );
+    }
 
     view! {
         <MenuContent

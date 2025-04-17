@@ -213,6 +213,7 @@ pub fn DropdownContent(
         }
     };
 
+    //NOTE: maybe on the server side i should return a default string
     let position = Signal::derive(move || format!("translate: {}px {}px;", x.get(), y_position()));
 
     Effect::new(move |_| {

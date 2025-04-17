@@ -84,21 +84,21 @@ pub fn App() -> impl IntoView {
                             path=StaticSegment("discover")
                             view=move || view! { <div>"search servers"</div> }
                         />
-                        // <ParentRoute path=ParamSegment("id") view=Server>
-                        //     <Route path=StaticSegment("") view=EmptyServer />
-                        //     <ParentRoute path=ParamSegment("channel_id") view=ChannelView>
-                        //         <Route path=ParamSegment("thread_id") view=ThreadSplit />
-                        //         <Route path=StaticSegment("") view=|| view! { <div /> } />
-                        //     </ParentRoute>
-                        //     <Route
-                        //         path=(
-                        //             StaticSegment("thread"),
-                        //             ParamSegment("channel_id"),
-                        //             ParamSegment("thread_id"),
-                        //         )
-                        //         view=Thread
-                        //     />
-                        // </ParentRoute>
+                        <ParentRoute path=ParamSegment("id") view=Server>
+                            <Route path=StaticSegment("") view=EmptyServer />
+                            <ParentRoute path=ParamSegment("channel_id") view=ChannelView>
+                                <Route path=ParamSegment("thread_id") view=ThreadSplit />
+                                <Route path=StaticSegment("") view=|| view! { <div /> } />
+                            </ParentRoute>
+                            <Route
+                                path=(
+                                    StaticSegment("thread"),
+                                    ParamSegment("channel_id"),
+                                    ParamSegment("thread_id"),
+                                )
+                                view=Thread
+                            />
+                        </ParentRoute>
                     </ProtectedParentRoute>
                     <Route path=StaticSegment("login") view=Login />
                     <Route path=StaticSegment("signup") view=Signup />

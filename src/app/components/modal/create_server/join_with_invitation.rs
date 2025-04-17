@@ -2,12 +2,11 @@ use super::use_create_server;
 use crate::app::api::server::use_server;
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;
-use icondata;
+//use icondata;
 use leptos::prelude::*;
-use leptos_icons::*;
+//use leptos_icons::*;
 use leptos_router::components::A;
 
- 
 #[component]
 pub fn JoinWithInvitation() -> impl IntoView {
     let join_with_invitation = use_server().join_with_invitation;
@@ -30,7 +29,8 @@ pub fn JoinWithInvitation() -> impl IntoView {
                         attr:r#type="reset"
                         class="absolute right-2 top-2 flex items-center group bg-none"
                     >
-                        <Icon icon=icondata::RiCloseSystemLine />
+                        <div/>
+                        // <Icon icon=icondata::RiCloseSystemLine />
                     // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                     </ModalClose>
                 </div>
@@ -79,7 +79,7 @@ pub fn JoinWithInvitation() -> impl IntoView {
                         class="rounded-lg bg-base-300/30 hover:bg-base-content/30 mb-4 flex items-center p-3 text-left"
                     >
                         <div class="mr-3 w-[40px] h-[40px] bg-primary rounded-full flex items-center justify-center">
-                            <Icon icon=icondata::RiCompassMapLine />
+                            // <Icon icon=icondata::RiCompassMapLine />
                         </div>
                         <div>
                             <h2 class="text-[16px] leading-[20px] font-bold">
@@ -89,7 +89,7 @@ pub fn JoinWithInvitation() -> impl IntoView {
                                 Check out Discoverable communities in Server Discovery.
                             </div>
                         </div>
-                        <Icon icon=icondata::RiArrowRightSArrowsLine />
+                        // <Icon icon=icondata::RiArrowRightSArrowsLine />
                     </A>
                 </div>
                 <div class="relative p-4 overflow-x-auto flex justify-between items-center bg-base-300/60">

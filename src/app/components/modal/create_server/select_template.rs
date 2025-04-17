@@ -2,12 +2,11 @@ use super::use_create_server;
 use crate::app::api::server::ServerTemplate;
 use crate::app::components::ui::modal::slide_modal::SlideForward;
 use crate::app::components::ui::modal::ModalClose;
-use icondata;
+//use icondata;
 use leptos::prelude::*;
-use leptos_icons::*;
+//use leptos_icons::*;
 use strum::IntoEnumIterator;
 
- 
 #[component]
 pub fn SelectTemplate() -> impl IntoView {
     view! {
@@ -20,7 +19,7 @@ pub fn SelectTemplate() -> impl IntoView {
                 attr:r#type="reset"
                 class="absolute right-2 top-2 flex items-center group bg-none"
             >
-                <Icon icon=icondata::RiCloseSystemLine />
+                // <Icon icon=icondata::RiCloseSystemLine />
             // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
             </ModalClose>
         </div>
@@ -52,7 +51,6 @@ pub fn SelectTemplate() -> impl IntoView {
     }
 }
 
- 
 #[component]
 fn Templates(template: ServerTemplate, children: Children) -> impl IntoView {
     let selected_template = use_create_server().selected_template;
@@ -67,7 +65,7 @@ fn Templates(template: ServerTemplate, children: Children) -> impl IntoView {
             >
                 <div class="w-[66px] h-[66px]" />
                 <div class="text-base leading-[20px] font-bold">{children()}</div>
-                <Icon icon=icondata::RiArrowRightSArrowsLine />
+                // <Icon icon=icondata::RiArrowRightSArrowsLine />
             </div>
         </SlideForward>
     }

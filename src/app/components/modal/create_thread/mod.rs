@@ -1,7 +1,7 @@
 use crate::app::api::thread::use_thread;
 use crate::app::components::ui::modal::*;
 use leptos::{html, prelude::*};
-use leptos_icons::Icon;
+//use leptos_icons::Icon;
 
 use uuid::Uuid;
 
@@ -37,7 +37,7 @@ pub fn CreatethreadModal(
                 <div class="text-start p-[16px] w-full">
                     <h1 class="font-bold text-[24px] leading-[30px]">"Create Thread"</h1>
                     <ModalClose class="absolute right-2 top-2 flex items-center group bg-none">
-                        <Icon icon=icondata::RiCloseSystemLine />
+                        // <Icon icon=icondata::RiCloseSystemLine />
                     // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                     </ModalClose>
                 </div>

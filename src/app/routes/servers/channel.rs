@@ -5,7 +5,7 @@ use crate::app::components::channel::header::ChannelHeader;
 use crate::app::components::channel::sidebars::{MemberSideBar, SideBarContext};
 use crate::app::routes::servers::server::use_current_server_context;
 use leptos::prelude::*;
-use leptos_icons::Icon;
+//use leptos_icons::Icon;
 use leptos_router::components::Outlet;
 use leptos_router::hooks::use_params_map;
 use uuid::Uuid;
@@ -53,12 +53,12 @@ pub fn ChannelView() -> impl IntoView {
                                             <div class="grow overflow-auto" />
                                             <div class="h-20 shrink-0 flex">
                                                 <div class="m-4 w-full grow bg-base-300/60 rounded-lg flex items-center px-4">
-                                                    <Icon icon=icondata::RiAddCircleSystemFill />
+                                                    // <Icon icon=icondata::RiAddCircleSystemFill />
                                                     // class="w-7 h-7 fill-base-content/40 grow-0 mr-4"
                                                     <div class="grow text-base-content/60">
                                                         {format!("Message #{}", name)}
                                                     </div>
-                                                    <Icon icon=icondata::RiEmojiStickerCommunicationFill />
+                                                    // <Icon icon=icondata::RiEmojiStickerCommunicationFill />
                                                 // class="w-7 h-7 fill-base-content/40"
                                                 </div>
                                             </div>

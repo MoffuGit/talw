@@ -6,11 +6,11 @@ use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
 use crate::entities::channel::Channel;
-use icondata;
-use icondata::Icon;
+//use icondata;
+//use icondata:Icon;
 use leptos::html;
 use leptos::prelude::*;
-use leptos_icons::Icon;
+//use leptos_icons::Icon;
 use leptos_router::components::A;
 
 use super::thread::Thread;
@@ -66,7 +66,7 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                             )
                         }
                     >
-                        <Icon icon=Icon::from(channel_type) />
+                        // <Icon icon=Icon::from(channel_type) />
                         // class="relative w-4 h-4 shrink-0 mr-1.5 fill-base-content"
                         <div class="whitespace-nowrap overflow-hidden text-ellipsis mr-auto leading-5 flex-auto relative text-sm">
                             {name.clone()}

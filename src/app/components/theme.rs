@@ -2,21 +2,21 @@ use std::time::Duration;
 
 use crate::app::api::theme::use_theme;
 use crate::app::components::ui::tool_tip::*;
-use icondata::Icon;
+//use icondata:Icon;
 use leptos::prelude::*;
-use leptos_icons::*;
+//use leptos_icons::*;
 
-#[derive(Clone)]
-pub struct ThemeIcons {
-    pub dark: Icon,
-    pub light: Icon,
-    pub class: &'static str,
-}
+// #[derive(Clone)]
+// pub struct ThemeIcons {
+//     pub dark: Icon,
+//     pub light: Icon,
+//     pub class: &'static str,
+//
 
 #[component]
 pub fn Toggle_Theme(
     class: &'static str,
-    #[prop(optional)] icons: Option<ThemeIcons>,
+    // #[prop(optional)] icons: Option<ThemeIcons>,
 ) -> impl IntoView {
     let theme_context = use_theme();
     let toggle_theme = theme_context.toggle_theme;
@@ -26,12 +26,12 @@ pub fn Toggle_Theme(
         <ActionForm action=toggle_theme>
             <input type="hidden" name="theme" value=move || (!prefers_theme.get()).to_string() />
             <button type="submit" class="w-full h-full flex items-center justify-center">
-                {icons
-                    .clone()
-                    .map(|icons| move || match prefers_theme.get() {
-                        true => view! { <Icon icon=icons.dark /> },
-                        false => view! { <Icon icon=icons.light /> },
-                    })}
+                // {icons
+                //     .clone()
+                //     .map(|icons| move || match prefers_theme.get() {
+                //         true => view! { <Icon icon=icons.dark /> },
+                //         false => view! { <Icon icon=icons.light /> },
+                //     })}
             </button>
         </ActionForm>
     }

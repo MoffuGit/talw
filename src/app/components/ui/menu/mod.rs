@@ -125,21 +125,24 @@ pub fn MenuContent(
             }
         }
     });
+    #[cfg(feature = "hydrate")]
+    {
+        let on_click_outside_options = if let Some(ignore) = ignore {
+            OnClickOutsideOptions::default().ignore(ignore)
+        } else {
+            OnClickOutsideOptions::default()
+        };
+        let _ = on_click_outside_with_options(
+            content_ref,
+            move |_| {
+                if context.open.get() {
+                    context.open.set(false)
+                }
+            },
+            on_click_outside_options,
+        );
+    }
 
-    let on_click_outside_options = if let Some(ignore) = ignore {
-        OnClickOutsideOptions::default().ignore(ignore)
-    } else {
-        OnClickOutsideOptions::default()
-    };
-    let _ = on_click_outside_with_options(
-        content_ref,
-        move |_| {
-            if context.open.get() {
-                context.open.set(false)
-            }
-        },
-        on_click_outside_options,
-    );
     let class = StoredValue::new(class);
 
     view! {

@@ -3,15 +3,14 @@ use crate::app::api::auth::use_auth;
 use crate::app::api::server::use_server;
 use crate::app::components::ui::modal::slide_modal::SlideBack;
 use crate::app::components::ui::modal::ModalClose;
-use icondata;
+//use icondata;
 use leptos::ev::SubmitEvent;
 use leptos::html::Input;
 use leptos::prelude::*;
-use leptos_icons::*;
+//use leptos_icons::*;
 use wasm_bindgen::JsCast;
 use web_sys::{Blob, FormData, HtmlFormElement, Url};
 
- 
 #[component]
 pub fn SelectName() -> impl IntoView {
     let create_server = use_server().create_server;
@@ -49,7 +48,7 @@ pub fn SelectName() -> impl IntoView {
                     attr:r#type="reset"
                     class="absolute right-2 top-2 flex items-center group bg-none"
                 >
-                    <Icon icon=icondata::RiCloseSystemLine />
+                    // <Icon icon=icondata::RiCloseSystemLine />
                 // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                 </ModalClose>
             </div>
@@ -79,11 +78,11 @@ pub fn SelectName() -> impl IntoView {
                                 view! {
                                     <div class="indicator w-20 h-20 flex flex-col justify-center items-center rounded-full border-2 border-base-content border-dashed relative z-30">
                                         <span class="indicator-item badge badge-primary translate-x-[11%] translate-y-[20%] w-[20px] h-[20px] p-0">
-                                            <Icon icon=icondata::RiAddSystemFill />
+                                            // <Icon icon=icondata::RiAddSystemFill />
                                         // class="fill-primary-content w-4 h-4"
                                         </span>
                                         <div class="flex flex-col items-center">
-                                            <Icon icon=icondata::RiCameraMediaFill />
+                                            // <Icon icon=icondata::RiCameraMediaFill />
                                             // class="fill-base-content w-6 h-6 "
                                             <p class="uppercase fill-base-content text-xs font-bold">
                                                 upload

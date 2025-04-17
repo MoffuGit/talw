@@ -6,10 +6,10 @@ use crate::app::components::overview::server::ServerOverviewTrigger;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
-use icondata;
+//use icondata;
 use leptos::html;
 use leptos::prelude::*;
-use leptos_icons::*;
+//use leptos_icons::*;
 
 #[component]
 pub fn ServerMenu() -> impl IntoView {
@@ -34,7 +34,7 @@ pub fn ServerMenu() -> impl IntoView {
                         <p class="block mr-auto text-base overflow-hidden font-semibold text-ellipsis whitespace-nowrap min-w-0">
                             {server.name}
                         </p>
-                        <Icon icon=icondata::LuChevronDown />
+                        // <Icon icon=icondata::LuChevronDown />
                     // class="relative"
                     </div>
                 </DropdownTrigger>

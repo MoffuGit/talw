@@ -5,7 +5,7 @@ use crate::app::components::navigation::server::use_current_channel;
 use crate::app::components::thread::sidebar::CurrentThreadContext;
 use crate::app::routes::servers::server::use_current_server_context;
 use leptos::prelude::*;
-use leptos_icons::Icon;
+//use leptos_icons::Icon;
 use leptos_router::components::A;
 
 #[component]
@@ -24,7 +24,8 @@ pub fn ThreadHeader() -> impl IntoView {
                     {..}
                     class="inline-block p-1 hover:bg-base-content/5 rounded-lg"
                 >
-                    <Icon icon=icondata::LuX />
+                    // <Icon icon=icondata::LuX />
+                    <div/>
                 </A>
             </div>
         </div>
@@ -37,7 +38,7 @@ pub fn ThreadTitle() -> impl IntoView {
         use_context::<CurrentThreadContext>().expect("SHould return the current thrread context");
     view! {
         <div class="relative flex items-center p-1.5 text-base select-none">
-            <Icon icon=icondata::RiDiscussCommunicationFill />
+            // <Icon icon=icondata::RiDiscussCommunicationFill />
             <div>{current_thread.thread.name}</div>
         </div>
     }

@@ -3,9 +3,9 @@ mod profile;
 mod search;
 mod servers;
 use crate::app::components::ui::tool_tip::*;
-use icondata;
+//use icondata;
 use leptos::prelude::*;
-use leptos_icons::*;
+//use leptos_icons::*;
 use leptos_router::components::A;
 use std::time::Duration;
 
@@ -24,7 +24,7 @@ pub fn SideBar() -> impl IntoView {
                     <TooltipTrigger class="relative my-1">
                         <A href="me" {..} class=" flex relative items-center">
                             <div class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer">
-                                <Icon icon=icondata::LuMessageCircle />
+                                // <Icon icon=icondata::LuMessageCircle />
                             // class="h-5 w-5 stroke-base-content"
                             </div>
                         </A>

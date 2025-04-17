@@ -119,7 +119,7 @@ async fn main() {
     let app = Router::new()
         .route("/ws", any(ws_handler))
         .route(
-            "/api/*fn_name",
+            "/api/{*fn_name}",
             get(server_fn_handler).post(server_fn_handler),
         )
         .leptos_routes_with_handler(routes, get(leptos_router_handler))
@@ -140,4 +140,11 @@ async fn main() {
 }
 
 #[cfg(not(feature = "ssr"))]
-pub fn main() {}
+pub fn main() {
+    use leptos::mount::mount_to_body;
+    use start_axum::app::App;
+
+    _ = console_log::init_with_level(log::Level::Debug);
+    console_error_panic_hook::set_once();
+    mount_to_body(App);
+}

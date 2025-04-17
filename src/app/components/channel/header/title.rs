@@ -6,9 +6,9 @@ use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::{use_current_server_context, CurrentServerContext};
 use crate::entities::channel::Channel;
 use crate::entities::thread::Thread;
-use icondata::Icon;
+//use icondata:Icon;
 use leptos::{html, prelude::*};
-use leptos_icons::Icon;
+//use leptos_icons::Icon;
 use leptos_router::components::A;
 use uuid::Uuid;
 
@@ -27,7 +27,7 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
     view! {
         <ContextMenuProvider modal=false hidden=hidden>
             <ContextMenuTrigger class="relative flex items-center p-1.5 text-base select-none">
-                <Icon icon=Icon::from(channel.channel_type) />
+                // <Icon icon=Icon::from(channel.channel_type) />
                 <div>{channel_name}</div>
                 <ChannelTopic channel_id=channel.id />
                 {thread.map(|thread| view! { <ChannelThread thread=thread.get_value() /> })}
@@ -121,7 +121,7 @@ pub fn ChannelTopic(channel_id: Uuid) -> impl IntoView {
 #[component]
 pub fn ChannelThread(thread: Thread) -> impl IntoView {
     view! {
-        <Icon icon=icondata::LuChevronRight />
+        // <Icon icon=icondata::LuChevronRight />
         <div>{thread.name}</div>
     }
 }

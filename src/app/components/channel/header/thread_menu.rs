@@ -7,9 +7,9 @@ use crate::app::components::ui::context_menu::*;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::entities::thread::Thread;
 use crate::entities::user::Profile;
-use icondata;
+//use icondata;
 use leptos::{html, prelude::*};
-use leptos_icons::Icon;
+//use leptos_icons::Icon;
 use leptos_router::components::A;
 use uuid::Uuid;
 
@@ -69,11 +69,10 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
                         </svg>
                         <div class="font-semibold text-lg mr-auto">"Threads"</div>
                         <div class="hover:bg-base-content/10 rounded-md p-1 fill-base-content ml-[10px]">
-                            <Icon
-                                icon=icondata::LuX
-                                // class="w-5 h-5"
-                                on:click=move |_| open.set(false)
-                            />
+                            // <Icon
+                            //     icon=icondata::LuX
+                            //     on:click=move |_| open.set(false)
+                            // />
                         </div>
                     </div>
                     <div class="bg-base-100 h-px -mx-1" />
@@ -115,7 +114,8 @@ pub fn ActiveThreads(
         <div class="w-full h-auto relative">
             <div class="flex w-full justify-between items-center my-2">
                 <div class="h-6 w-[200px] border border-base-100 rounded p-1.5 flex items-center justify-between">
-                    "Search" <Icon icon=icondata::LuSearch />
+                    "Search"
+                    // <Icon icon=icondata::LuSearch />
                 </div>
                 <CreatethreadModal
                     content_ref=create_thread_node

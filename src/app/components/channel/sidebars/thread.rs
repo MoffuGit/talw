@@ -12,7 +12,7 @@ use crate::entities::member::Member;
 use crate::entities::role::Role;
 use leptos::either::Either;
 use leptos::prelude::*;
-use leptos_icons::Icon;
+//use leptos_icons::Icon;
 use uuid::Uuid;
 
 #[component]
@@ -56,7 +56,7 @@ pub fn ThreadMemberSideBar(server_id: Uuid, thread_id: Uuid) -> impl IntoView {
                     <CollapsibleProvider>
                         <div class="pt-6 px-2 select-none text-base cursor-pointer box-border flex items-center justify-between">
                             <CollapsibleTrigger class="flex flex-auto overflow-hidden items-center p-2 rounded-md hover:bg-base-100">
-                                <Icon icon=icondata::LuChevronRight />
+                                // <Icon icon=icondata::LuChevronRight />
                                 // class=MaybeProp::derive(move || Some(
                                 // TextProp::from(
                                 // format!(
@@ -117,7 +117,7 @@ pub fn Role(role: Role, thread_id: Uuid) -> impl IntoView {
             <CollapsibleProvider open=open>
                 <div class="pt-6 px-2 select-none text-base cursor-pointer box-border flex items-center justify-between">
                     <CollapsibleTrigger class="flex flex-auto overflow-hidden items-center p-2 rounded-md hover:bg-base-100">
-                        <Icon icon=icondata::RiArrowDownSArrowsLine />
+                        // <Icon icon=icondata::RiArrowDownSArrowsLine />
                         // class=MaybeProp::derive(move || Some(
                         // TextProp::from(
                         // format!(

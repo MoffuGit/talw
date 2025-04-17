@@ -24,9 +24,9 @@ pub struct WsContext {
 impl WsContext {
     pub fn send(&self, msg: Message) {
         let sb = self.sender.clone();
-        spawn_local(async move {
-            let _ = sb.broadcast(msg).await;
-        });
+        // spawn_local(async move {
+        //     let _ = sb.broadcast(msg).await;
+        // });
     }
 
     // pub fn on_msg(&self) {
@@ -107,9 +107,9 @@ pub fn provide_ws_context() {
     let sb_clean = sender_sb.clone();
     on_cleanup(move || {
         let sb = sb_clean;
-        spawn_local(async move {
-            let _ = sb.broadcast(Message::Close).await;
-        });
+        // spawn_local(async move {
+        //     let _ = sb.broadcast(Message::Close).await;
+        // });
     });
 
     Effect::new(move |_| {

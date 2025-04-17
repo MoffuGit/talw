@@ -7,9 +7,9 @@ use crate::app::components::navigation::server::sidebar::ServerSideBarTrigger;
 use crate::app::components::ui::tool_tip::*;
 use crate::entities::channel::Channel;
 use crate::entities::thread::Thread;
-use icondata;
+//use icondata;
 use leptos::prelude::*;
-use leptos_icons::Icon;
+//use leptos_icons::Icon;
 
 use self::thread_menu::ThreadMenu;
 
@@ -69,7 +69,8 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                         close_on_click=true
                         class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
                     >
-                        <Icon icon=icondata::LuPin />
+                        <div/>
+                        // <Icon icon=icondata::LuPin />
                     </TooltipTrigger>
                     <TooltipContent
                         tip="Pinned Messages"
@@ -83,7 +84,8 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                         close_on_click=true
                         class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
                     >
-                        <Icon icon=icondata::LuSearch />
+                        <div/>
+                        // <Icon icon=icondata::LuSearch />
                     // class="w-5 h-5"
                     </TooltipTrigger>
                     <TooltipContent

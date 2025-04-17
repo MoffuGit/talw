@@ -1,14 +1,13 @@
 use crate::app::api::channel::use_channel;
 use crate::app::components::ui::modal::*;
 use crate::entities::channel::ChannelType;
-use icondata::{self, Icon};
+// use icondata::{self, Icon};
 use leptos::either::Either;
 use leptos::{html, prelude::*};
-use leptos_icons::*;
+//use leptos_icons::*;
 
 use uuid::Uuid;
 
- 
 #[component]
 pub fn CreateChannelModal(
     class: &'static str,
@@ -62,7 +61,8 @@ pub fn CreateChannelModal(
                             <h1 class="font-bold text-[24px] leading-[30px]">"Create Channel"</h1>
                             <p class="leading-[30px] text-xs">{format!("in {}", &category_name)}</p>
                             <ModalClose class="absolute right-2 top-2 flex items-center group bg-none">
-                                <Icon icon=icondata::RiCloseSystemLine />
+                                <div/>
+                                // <Icon icon=icondata::RiCloseSystemLine />
                             // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                             </ModalClose>
                         </div>
@@ -78,7 +78,7 @@ pub fn CreateChannelModal(
                                         class="mb-2 rounded bg-base-200 flex justify-between w-full py-[10px] px-3 items-center"
                                         on:click=move |_| channel_type.set(ChannelType::TEXT)
                                     >
-                                        <Icon icon=icondata::RiHashtagEditor />
+                                        // <Icon icon=icondata::RiHashtagEditor />
                                         <div class="flex flex-col mr-2">
                                             <div class="font-medium">"Text"</div>
                                             <div class="text-xs">
@@ -98,7 +98,7 @@ pub fn CreateChannelModal(
                                         class="mb-2 rounded bg-base-200 flex justify-between py-[10px] px-3 items-center"
                                         on:click=move |_| channel_type.set(ChannelType::VOICE)
                                     >
-                                        <Icon icon=icondata::RiVolumeUpMediaFill />
+                                        // <Icon icon=icondata::RiVolumeUpMediaFill />
                                         // class="w-6 h-6 mr-3"
                                         <div class="flex flex-col mr-2">
                                             <div class="font-medium">"Voice"</div>
@@ -119,9 +119,9 @@ pub fn CreateChannelModal(
                                     "channel name"
                                 </div>
                                 <div class="mt-2 mb-4 w-full bg-base-300 rounded flex items-center">
-                                    {move || {
-                                        view! { <Icon icon=Icon::from(channel_type.get()) /> }
-                                    }}
+                                    // {move || {
+                                    //     view! { <Icon icon=Icon::from(channel_type.get()) /> }
+                                    // }}
                                     <input
                                         name="name"
                                         minlength="1"
@@ -190,7 +190,8 @@ pub fn CreateChannelModal(
                         <div class="text-start p-[16px] w-full">
                             <h1 class="font-bold text-[24px] leading-[30px]">"Create Channel"</h1>
                             <ModalClose class="absolute right-2 top-2 flex items-center group bg-none">
-                                <Icon icon=icondata::RiCloseSystemLine />
+                                <div/>
+                                // <Icon icon=icondata::RiCloseSystemLine />
                             // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                             </ModalClose>
                         </div>
@@ -247,9 +248,9 @@ pub fn CreateChannelModal(
                                     "channel name"
                                 </div>
                                 <div class="mt-2 mb-4 w-full bg-base-300 rounded flex items-center">
-                                    {move || {
-                                        view! { <Icon icon=Icon::from(channel_type.get()) /> }
-                                    }}
+                                    // {move || {
+                                    //     view! { <Icon icon=Icon::from(channel_type.get()) /> }
+                                    // }}
                                     <input
                                         name="name"
                                         minlength="1"

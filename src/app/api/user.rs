@@ -20,8 +20,8 @@ cfg_if! {
 
 #[derive(Clone, Copy)]
 pub struct UserContext {
-    pub edit_banner_image: Action<FormData, Result<(), ServerFnError>, LocalStorage>,
-    pub edit_profile_image: Action<FormData, Result<(), ServerFnError>, LocalStorage>,
+    pub edit_banner_image: Action<FormData, Result<(), ServerFnError>>,
+    pub edit_profile_image: Action<FormData, Result<(), ServerFnError>>,
     pub banner: Resource<Result<Banner, ServerFnError>>,
     pub profile: Resource<Result<Profile, ServerFnError>>,
     pub edit_profile_name: ServerAction<EditUserName>,

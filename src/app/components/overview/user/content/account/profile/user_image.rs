@@ -1,6 +1,6 @@
 use leptos::either::Either;
 use leptos::prelude::*;
-use leptos_icons::Icon;
+//use leptos_icons::Icon;
 use wasm_bindgen::JsCast;
 
 use crate::app::api::user::use_user;
@@ -71,7 +71,7 @@ pub fn UserImage() -> impl IntoView {
                 }
             }}
             <div class="w-32 h-32 absolute top-[136px] left-8 rounded-full border-8 border-transparent transition opacity-0 group-hover:opacity-100 bg-base-content/10 z-50 flex items-center justify-center">
-                <Icon icon=icondata::RiPencilDesignFill />
+                // <Icon icon=icondata::RiPencilDesignFill />
             </div>
         </form>
     }

@@ -1,12 +1,11 @@
 use crate::app::api::category::use_category;
 use crate::app::components::ui::modal::*;
-use icondata;
+//use icondata;
 use leptos::{html, prelude::*};
-use leptos_icons::*;
+//use leptos_icons::*;
 
 use uuid::Uuid;
 
- 
 #[component]
 pub fn CreateCategoryModal(
     class: &'static str,
@@ -39,7 +38,7 @@ pub fn CreateCategoryModal(
                 <div class="text-start p-[16px] w-full">
                     <h1 class="font-bold text-[24px] leading-[30px]">"Create Category"</h1>
                     <ModalClose class="absolute right-2 top-2 flex items-center group bg-none">
-                        <Icon icon=icondata::RiCloseSystemLine />
+                        // <Icon icon=icondata::RiCloseSystemLine />
                     // class="group-hover:fill-neutral fill-neutral-content w-8 h-8 transition-all"
                     </ModalClose>
                 </div>

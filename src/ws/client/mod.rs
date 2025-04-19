@@ -24,19 +24,15 @@ pub struct WsContext {
 impl WsContext {
     pub fn send(&self, msg: Message) {
         let sb = self.sender.clone();
-        // spawn_local(async move {
-        //     let _ = sb.broadcast(msg).await;
-        // });
+        spawn_local(async move {
+            let _ = sb.broadcast(msg).await;
+        });
     }
 
-    // pub fn on_msg(&self) {
-    //     let rb = self.receiver.clone();
-    //     spawn_local(async move {
-    //         while let Ok(msg) = rb.recv().await {
-    //
-    //         }
-    //     });
-    // }
+    pub fn on_msg(&self) {
+        let mut rb = self.receiver.clone();
+        spawn_local(async move { while let Ok(msg) = rb.recv().await {} });
+    }
 }
 
 pub fn use_ws() -> WsContext {
@@ -105,12 +101,15 @@ pub fn provide_ws_context() {
     });
 
     let sb_clean = sender_sb.clone();
-    on_cleanup(move || {
-        let sb = sb_clean;
-        // spawn_local(async move {
-        //     let _ = sb.broadcast(Message::Close).await;
-        // });
-    });
+    #[cfg(feature = "hydrate")]
+    {
+        on_cleanup(move || {
+            let sb = sb_clean;
+            spawn_local(async move {
+                let _ = sb.broadcast(Message::Close).await;
+            });
+        });
+    }
 
     Effect::new(move |_| {
         if ws_state.get() == WsState::Closed {

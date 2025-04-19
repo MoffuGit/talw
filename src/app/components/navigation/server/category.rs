@@ -1,5 +1,3 @@
-use crate::app::api::category::use_category;
-use crate::app::api::channel::use_channel;
 use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::modal::delete_category::DeleteCategoryModal;
 use crate::app::components::modal::edit_category::EditCategoryModal;
@@ -19,24 +17,13 @@ pub fn Category(category: EntCategory) -> impl IntoView {
     let category = StoredValue::new(category);
     let collapsible_open = RwSignal::new(false);
     let hidden_context_menu = RwSignal::new(false);
-    let delete_category = use_category().delete_category;
-    let create_channel_with_category = use_channel().create_channel_with_category;
-    let delete_channel = use_channel().delete_channel;
-    let rename_channel = use_channel().rename_channel;
     let CurrentServerContext { server, .. } = use_current_server_context();
 
     let EntCategory { id, name, .. } = category.get_value();
     let name = StoredValue::new(name);
 
     let channels = Resource::new(
-        move || {
-            (
-                create_channel_with_category.version().get(),
-                delete_channel.version().get(),
-                rename_channel.version().get(),
-                delete_category.version().get(),
-            )
-        },
+        move || (),
         move |_| get_channels_with_category(server.id, id),
     );
 

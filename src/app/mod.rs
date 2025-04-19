@@ -16,14 +16,15 @@ use routes::login::Login;
 use routes::servers::channel::ChannelView;
 use routes::servers::empty_server::EmptyServer;
 use routes::servers::server::Server;
-use routes::servers::Servers;
 use routes::signup::Signup;
 
 use crate::app::api::category::provide_category_context;
 use crate::app::routes::servers::thread::split::ThreadSplit;
 
 use self::api::auth::use_auth;
+use self::api::user::provide_user_context;
 use self::routes::servers::thread::Thread;
+use self::routes::servers::Servers;
 
 #[component]
 pub fn App() -> impl IntoView {
@@ -36,9 +37,11 @@ pub fn App() -> impl IntoView {
     provide_thread_context();
 
     //NOTE:
-    //check for reconnection and re sending messages for the websocket
-    //add the capacity to send channel messages
-    //this let you test what you add
+    //start sending messages
+    //check for reconnection
+    //add batching
+    //add unread and read messages
+    //fix the icons
     //fix the ui of the modals and user overview
     //add flallbacks for the transitions
     //add things to user stuff and search stuff servers stuff

@@ -2,12 +2,14 @@ use uuid::Uuid;
 
 use crate::entities::member::Member;
 use crate::entities::thread::Thread;
+use crate::messages::Message;
 use cfg_if::cfg_if;
 use core::f64;
 use leptos::prelude::*;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use super::msg_sender;
         use super::user_can_edit;
         use super::auth_user;
         use super::pool;
@@ -98,6 +100,10 @@ pub async fn create_thread(
             channel_id.simple(),
             id.simple()
         ));
+        msg_sender()?.send(Message::ThreadCreated {
+            server_id,
+            thread_id: id,
+        });
         Ok(())
     } else {
         Err(ServerFnError::new("You can't create a thread"))
@@ -136,12 +142,20 @@ pub async fn delete_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), Serve
     if user_can_edit(server_id, user.id, &pool).await? {
         Thread::delete_members(thread_id, &pool).await?;
         Thread::delete(thread_id, &pool).await?;
+        msg_sender()?.send(Message::ThreadDeleted {
+            server_id,
+            thread_id,
+        });
         return Ok(());
     }
     if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
         if Thread::get_created_by(thread_id, &pool).await? == member.id {
             Thread::delete_members(thread_id, &pool).await?;
             Thread::delete(thread_id, &pool).await?;
+            msg_sender()?.send(Message::ThreadDeleted {
+                server_id,
+                thread_id,
+            });
             return Ok(());
         }
     }

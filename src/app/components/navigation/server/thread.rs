@@ -21,7 +21,6 @@ pub fn Thread(channel_id: Uuid) -> impl IntoView {
                 use_threads.leave_thread.version().get(),
                 use_threads.create_thread.version().get(),
                 use_threads.join_thread.version().get(),
-                use_threads.delete_thread.version().get(),
             )
         },
         move |_| get_threads_for_member(channel_id, member.id),

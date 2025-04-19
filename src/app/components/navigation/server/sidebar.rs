@@ -25,7 +25,7 @@ pub fn ServerSideBar() -> impl IntoView {
     let use_channel = use_channel();
     let create_channel = use_channel.create_channel;
     let delete_channel = use_channel.delete_channel;
-    let rename_channel = use_channel.rename_channel;
+    let update_channel = use_channel.update_channel;
 
     let use_category = use_category();
     let delete_category = use_category.delete_category;
@@ -40,7 +40,7 @@ pub fn ServerSideBar() -> impl IntoView {
                 delete_category.version().get(),
                 create_channel.version().get(),
                 delete_channel.version().get(),
-                rename_channel.version().get(),
+                update_channel.version().get(),
             )
         },
         move |_| get_general_channels(server.id),

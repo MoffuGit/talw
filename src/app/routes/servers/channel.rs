@@ -1,8 +1,9 @@
 use std::str::FromStr;
 
-use crate::app::api::channel::{get_channel, use_channel};
+use crate::app::api::channel::get_channel;
 use crate::app::components::channel::header::ChannelHeader;
 use crate::app::components::channel::sidebars::{MemberSideBar, SideBarContext};
+use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::routes::servers::server::use_current_server_context;
 use leptos::prelude::*;
 //use leptos_icons::Icon;
@@ -22,16 +23,9 @@ pub fn ChannelView() -> impl IntoView {
             })
             .unwrap_or_default()
     };
-    let use_channel = use_channel();
     let channel = Resource::new(
-        move || {
-            (
-                use_channel.rename_channel.version().get(),
-                use_channel.delete_channel.version().get(),
-                channel_id(),
-            )
-        },
-        move |(_, _, channel_id)| get_channel(channel_id, server_id),
+        move || channel_id(),
+        move |channel_id| get_channel(channel_id, server_id),
     );
 
     provide_context(SideBarContext(RwSignal::new(false)));
@@ -53,13 +47,12 @@ pub fn ChannelView() -> impl IntoView {
                                             <div class="grow overflow-auto" />
                                             <div class="h-20 shrink-0 flex">
                                                 <div class="m-4 w-full grow bg-base-300/60 rounded-lg flex items-center px-4">
-                                                    // <Icon icon=icondata::RiAddCircleSystemFill />
-                                                    // class="w-7 h-7 fill-base-content/40 grow-0 mr-4"
+                                                    <Icon icon=IconData::CirclePlus class="w-7 h-7 stroke-base-content/40 grow-0 mr-4"  />
                                                     <div class="grow text-base-content/60">
                                                         {format!("Message #{}", name)}
                                                     </div>
-                                                    // <Icon icon=icondata::RiEmojiStickerCommunicationFill />
-                                                // class="w-7 h-7 fill-base-content/40"
+                                                    <Icon icon=IconData::Sticker class="w-7 h-7 stroke-base-content/40"/>
+
                                                 </div>
                                             </div>
                                         </div>

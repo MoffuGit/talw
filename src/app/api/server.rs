@@ -29,6 +29,7 @@ cfg_if! {
 #[derive(Clone, Copy)]
 pub struct ServerContext {
     pub join_with_invitation: ServerAction<JoinServerWithInvitation>,
+    pub get_servers: Resource<Result<Vec<Server>, ServerFnError>>,
     pub create_server: Action<FormData, Result<String, ServerFnError>>,
     pub leave_server: ServerAction<LeaveServer>,
     pub edit_server_image: Action<FormData, Result<(), ServerFnError>>,
@@ -54,6 +55,7 @@ pub enum ServerTemplate {
 }
 
 pub fn provide_server_context() {
+    let get_servers = Resource::new(move || (), move |_| get_user_servers());
     let join_with_invitation = ServerAction::<JoinServerWithInvitation>::new();
     let create_server = Action::new_local(|data: &FormData| {
         let data = data.clone();
@@ -71,6 +73,7 @@ pub fn provide_server_context() {
         leave_server,
         join_with_invitation,
         create_server,
+        get_servers,
     })
 }
 
@@ -145,7 +148,13 @@ pub async fn edit_server_image(data: MultipartData) -> Result<(), ServerFnError>
                     .await
                     .map_err(|_| ServerFnError::new("We have problems deleting your file"))?;
             }
-            return Ok(Server::set_image_url(res.url, res.key, server_id, &pool).await?);
+            Server::set_image_url(&res.url, &res.key, server_id, &pool).await?;
+            msg_sender()?.send(Message::ServerUpdated {
+                server_id,
+                name: None,
+                image: Some(res.url),
+            });
+            return Ok(());
         }
     }
 
@@ -156,8 +165,15 @@ pub async fn edit_server_image(data: MultipartData) -> Result<(), ServerFnError>
 pub async fn edit_server_name(new_name: String, server_id: Uuid) -> Result<(), ServerFnError> {
     let pool = pool()?;
     auth_user()?;
+    Server::set_server_name(&new_name, server_id, &pool).await?;
 
-    Ok(Server::set_server_name(new_name, server_id, &pool).await?)
+    msg_sender()?.send(Message::ServerUpdated {
+        server_id,
+        name: Some(new_name),
+        image: None,
+    });
+
+    Ok(())
 }
 
 #[server(GetServerRoles)]
@@ -168,34 +184,11 @@ pub async fn get_server_roles(server_id: Uuid) -> Result<Vec<Role>, ServerFnErro
     Ok(Role::get_server_roles(server_id, &pool).await?)
 }
 
-#[server(GetUserServersAndSubcribe)]
-pub async fn get_user_servers_and_subscribe() -> Result<Vec<Server>, ServerFnError> {
+#[server(GetUserServers)]
+pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
-    let msg_sender = msg_sender()?;
-    let servers = Server::get_user_servers(user.id, &pool).await?;
-
-    msg_sender.send(Message::Batch(
-        servers
-            .iter()
-            .map(|server| Message::UserConnected {
-                server_id: server.id,
-                user_id: user.id,
-            })
-            .collect(),
-    ));
-
-    msg_sender.send(Message::Batch(
-        servers
-            .iter()
-            .map(|server| Message::Subscribe {
-                server_id: server.id,
-                user_id: user.id,
-            })
-            .collect(),
-    ));
-
-    Ok(servers)
+    Ok(Server::get_user_servers(user.id, &pool).await?)
 }
 
 #[server(JoinServerWithInvitation, "/api")]
@@ -224,10 +217,6 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
         Err(crate::entities::Error::NotFound) => {
             match Member::create_member_from_invitation(user.id, invitation, &pool).await {
                 Ok(id) => {
-                    msg_sender.send(crate::messages::Message::Subscribe {
-                        server_id: id.1,
-                        user_id: user.id,
-                    });
                     msg_sender.send(crate::messages::Message::MemberJoinedServer {
                         member_id: id.0,
                         server_id: id.1,
@@ -310,30 +299,30 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
                 )
                 .await
             {
-                Server::set_image_url(res.url, res.key, server, &pool).await?;
+                Server::set_image_url(&res.url, &res.key, server, &pool).await?;
             }
         }
     }
     let member_id = Member::create(user.id, server, &pool).await?;
     Channel::create(
-        "general".to_string(),
+        "general",
         crate::entities::channel::ChannelType::TEXT,
         server,
         &pool,
     )
     .await?;
-    let text_category = Category::create("text".to_string(), server, &pool).await?;
+    let text_category = Category::create("text", server, &pool).await?;
     Channel::create_with_category(
-        "text".to_string(),
+        "text",
         crate::entities::channel::ChannelType::TEXT,
         server,
         text_category,
         &pool,
     )
     .await?;
-    let voice_category = Category::create("voice".to_string(), server, &pool).await?;
+    let voice_category = Category::create("voice", server, &pool).await?;
     Channel::create_with_category(
-        "voice".to_string(),
+        "voice",
         crate::entities::channel::ChannelType::VOICE,
         server,
         voice_category,
@@ -341,10 +330,6 @@ pub async fn create_server(data: MultipartData) -> Result<String, ServerFnError>
     )
     .await?;
     let msg_sender = msg_sender()?;
-    msg_sender.send(crate::messages::Message::Subscribe {
-        server_id: server,
-        user_id: user.id,
-    });
     msg_sender.send(crate::messages::Message::MemberJoinedServer {
         member_id,
         server_id: server,

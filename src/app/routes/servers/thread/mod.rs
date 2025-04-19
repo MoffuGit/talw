@@ -1,7 +1,7 @@
 pub mod split;
 
-use crate::app::api::channel::{get_channel, use_channel};
-use crate::app::api::thread::{get_thread, use_thread};
+use crate::app::api::channel::get_channel;
+use crate::app::api::thread::get_thread;
 use crate::app::components::channel::header::ChannelHeader;
 use crate::app::components::channel::sidebars::{MemberSideBar, SideBarContext};
 use crate::app::components::navigation::server::{use_current_channel, use_current_thread};
@@ -23,19 +23,13 @@ pub fn Thread() -> impl IntoView {
                         .get()
                         .zip(current_thread.get())
                         .map(|(channel_id, thread_id)| {
-                            let use_channel = use_channel();
-                            let use_thread = use_thread();
                             let channel = Resource::new(
                                 move || {
-                                    (
-                                        use_channel.rename_channel.version().get(),
-                                        use_channel.delete_channel.version().get(),
-                                    )
                                 },
-                                move |(_, _)| get_channel(channel_id, server_id),
+                                move |_| get_channel(channel_id, server_id),
                             );
                             let thread = Resource::new(
-                                move || (use_thread.delete_thread.version().get(),),
+                                move || (),
                                 move |_| get_thread(thread_id, channel_id),
                             );
                             view! {

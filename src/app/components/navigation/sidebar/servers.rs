@@ -2,7 +2,7 @@ use crate::app::components::navigation::context_server_menu::ContextServerMenu;
 use crate::entities::server::Server;
 use std::time::Duration;
 
-use crate::app::api::server::{get_user_servers_and_subscribe, use_server};
+use crate::app::api::server::use_server;
 use crate::app::components::modal::create_server::CreateServerModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::components::ui::tool_tip::*;
@@ -14,19 +14,7 @@ use leptos_router::hooks::use_params_map;
 
 #[component]
 pub fn Servers() -> impl IntoView {
-    let use_server = use_server();
-    let servers = Resource::new(
-        move || {
-            (
-                use_server.edit_server_image.version().get(),
-                use_server.edit_server_name.version().get(),
-                use_server.leave_server.version().get(),
-                use_server.join_with_invitation.version().get(),
-                use_server.create_server.version().get(),
-            )
-        },
-        move |_| get_user_servers_and_subscribe(),
-    );
+    let servers = use_server().get_servers;
 
     let open = RwSignal::new(false);
     let hidden = RwSignal::new(false);

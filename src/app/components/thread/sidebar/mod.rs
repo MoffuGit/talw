@@ -1,6 +1,6 @@
 pub mod header;
 use self::header::ThreadHeader;
-use crate::app::api::thread::{get_thread, use_thread};
+use crate::app::api::thread::get_thread;
 use crate::app::components::navigation::server::{use_current_channel, use_current_thread};
 use crate::entities::thread::Thread;
 //use leptos_icons::Icon;
@@ -21,7 +21,7 @@ pub fn ThreadSideBar() -> impl IntoView {
                 .get()
                 .map(|current| {
                     let thread = Resource::new(
-                        move || (use_thread().delete_thread.version().get()),
+                        move || (),
                         move |_| get_thread(current, channel_id().into_uuid()),
                     );
 

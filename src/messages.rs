@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::entities::category::Category;
+use crate::entities::channel::Channel;
+
 //NOTE:
 //they are missing more messages, like, message read, user banned but at this point im ok with only
 //more messages
@@ -50,11 +53,20 @@ pub enum Message {
     },
     ServerUpdated {
         server_id: Uuid,
-        //server_update: name,settings...
+        name: Option<String>,
+        image: Option<String>,
+    },
+    ThreadCreated {
+        server_id: Uuid,
+        thread_id: Uuid,
+    },
+    ThreadDeleted {
+        server_id: Uuid,
+        thread_id: Uuid,
     },
     ChannelCreated {
         server_id: Uuid,
-        // channel: Channel,
+        new_channel: Channel,
     },
     ChannelDeleted {
         server_id: Uuid,
@@ -62,13 +74,26 @@ pub enum Message {
     },
     ChannelUpdated {
         server_id: Uuid,
-        //channel_update: name, settings...
+        topic: Option<String>,
+        name: Option<String>,
     },
-    //UserStatus
     Typing {
         user_id: Uuid,
         chat_id: Uuid,
         is_typing: bool,
+    },
+    CategoryCreated {
+        server_id: Uuid,
+        new_category: Category,
+    },
+    CategoryUpdated {
+        server_id: Uuid,
+        id: Uuid,
+        new_name: String,
+    },
+    CategoryDeleted {
+        server_id: Uuid,
+        id: Uuid,
     },
     Close,
 }

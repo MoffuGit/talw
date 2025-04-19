@@ -11,7 +11,7 @@ cfg_if! {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Copy)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Copy, Eq)]
 #[cfg_attr(feature = "ssr", derive(Decode, Encode))]
 pub enum ChannelType {
     TEXT,
@@ -59,7 +59,7 @@ impl sqlx::Type<sqlx::MySql> for ChannelType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Channel {
     pub id: Uuid,
@@ -69,7 +69,7 @@ pub struct Channel {
     pub category_id: Option<Uuid>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct ChannelTopic(pub Option<String>);
 
@@ -77,7 +77,7 @@ pub struct ChannelTopic(pub Option<String>);
 impl Channel {
     pub async fn update_topic(
         channel_id: Uuid,
-        topic: String,
+        topic: &str,
         pool: &MySqlPool,
     ) -> Result<(), Error> {
         sqlx::query("UPDATE channels SET channels.topic = ? WHERE channels.id = ?")
@@ -99,7 +99,7 @@ impl Channel {
         .await?)
     }
     pub async fn create(
-        name: String,
+        name: &str,
         channel_type: ChannelType,
         server: Uuid,
         pool: &MySqlPool,
@@ -116,7 +116,7 @@ impl Channel {
     }
 
     pub async fn create_with_category(
-        name: String,
+        name: &str,
         channel_type: ChannelType,
         server: Uuid,
         category: Uuid,
@@ -134,7 +134,7 @@ impl Channel {
         Ok(id)
     }
 
-    pub async fn rename(new_name: String, channel_id: Uuid, pool: &MySqlPool) -> Result<(), Error> {
+    pub async fn rename(new_name: &str, channel_id: Uuid, pool: &MySqlPool) -> Result<(), Error> {
         sqlx::query("UPDATE channels SET channels.name = ? WHERE channels.id = ?")
             .bind(new_name)
             .bind(channel_id)

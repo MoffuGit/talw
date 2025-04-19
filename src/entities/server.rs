@@ -1,4 +1,5 @@
 use cfg_if::cfg_if;
+use reactive_stores::{Patch, Store};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -11,7 +12,7 @@ cfg_if! {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Store)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Server {
     pub id: Uuid,
@@ -24,7 +25,7 @@ pub struct Server {
 #[cfg(feature = "ssr")]
 impl Server {
     pub async fn set_server_name(
-        new_name: String,
+        new_name: &str,
         server_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<(), Error> {
@@ -118,8 +119,8 @@ impl Server {
     }
 
     pub async fn set_image_url(
-        url: String,
-        key: String,
+        url: &str,
+        key: &str,
         server_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<(), Error> {

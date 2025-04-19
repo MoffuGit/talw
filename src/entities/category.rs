@@ -9,7 +9,7 @@ cfg_if! {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Category {
     pub id: Uuid,
@@ -19,7 +19,7 @@ pub struct Category {
 
 #[cfg(feature = "ssr")]
 impl Category {
-    pub async fn create(name: String, server: Uuid, pool: &MySqlPool) -> Result<Uuid, Error> {
+    pub async fn create(name: &str, server: Uuid, pool: &MySqlPool) -> Result<Uuid, Error> {
         let id = Uuid::new_v4();
         sqlx::query("INSERT INTO categories (id, name, server_id) VALUES (?,?,?)")
             .bind(id)
@@ -31,7 +31,7 @@ impl Category {
     }
 
     pub async fn rename(
-        new_name: String,
+        new_name: &str,
         channel_id: Uuid,
         server: Uuid,
         pool: &MySqlPool,

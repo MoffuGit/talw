@@ -2,6 +2,7 @@ use super::server;
 use crate::entities::channel::Channel;
 use crate::entities::channel::ChannelType;
 use crate::messages::Message;
+use crate::messages::ServerMessage;
 use cfg_if::cfg_if;
 use leptos::prelude::*;
 use uuid::Uuid;
@@ -75,10 +76,9 @@ pub async fn update_channel(
             Channel::update_topic(channel_id, topic, &pool).await?;
         }
 
-        msg_sender()?.send(Message::ChannelUpdated {
+        msg_sender()?.send(ServerMessage {
             server_id,
-            topic,
-            name,
+            msg: Message::ChannelUpdated { topic, name },
         });
         Ok(())
     } else {
@@ -128,14 +128,16 @@ pub async fn create_channel(
         }
 
         let channel_id = Channel::create(&name, channel_type, server_id, &pool).await?;
-        msg_sender()?.send(Message::ChannelCreated {
+        msg_sender()?.send(ServerMessage {
             server_id,
-            new_channel: Channel {
-                id: channel_id,
-                name,
-                channel_type,
-                server_id,
-                category_id: None,
+            msg: Message::ChannelCreated {
+                new_channel: Channel {
+                    id: channel_id,
+                    name,
+                    channel_type,
+                    server_id,
+                    category_id: None,
+                },
             },
         });
         return Ok(channel_id);
@@ -162,14 +164,16 @@ pub async fn create_channel_with_category(
             Channel::create_with_category(&name, channel_type, server_id, category_id, &pool)
                 .await?;
 
-        msg_sender()?.send(Message::ChannelCreated {
+        msg_sender()?.send(ServerMessage {
             server_id,
-            new_channel: Channel {
-                id: channel_id,
-                name,
-                channel_type,
-                server_id,
-                category_id: Some(category_id),
+            msg: Message::ChannelCreated {
+                new_channel: Channel {
+                    id: channel_id,
+                    name,
+                    channel_type,
+                    server_id,
+                    category_id: Some(category_id),
+                },
             },
         });
 
@@ -186,9 +190,9 @@ pub async fn delete_channel(server_id: Uuid, channel_id: Uuid) -> Result<(), Ser
 
     if user_can_edit(server_id, user.id, &pool).await? {
         Channel::delete(channel_id, server_id, &pool).await?;
-        msg_sender()?.send(Message::ChannelDeleted {
+        msg_sender()?.send(ServerMessage {
             server_id,
-            channel_id,
+            msg: Message::ChannelDeleted { channel_id },
         });
         return Ok(());
     }

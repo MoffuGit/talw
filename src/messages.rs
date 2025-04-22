@@ -4,76 +4,88 @@ use uuid::Uuid;
 use crate::entities::category::Category;
 use crate::entities::channel::Channel;
 
-//NOTE:
-//they are missing more messages, like, message read, user banned but at this point im ok with only
-//more messages
-//reaction
-//category changes
-//private messages
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub enum AppMessage {
+    ClientMessage(ClientMessage),
+    ClosedConnection { user_id: Uuid },
+    Subscribe { user_id: Uuid, server_id: Uuid },
+    Unsubscribe { user_id: Uuid, server_id: Uuid },
+    Batch(Vec<AppMessage>),
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub enum ClientMessage {
+    ServerMessage(ServerMessage),
+    ServerDeleted { server_id: Uuid },
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+pub struct ServerMessage {
+    pub server_id: Uuid,
+    pub msg: Message,
+}
+
+impl From<ClientMessage> for AppMessage {
+    fn from(val: ClientMessage) -> Self {
+        AppMessage::ClientMessage(val)
+    }
+}
+
+impl From<ServerMessage> for AppMessage {
+    fn from(val: ServerMessage) -> Self {
+        AppMessage::ClientMessage(ClientMessage::ServerMessage(val))
+    }
+}
+
+impl From<ServerMessage> for ClientMessage {
+    fn from(value: ServerMessage) -> Self {
+        ClientMessage::ServerMessage(value)
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum Message {
-    Batch(Vec<Message>),
-    Subscribe {
-        server_id: Uuid,
-        user_id: Uuid,
-    },
-    Unsubscribe {
-        server_id: Uuid,
-        user_id: Uuid,
-    },
-    ChannelMessage {
-        server_id: Uuid,
-        channel_id: Uuid,
-        content: String,
-        //content: Message
-    },
-    ThreadMessage {
-        server_id: Uuid,
-        thread_id: Uuid,
-        content: String,
-        //content: Message
-    },
+    Batch(Vec<ServerMessage>),
     UserConnected {
-        server_id: Uuid,
         user_id: Uuid,
     },
     UserDisconnected {
         user_id: Uuid,
     },
+    ChannelMessage {
+        channel_id: Uuid,
+        content: String,
+        //content: Message
+    },
+    ThreadMessage {
+        thread_id: Uuid,
+        content: String,
+        //content: Message
+    },
     MemberJoinedServer {
-        member_id: Uuid,
-        server_id: Uuid,
+        user_id: Uuid,
     },
     MemberLeftServer {
-        member_id: Uuid,
-        server_id: Uuid,
+        user_id: Uuid,
     },
-    ServerDeleted {
-        server_id: Uuid,
-    },
+    ServerDeleted,
     ServerUpdated {
-        server_id: Uuid,
         name: Option<String>,
         image: Option<String>,
     },
     ThreadCreated {
-        server_id: Uuid,
         thread_id: Uuid,
     },
     ThreadDeleted {
-        server_id: Uuid,
         thread_id: Uuid,
     },
     ChannelCreated {
-        server_id: Uuid,
         new_channel: Channel,
     },
     ChannelDeleted {
-        server_id: Uuid,
         channel_id: Uuid,
     },
     ChannelUpdated {
-        server_id: Uuid,
         topic: Option<String>,
         name: Option<String>,
     },
@@ -83,17 +95,13 @@ pub enum Message {
         is_typing: bool,
     },
     CategoryCreated {
-        server_id: Uuid,
         new_category: Category,
     },
     CategoryUpdated {
-        server_id: Uuid,
         id: Uuid,
         new_name: String,
     },
     CategoryDeleted {
-        server_id: Uuid,
         id: Uuid,
     },
-    Close,
 }

@@ -18,11 +18,11 @@ use uuid::Uuid;
 
 use crate::{
     entities::user::{AuthSession, User},
-    messages::Message,
+    messages::AppMessage,
     state::AppState,
 };
 
-pub type WsChannels = Arc<DashMap<Uuid, (Sender<Message>, Arc<Mutex<Receiver<Message>>>)>>;
+pub type WsChannels = Arc<DashMap<Uuid, (Sender<AppMessage>, Arc<Mutex<Receiver<AppMessage>>>)>>;
 
 pub async fn ws_handler(
     auth_session: AuthSession,
@@ -44,7 +44,7 @@ async fn handle_socket(socket: WebSocket, state: AppState, user: User) {
         match channels.get(&user.id) {
             Some(channel) => channel.1.clone(),
             None => {
-                let (tx, rx) = broadcast::channel::<Message>(1000);
+                let (tx, rx) = broadcast::channel::<AppMessage>(1000);
                 let rx = Arc::new(Mutex::new(rx));
                 channels.insert(user.id, (tx.clone(), rx.clone()));
                 rx
@@ -54,13 +54,18 @@ async fn handle_socket(socket: WebSocket, state: AppState, user: User) {
 
     let mut send_task = tokio::spawn(async move {
         while let Ok(msg) = rx.lock().await.recv().await {
-            if sender
-                .send(WsMessage::Text(serde_json::to_string(&msg).unwrap().into()))
-                .await
-                .is_err()
-            {
-                debug!("we got an error when sending the message");
-                break;
+            debug!("got this msg from the msg sender: {msg:?}");
+            if let AppMessage::ClientMessage(msg) = msg {
+                if sender
+                    .send(WsMessage::Text(serde_json::to_string(&msg).unwrap().into()))
+                    .await
+                    .is_err()
+                {
+                    debug!("we got an error when sending the message");
+                    break;
+                }
+            } else {
+                debug!("got a msg that isnt ClientMessage");
             }
         }
     });
@@ -68,16 +73,16 @@ async fn handle_socket(socket: WebSocket, state: AppState, user: User) {
     let mut recv_task: tokio::task::JoinHandle<Result<(), anyhow::Error>> =
         tokio::spawn(async move {
             let msg_sender = state.msg_sender;
-            //if the receiver close connection send a UserDisconnectd to the msg_sender
             while let Some(Ok(WsMessage::Text(msg))) = receiver.next().await {
-                if let Ok(msg) = serde_json::from_str::<Message>(&msg) {
+                if let Ok(msg) = serde_json::from_str::<AppMessage>(&msg) {
+                    debug!("got this msg from the client: {msg:?}");
                     msg_sender.send(msg);
                 } else {
                     debug!("we got a msg but cant deserialize");
                 }
             }
 
-            msg_sender.send(Message::UserDisconnected { user_id: user.id });
+            msg_sender.send(AppMessage::ClosedConnection { user_id: user.id });
             Ok(())
         });
 

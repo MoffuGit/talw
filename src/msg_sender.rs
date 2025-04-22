@@ -5,24 +5,25 @@ use tokio::sync::broadcast::Sender;
 use tokio::sync::broadcast::{self, Receiver};
 use uuid::Uuid;
 
+use crate::messages::{ClientMessage, Message, ServerMessage};
 use crate::ws::server::WsChannels;
 
-use super::messages::Message;
+use super::messages::AppMessage;
 use super::subs::Subscriptions;
 
 #[derive(Clone)]
 pub struct MsgSender {
-    sender: Sender<Message>,
+    sender: Sender<AppMessage>,
 }
 
 impl MsgSender {
-    pub fn send(&self, msg: Message) {
-        let _ = self.sender.send(msg);
+    pub fn send(&self, msg: impl Into<AppMessage>) {
+        let _ = self.sender.send(msg.into());
     }
 }
 
 impl Debug for MsgSender {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         f.debug_struct("MsgBroker").finish()
     }
 }
@@ -39,13 +40,13 @@ impl MsgSender {
 }
 
 struct MsgReceiver {
-    receiver: Receiver<Message>,
+    receiver: Receiver<AppMessage>,
     subscriptions: Subscriptions,
     channels: WsChannels,
 }
 
 impl MsgReceiver {
-    pub fn new(receiver: Receiver<Message>, channels: WsChannels) -> Self {
+    pub fn new(receiver: Receiver<AppMessage>, channels: WsChannels) -> Self {
         MsgReceiver {
             receiver,
             channels,
@@ -55,48 +56,94 @@ impl MsgReceiver {
 
     pub async fn start(&mut self) {
         while let Ok(msg) = self.receiver.recv().await {
-            self.handle_msg(msg);
+            debug!("receive msg: {msg:?}");
+            self.handle_app_msg(msg);
         }
     }
 
-    pub fn handle_msg(&mut self, msg: Message) {
-        debug!("got this msg on the msg receiver {:?}", msg);
+    pub fn handle_sub_msg(&mut self, server_id: Uuid, user_id: Uuid) {
+        debug!("we are going to subscribe the user {user_id} to {server_id}");
+        self.subscriptions.subscribe(user_id, server_id);
+        self.send_msg_to_sever(
+            server_id,
+            ServerMessage {
+                server_id,
+                msg: Message::UserConnected { user_id },
+            },
+        );
+    }
+
+    pub fn handle_unsub_msg(&mut self, server_id: Uuid, user_id: Uuid) {
+        self.subscriptions.unsubscribe(user_id, server_id);
+        self.send_msg_to_sever(
+            server_id,
+            ServerMessage {
+                server_id,
+                msg: Message::UserDisconnected { user_id },
+            },
+        );
+    }
+
+    pub fn handle_client_message(&mut self, msg: ClientMessage) {
         match msg {
-            Message::Batch(msgs) => {
-                for msg in msgs {
-                    self.handle_msg(msg);
-                }
+            ClientMessage::ServerMessage(ref server_message) => {
+                debug!("we send this to servers: {:?}", server_message);
+                let server_id = server_message.server_id;
+                self.send_msg_to_sever(server_id, msg);
             }
-            Message::Subscribe { user_id, server_id } => {
-                self.subscriptions.subscribe(user_id, server_id);
+            ClientMessage::ServerDeleted { server_id } => {
+                self.send_msg_to_sever(server_id, msg);
             }
-            Message::Unsubscribe { server_id, user_id } => {
-                self.subscriptions.unsubscribe(user_id, server_id);
-            }
-            Message::MemberJoinedServer { server_id, .. } => {
-                self.send_msg_to_topic(msg, server_id);
-            }
-            Message::UserConnected { server_id, .. } => {
-                self.send_msg_to_topic(msg, server_id);
-            }
-            Message::UserDisconnected { user_id } => {
-                let servers = self.subscriptions.unsubscribe_all(user_id);
-                if let Some(servers) = servers {
-                    servers.into_iter().for_each(|server_id| {
-                        self.send_msg_to_topic(msg.clone(), server_id);
-                    })
-                }
-            }
-            _ => {}
         }
     }
 
-    pub fn send_msg_to_topic(&mut self, msg: Message, server_id: Uuid) {
-        if let Some(users) = self.subscriptions.topic_subscriptions.get(&server_id) {
+    pub fn handle_user_disconnect(&mut self, user_id: Uuid) {
+        let servers = self.subscriptions.unsubscribe_all(user_id);
+        for server_id in servers {
+            self.send_msg_to_sever(
+                server_id,
+                ServerMessage {
+                    server_id,
+                    msg: Message::UserDisconnected { user_id },
+                },
+            );
+        }
+    }
+
+    pub fn handle_app_msg(&mut self, message: AppMessage) {
+        match message {
+            AppMessage::ClientMessage(client_message) => {
+                self.handle_client_message(client_message);
+            }
+            AppMessage::ClosedConnection { user_id } => {
+                self.handle_user_disconnect(user_id);
+            }
+            AppMessage::Subscribe { user_id, server_id } => {
+                self.handle_sub_msg(server_id, user_id);
+            }
+            AppMessage::Unsubscribe { user_id, server_id } => {
+                self.handle_unsub_msg(server_id, user_id);
+            }
+            AppMessage::Batch(app_messages) => {
+                for msg in app_messages {
+                    self.handle_app_msg(msg);
+                }
+            }
+        }
+    }
+
+    pub fn send_msg_to_sever(
+        &mut self,
+        server_id: Uuid,
+        msg: impl Into<ClientMessage> + std::fmt::Debug,
+    ) {
+        if let Some(users) = self.subscriptions.server_subscriptions.get(&server_id) {
+            debug!("sending msg: {msg:?} to users: {users:?}");
+            let msg = std::convert::Into::<ClientMessage>::into(msg);
             for user in users {
                 if let Some(channel) = self.channels.get(user) {
                     let sender = channel.0.clone();
-                    let _ = sender.send(msg.clone());
+                    let _ = sender.send(AppMessage::ClientMessage(msg.clone()));
                 }
             }
         }

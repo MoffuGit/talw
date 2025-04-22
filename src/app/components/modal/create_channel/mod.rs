@@ -12,7 +12,7 @@ use uuid::Uuid;
 pub fn CreateChannelModal(
     class: &'static str,
     #[prop(optional)] on_click: Option<Signal<()>>,
-    server_id: Uuid,
+    #[prop(into)] server_id: Signal<Uuid>,
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] category_id: Option<Uuid>,
     #[prop(optional)] category_name: Option<String>,
@@ -138,7 +138,7 @@ pub fn CreateChannelModal(
                                 >
                                     "Cancel"
                                 </ModalClose>
-                                <input value=server_id.to_string() type="hidden" name="server_id" />
+                                <input value=move || server_id.get().to_string() type="hidden" name="server_id" />
                                 <input
                                     value=category_id.to_string()
                                     type="hidden"
@@ -267,7 +267,7 @@ pub fn CreateChannelModal(
                                 >
                                     "Cancel"
                                 </ModalClose>
-                                <input value=server_id.to_string() type="hidden" name="server_id" />
+                                <input value=move || server_id.get().to_string() type="hidden" name="server_id" />
                                 <button
                                     type="submit"
                                     class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-secondary text-seconday-content"

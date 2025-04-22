@@ -6,6 +6,7 @@ use crate::app::api::server::get_server;
 use crate::app::components::ui::overview::*;
 use crate::entities::server::Server;
 use leptos::prelude::*;
+use reactive_stores::Field;
 use std::fmt::Display;
 use uuid::Uuid;
 
@@ -87,7 +88,7 @@ pub fn ServerOverview() -> impl IntoView {
 pub fn ServerOverviewTrigger(
     children: Children,
     class: &'static str,
-    server_id: Uuid,
+    #[prop(into)] server_id: Signal<Uuid>,
     #[prop(optional)] select_setting: Option<ServerSettings>,
 ) -> impl IntoView {
     let overview_context = use_context::<ServerOverviewContext>()
@@ -96,7 +97,7 @@ pub fn ServerOverviewTrigger(
     view! {
         <OverviewTrigger
             on_click=Signal::derive(move || {
-                overview_context.server.set(Some(server_id));
+                overview_context.server.set(Some(server_id.get()));
                 if let Some(select_setting) = select_setting {
                     overview_context.settings.set(select_setting)
                 }

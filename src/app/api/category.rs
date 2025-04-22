@@ -1,5 +1,5 @@
 use crate::entities::category::Category;
-use crate::messages::Message;
+use crate::messages::{Message, ServerMessage};
 use cfg_if::cfg_if;
 use leptos::prelude::*;
 use uuid::Uuid;
@@ -61,9 +61,9 @@ pub async fn create_category(server_id: Uuid, name: String) -> Result<Uuid, Serv
             name,
             server_id,
         };
-        msg_sender.send(Message::CategoryCreated {
+        msg_sender.send(ServerMessage {
             server_id,
-            new_category,
+            msg: Message::CategoryCreated { new_category },
         });
         return Ok(category_id);
     }
@@ -85,10 +85,12 @@ pub async fn rename_category(
         }
         let msg_sender = msg_sender()?;
         Category::rename(&new_name, category_id, server_id, &pool).await?;
-        msg_sender.send(Message::CategoryUpdated {
+        msg_sender.send(ServerMessage {
             server_id,
-            new_name,
-            id: category_id,
+            msg: Message::CategoryUpdated {
+                new_name,
+                id: category_id,
+            },
         });
         return Ok(());
     };
@@ -104,9 +106,9 @@ pub async fn delete_category(server_id: Uuid, category_id: Uuid) -> Result<(), S
     if user_can_edit(server_id, user.id, &pool).await? {
         Channel::remove_all_from_category(server_id, category_id, &pool).await?;
         Category::delete(category_id, server_id, &pool).await?;
-        msg_sender()?.send(Message::CategoryDeleted {
+        msg_sender()?.send(ServerMessage {
             server_id,
-            id: category_id,
+            msg: Message::CategoryDeleted { id: category_id },
         });
         return Ok(());
     };

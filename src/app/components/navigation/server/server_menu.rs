@@ -1,3 +1,5 @@
+use std::ops::Not;
+
 use crate::app::components::modal::create_category::CreateCategoryModal;
 use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::modal::invite_people::InvitePeopleModal;
@@ -58,7 +60,7 @@ pub fn ServerMenu() -> impl IntoView {
                         >
                             <div>"Invite People"</div>
                         </InvitePeopleModal>
-                        {if member_can_edit {
+                        {member_can_edit.then(|| {
                             view! {
                                 <div class="bg-base-100 h-px my-1 -mx-1" />
                                 <ServerMenuAdminItems
@@ -67,24 +69,18 @@ pub fn ServerMenu() -> impl IntoView {
                                     on_click=on_click_item
                                 />
                             }
-                                .into_any()
-                        } else {
-                            ().into_any()
-                        }}
+                        })}
                         <div class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm">
                             <div>"Edit Server Profile"</div>
                         </div>
-                        {if !member_can_edit {
+                        {member_can_edit.not().then(|| {
                             view! {
                                 <ServerMenuGuestItems
                                     leave_server_node=leave_server_node
                                     on_click=on_click_item
                                 />
                             }
-                                .into_any()
-                        } else {
-                            ().into_any()
-                        }}
+                        })}
                     </div>
                 </DropdownContent>
             </DropdownProvider>
@@ -135,7 +131,8 @@ fn ServerMenuGuestItems(
 ) -> impl IntoView {
     let CurrentServerContext { server, .. } = use_current_server_context();
     view! {
-        // <div class="bg-base-100 h-px my-1 -mx-1" />
+        <div class="bg-base-100 h-px my-1 -mx-1" />
+        //NOTE: FIX THIS
         // <LeaveServer
         //     content_ref=leave_server_node
         //     server=server

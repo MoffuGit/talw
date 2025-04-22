@@ -1,8 +1,11 @@
 use crate::app::components::navigation::context_server_menu::ContextServerMenu;
+use crate::app::routes::servers::ServersStore;
+use crate::app::routes::servers::ServersStoreStoreFields;
 use crate::entities::server::Server;
+use crate::entities::server::ServerStoreFields;
+use crate::ws::client::use_ws;
 use std::time::Duration;
 
-use crate::app::api::server::use_server;
 use crate::app::components::modal::create_server::CreateServerModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::components::ui::tool_tip::*;
@@ -11,10 +14,13 @@ use leptos::prelude::*;
 //use leptos_icons::*;
 use leptos_router::components::A;
 use leptos_router::hooks::use_params_map;
+use reactive_stores::Field;
+use reactive_stores::Store;
 
 #[component]
 pub fn Servers() -> impl IntoView {
-    let servers = use_server().get_servers;
+    let servers_store =
+        use_context::<Store<ServersStore>>().expect("should acces to the Servers Store.");
 
     let open = RwSignal::new(false);
     let hidden = RwSignal::new(false);
@@ -71,24 +77,22 @@ pub fn Servers() -> impl IntoView {
                 </div>
             </ContextMenuContent>
         </ContextMenuProvider>
-        <Transition>
-            <For
-                each=move || servers.get().and_then(Result::ok).unwrap_or_default()
-                key=|server| server.id
-                children=move |server: Server| {
-                    view! { <ServerNavigation server=server /> }
-                }
-            />
-        </Transition>
+        <For
+            each=move || servers_store.servers()
+            key=|server| server.id().get()
+            let:server
+        >
+            <ServerNavigation server=server />
+        </For>
     }
 }
 
 #[component]
-pub fn ServerNavigation(server: Server) -> impl IntoView {
-    let current_server =
-        move || use_params_map().with(|params| params.get("id").map(|id| id.to_string()));
-    let image_url = server.image_url.clone();
-    let name = server.name.clone();
+pub fn ServerNavigation(#[prop(into)] server: Field<Server>) -> impl IntoView {
+    let current_server = move || use_params_map().with(|params| params.get("id"));
+    let image_url = server.image_url();
+    let name = server.name();
+    let id = server.id();
     view! {
         <div class="group flex relative items-center justify-center w-full my-0.5">
             <div class=move || {
@@ -96,7 +100,7 @@ pub fn ServerNavigation(server: Server) -> impl IntoView {
                     "absolute left-0 bg-white rounded-r-full transition-all duration-100 ease-linear w-0.5 {}",
                     {
                         match current_server()
-                            .is_some_and(|current| { current == server.id.simple().to_string() })
+                            .is_some_and(|current| { current == id.get().simple().to_string() })
                         {
                             false => "group-hover:h-3 h-1",
                             true => "h-6",
@@ -107,12 +111,12 @@ pub fn ServerNavigation(server: Server) -> impl IntoView {
             <TooltipProvider delay_duration=Duration::new(0, 0)>
                 <TooltipTrigger class="relative my-0.5">
                     <A
-                        href=server.id.simple().to_string()
+                        href=move || id.get().simple().to_string()
                         {..}
                         class="group flex relative items-center"
                     >
                         <ContextServerMenu server=server>
-                            {image_url
+                            {move || image_url.get()
                                 .map(|url| {
                                     view! { <img class="w-full h-full object-cover " src=url /> }
                                 })}

@@ -1,12 +1,17 @@
 use async_broadcast::{broadcast, Receiver, Sender};
+use dashmap::DashMap;
+use futures::lock::Mutex;
 use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::futures::WebSocket as GlooWs;
 use gloo_net::websocket::Message as GlooMsg;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use log::debug;
+use std::sync::Arc;
+use uuid::Uuid;
+use web_sys::console::debug;
 
-use crate::messages::Message;
+use crate::messages::{AppMessage, ClientMessage, Message, ServerMessage};
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum WsState {
@@ -15,23 +20,70 @@ pub enum WsState {
     Stoped,
 }
 
+type Channels = Arc<DashMap<Uuid, (Sender<Message>, Arc<Mutex<Receiver<Message>>>)>>;
+
 #[derive(Clone)]
 pub struct WsContext {
-    sender: Sender<Message>,
-    receiver: Receiver<Message>,
+    sender: Sender<WsMessage>,
+    servers_channels: Channels,
+    app_channel: (Sender<ClientMessage>, Arc<Mutex<Receiver<ClientMessage>>>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum WsMessage {
+    AppMessage(AppMessage),
+    Close,
 }
 
 impl WsContext {
-    pub fn send(&self, msg: Message) {
-        let sb = self.sender.clone();
-        spawn_local(async move {
-            let _ = sb.broadcast(msg).await;
-        });
+    pub fn send(&self, msg: AppMessage) {
+        #[cfg(feature = "hydrate")]
+        {
+            let sb = self.sender.clone();
+            spawn_local(async move {
+                let _ = sb.broadcast(WsMessage::AppMessage(msg)).await;
+            });
+        }
     }
 
-    pub fn on_msg(&self) {
-        let mut rb = self.receiver.clone();
-        spawn_local(async move { while let Ok(msg) = rb.recv().await {} });
+    //NOTE:
+    //this should remove and add servers in base of the servers vec
+    pub fn sync_channels(&self, servers: Vec<Uuid>, user_id: Uuid) {
+        debug!("creatign channels for servers:{servers:?}");
+        let mut messages = vec![];
+        for server_id in servers {
+            let (sender, receiver) = broadcast::<Message>(1000);
+            let receiver = Arc::new(Mutex::new(receiver));
+            self.servers_channels.insert(server_id, (sender, receiver));
+            messages.push(AppMessage::Subscribe { user_id, server_id });
+        }
+        self.send(AppMessage::Batch(messages));
+    }
+
+    pub fn on_server_msg(&self, server_id: Uuid) {
+        #[cfg(feature = "hydrate")]
+        {
+            if let Some(broadcast) = self.servers_channels.get(&server_id) {
+                let rx = broadcast.1.clone();
+                spawn_local(async move {
+                    while let Ok(msg) = rx.lock().await.recv().await {
+                        debug!("msg: {:?}", msg);
+                    }
+                });
+            }
+        }
+    }
+
+    pub fn on_app_msg(&self) {
+        #[cfg(feature = "hydrate")]
+        {
+            let rx = self.app_channel.1.clone();
+            spawn_local(async move {
+                while let Ok(msg) = rx.lock().await.recv().await {
+                    debug!("msg: {:?}", msg);
+                }
+            });
+        }
     }
 }
 
@@ -41,10 +93,14 @@ pub fn use_ws() -> WsContext {
 
 pub fn provide_ws_context() {
     let ws_state = RwSignal::new(WsState::Closed);
-    let (sender_sb, sender_rb) = broadcast::<Message>(1000);
-    let (receiver_sb, receiver_rb) = broadcast::<Message>(1000);
+    let (sender_sb, sender_rb) = broadcast::<WsMessage>(1000);
+    let servers_channels: Channels = Arc::new(DashMap::new());
+    let (app_sender, app_receiver) = broadcast::<ClientMessage>(1000);
+    let app_receiver = Arc::new(Mutex::new(app_receiver));
 
     let connect = StoredValue::new({
+        let channels = servers_channels.clone();
+        let app_sender = app_sender.clone();
         move || {
             let ws = match GlooWs::open("ws://localhost:3000/ws") {
                 Ok(ws) => {
@@ -61,15 +117,24 @@ pub fn provide_ws_context() {
 
             let mut sender_rb = sender_rb.clone();
 
-            let receiver_sb = receiver_sb.clone();
-
             spawn_local(async move {
                 while let Some(message) = receiver_ws.next().await {
                     match message {
                         Ok(GlooMsg::Text(msg)) => {
-                            let msg = serde_json::from_str(&msg).unwrap();
-                            debug!("we got this msg from the server: {:?}", msg);
-                            let _ = receiver_sb.broadcast(msg).await;
+                            let message = serde_json::from_str::<ClientMessage>(&msg)
+                                .expect("should receive an ClientMessage");
+                            match message {
+                                ClientMessage::ServerMessage(ServerMessage { server_id, msg }) => {
+                                    if let Some(broadcast) = channels.get(&server_id) {
+                                        let _ = broadcast.0.clone().broadcast(msg).await;
+                                    } else {
+                                        debug!("Got a msg to server_id: {}, but we don't have a broadcast for this id", server_id)
+                                    }
+                                }
+                                ClientMessage::ServerDeleted { .. } => {
+                                    let _ = app_sender.broadcast(message).await;
+                                }
+                            }
                         }
                         Ok(_) => {
                             debug!("not impl yet")
@@ -83,17 +148,22 @@ pub fn provide_ws_context() {
             });
 
             spawn_local(async move {
-                while let Ok(message) = sender_rb.recv().await {
-                    if let Message::Close = message {
-                        let _ = sender_ws.close().await;
-                        ws_state.set(WsState::Closed);
-                    } else if (sender_ws
-                        .send(GlooMsg::Text(serde_json::to_string(&message).unwrap()))
-                        .await)
-                        .is_err()
-                    {
-                        ws_state.set(WsState::Closed);
-                        break;
+                while let Ok(msg) = sender_rb.recv().await {
+                    match msg {
+                        WsMessage::Close => {
+                            let _ = sender_ws.close().await;
+                            ws_state.set(WsState::Closed);
+                        }
+                        WsMessage::AppMessage(msg) => {
+                            if (sender_ws
+                                .send(GlooMsg::Text(serde_json::to_string(&msg).unwrap()))
+                                .await)
+                                .is_err()
+                            {
+                                ws_state.set(WsState::Closed);
+                                break;
+                            }
+                        }
                     }
                 }
             });
@@ -106,7 +176,7 @@ pub fn provide_ws_context() {
         on_cleanup(move || {
             let sb = sb_clean;
             spawn_local(async move {
-                let _ = sb.broadcast(Message::Close).await;
+                let _ = sb.broadcast(WsMessage::Close).await;
             });
         });
     }
@@ -121,6 +191,7 @@ pub fn provide_ws_context() {
 
     provide_context(WsContext {
         sender: sender_sb.clone(),
-        receiver: receiver_rb.clone(),
+        servers_channels,
+        app_channel: (app_sender, app_receiver),
     });
 }

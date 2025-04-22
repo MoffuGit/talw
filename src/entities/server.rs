@@ -1,5 +1,5 @@
 use cfg_if::cfg_if;
-use reactive_stores::{Patch, Store};
+use reactive_stores::Store;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -93,16 +93,23 @@ impl Server {
                 .await?,
         )
     }
-    pub async fn create(name: String, user_id: Uuid, pool: &MySqlPool) -> Result<Uuid, Error> {
+    pub async fn create(name: &str, user_id: Uuid, pool: &MySqlPool) -> Result<Server, Error> {
         let id = Uuid::new_v4();
+        let invite_code = Uuid::new_v4();
         sqlx::query("INSERT INTO servers (id, name, invite_code, owner_id) VALUES (?, ?, ?, ?)")
             .bind(id)
             .bind(name)
-            .bind(Uuid::new_v4())
+            .bind(invite_code)
             .bind(user_id)
             .execute(pool)
             .await?;
-        Ok(id)
+        Ok(Server {
+            id,
+            name: name.to_string(),
+            invite_code,
+            image_url: None,
+            owner_id: id,
+        })
     }
 
     pub async fn get_server_image_key(

@@ -6,7 +6,7 @@ use uuid::Uuid;
 pub fn InvitePeopleModal(
     class: &'static str,
     on_click: Signal<()>,
-    invite_code: Uuid,
+    #[prop(into)] invite_code: Signal<Uuid>,
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
@@ -27,7 +27,7 @@ pub fn InvitePeopleModal(
                     </div>
                     <div class="text-base w-full rounded h-[40px] bg-base-300 flex items-center justify-between">
                         <div class="p-2" node_ref=invite_ref>
-                            {invite_code.simple().to_string()}
+                            {move || invite_code.get().simple().to_string()}
                         </div>
                         <div class="btn-primary text-primary-content w-[75px] h-[32px] rounded m-1">
                             // on:click=move |_| {

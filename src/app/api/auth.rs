@@ -2,6 +2,7 @@ use super::user::get_user;
 use crate::entities::user::User;
 use cfg_if::cfg_if;
 use leptos::prelude::*;
+use log::debug;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -48,7 +49,7 @@ pub fn use_auth() -> AuthContext {
     use_context::<AuthContext>().expect("have auth context")
 }
 
-#[server(Login, "/api")]
+#[server(Login)]
 pub async fn login(
     username: String,
     password: String,

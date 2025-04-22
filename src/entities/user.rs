@@ -53,7 +53,7 @@ pub struct Profile {
 impl User {
     pub async fn get_password(user_id: Uuid, pool: &MySqlPool) -> Result<String, Error> {
         Ok(
-            sqlx::query_as::<_, (String,)>("SELECT password FROM user WHERE id = ?")
+            sqlx::query_as::<_, (String,)>("SELECT password FROM users WHERE id = ?")
                 .bind(user_id)
                 .fetch_one(pool)
                 .await?

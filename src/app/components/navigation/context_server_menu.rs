@@ -5,21 +5,21 @@ use crate::app::components::modal::invite_people::InvitePeopleModal;
 use crate::app::components::modal::leave_server::LeaveServer;
 use crate::app::components::overview::server::ServerOverviewTrigger;
 use crate::app::components::ui::context_menu::*;
-use crate::entities::server::Server;
+use crate::entities::server::{Server, ServerStoreFields};
 use leptos::either::Either;
 use leptos::{html, prelude::*};
+use reactive_stores::Field;
 
 #[component]
 pub fn ContextServerMenu(
-    server: Server,
+    #[prop(into)] server: Field<Server>,
     #[prop(optional)] children: Option<Children>,
 ) -> impl IntoView {
     let open = RwSignal::new(false);
     let hidden = RwSignal::new(false);
     let on_click_item = Signal::derive(move || hidden.set(true));
-    let member_can_update = Resource::new(|| (), move |_| member_can_edit(server.id));
-    let invite_code = server.invite_code;
-    let server = StoredValue::new(server);
+    let member_can_update = Resource::new(move || server.id().get(), member_can_edit);
+    let invite_code = server.invite_code();
     let create_channel_node = NodeRef::<html::Div>::new();
     let create_category_node = NodeRef::<html::Div>::new();
     let invite_people_node = NodeRef::<html::Div>::new();
@@ -61,7 +61,7 @@ pub fn ContextServerMenu(
                                                         create_channel_node,
                                                         create_category_node,
                                                     }
-                                                    server=server.get_value()
+                                                    server=server
                                                     on_click=on_click_item
                                                 />
                                             },
@@ -72,7 +72,7 @@ pub fn ContextServerMenu(
                                                 <div class="bg-base-100 h-px my-1 -mx-1" />
                                                 <ServerMenuGuestItems
                                                     leave_server_node=leave_server_node
-                                                    server=server.get_value()
+                                                    server=server
                                                     on_click=on_click_item
                                                 />
                                             },
@@ -96,7 +96,7 @@ pub struct ServerMenuNodes {
 #[component]
 fn ServerMenuAdminItems(
     on_click: Signal<()>,
-    server: Server,
+    #[prop(into)] server: Field<Server>,
     nodes: ServerMenuNodes,
 ) -> impl IntoView {
     let ServerMenuNodes {
@@ -105,7 +105,7 @@ fn ServerMenuAdminItems(
     } = nodes;
     view! {
         <ServerOverviewTrigger
-            server_id=server.id
+            server_id=server.id()
             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
         >
             "Server Settings"
@@ -114,7 +114,7 @@ fn ServerMenuAdminItems(
         <CreateChannelModal
             content_ref=create_channel_node
             on_click=on_click
-            server_id=server.id
+            server_id=server.id()
             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
         >
             <div class="">"Create Channel"</div>
@@ -123,7 +123,7 @@ fn ServerMenuAdminItems(
         <CreateCategoryModal
             content_ref=create_category_node
             on_click=on_click
-            server_id=server.id
+            server_id=server.id()
             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
         >
             <div class="">"Create Category"</div>
@@ -133,7 +133,7 @@ fn ServerMenuAdminItems(
 
 #[component]
 fn ServerMenuGuestItems(
-    server: Server,
+    #[prop(into)] server: Field<Server>,
     on_click: Signal<()>,
     leave_server_node: NodeRef<html::Div>,
 ) -> impl IntoView {

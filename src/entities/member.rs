@@ -163,7 +163,7 @@ impl Member {
         user_id: Uuid,
         invitation: Uuid,
         pool: &MySqlPool,
-    ) -> Result<(Uuid, Uuid), Error> {
+    ) -> Result<Uuid, Error> {
         let id = Uuid::new_v4();
         let server_id = Server::get_from_invitation(invitation, pool).await?;
         sqlx::query("INSERT INTO members (id, user_id, server_id) VALUES(?, ?, ?)")
@@ -172,7 +172,7 @@ impl Member {
             .bind(server_id)
             .execute(pool)
             .await?;
-        Ok((id, server_id))
+        Ok(server_id)
     }
 
     pub async fn check_member_from_invitation(

@@ -2,10 +2,7 @@ mod api;
 mod components;
 mod routes;
 
-use crate::app::api::thread::provide_thread_context;
 use api::auth::provide_auth_context;
-use api::channel::provide_channel_context;
-use api::server::provide_server_context;
 use api::theme::{provide_theme_context, Theme};
 use leptos::prelude::*;
 use leptos_meta::*;
@@ -18,23 +15,17 @@ use routes::servers::empty_server::EmptyServer;
 use routes::servers::server::Server;
 use routes::signup::Signup;
 
-use crate::app::api::category::provide_category_context;
 use crate::app::routes::servers::thread::split::ThreadSplit;
 
 use self::api::auth::use_auth;
-use self::api::user::provide_user_context;
 use self::routes::servers::thread::Thread;
 use self::routes::servers::Servers;
 
 #[component]
 pub fn App() -> impl IntoView {
     provide_meta_context();
-    provide_server_context();
     provide_theme_context();
     provide_auth_context();
-    provide_channel_context();
-    provide_category_context();
-    provide_thread_context();
 
     //NOTE:
     //start sending messages

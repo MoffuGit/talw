@@ -10,7 +10,7 @@ use uuid::Uuid;
 pub fn CreateCategoryModal(
     class: &'static str,
     on_click: Signal<()>,
-    server_id: Uuid,
+    #[prop(into)] server_id: Signal<Uuid>,
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
@@ -65,7 +65,7 @@ pub fn CreateCategoryModal(
                         </ModalClose>
                         <input
                             minlength="1"
-                            value=server_id.to_string()
+                            value=move || server_id.get().to_string()
                             type="hidden"
                             name="server_id"
                         />

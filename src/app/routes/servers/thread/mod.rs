@@ -6,12 +6,13 @@ use crate::app::components::channel::header::ChannelHeader;
 use crate::app::components::channel::sidebars::{MemberSideBar, SideBarContext};
 use crate::app::components::navigation::server::{use_current_channel, use_current_thread};
 use crate::app::routes::servers::server::use_current_server_context;
+use crate::entities::server::ServerStoreFields;
 use leptos::prelude::*;
 //use leptos_icons::Icon;
 
 #[component]
 pub fn Thread() -> impl IntoView {
-    let server_id = use_current_server_context().server.id;
+    let server_id = use_current_server_context().server.id();
     provide_context(SideBarContext(RwSignal::new(false)));
     let current_thread = use_current_thread();
     let current_channel = use_current_channel();
@@ -25,8 +26,9 @@ pub fn Thread() -> impl IntoView {
                         .map(|(channel_id, thread_id)| {
                             let channel = Resource::new(
                                 move || {
+                                    server_id.get()
                                 },
-                                move |_| get_channel(channel_id, server_id),
+                                move |server_id| get_channel(channel_id, server_id),
                             );
                             let thread = Resource::new(
                                 move || (),
@@ -63,7 +65,7 @@ pub fn Thread() -> impl IntoView {
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <MemberSideBar server_id=server_id thread_id=thread_id />
+                                                                <MemberSideBar server_id=server_id.get() thread_id=thread_id />
                                                             </div>
                                                         }
                                                     })

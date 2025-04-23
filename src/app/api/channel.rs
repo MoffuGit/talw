@@ -43,7 +43,7 @@ pub fn provide_channel_context() {
     })
 }
 
-#[server(GetChannel, "/api")]
+#[server(GetChannel)]
 pub async fn get_channel(channel_id: Uuid, server_id: Uuid) -> Result<Channel, ServerFnError> {
     auth_user()?;
     let pool = pool()?;

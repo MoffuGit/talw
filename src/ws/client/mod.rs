@@ -7,9 +7,9 @@ use gloo_net::websocket::Message as GlooMsg;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
 use log::debug;
+use std::collections::HashSet;
 use std::sync::Arc;
 use uuid::Uuid;
-use web_sys::console::debug;
 
 use crate::messages::{AppMessage, ClientMessage, Message, ServerMessage};
 
@@ -46,41 +46,55 @@ impl WsContext {
         }
     }
 
-    //NOTE:
-    //this should remove and add servers in base of the servers vec
     pub fn sync_channels(&self, servers: Vec<Uuid>, user_id: Uuid) {
-        debug!("creatign channels for servers:{servers:?}");
-        let mut messages = vec![];
-        for server_id in servers {
-            let (sender, receiver) = broadcast::<Message>(1000);
-            let receiver = Arc::new(Mutex::new(receiver));
-            self.servers_channels.insert(server_id, (sender, receiver));
-            messages.push(AppMessage::Subscribe { user_id, server_id });
+        debug!("Syncing channels for servers: {servers:?}");
+
+        let new_servers: HashSet<_> = servers.iter().cloned().collect();
+        let current_servers: HashSet<_> = self.servers_channels.iter().map(|e| *e.key()).collect();
+
+        let mut subscribe_msgs = vec![];
+
+        for server_id in current_servers.difference(&new_servers) {
+            self.servers_channels.remove(server_id);
         }
-        self.send(AppMessage::Batch(messages));
+
+        for server_id in new_servers.difference(&current_servers) {
+            let (sender, receiver) = broadcast::<Message>(1000);
+            self.servers_channels
+                .insert(*server_id, (sender, Arc::new(Mutex::new(receiver))));
+            subscribe_msgs.push(AppMessage::Subscribe {
+                user_id,
+                server_id: *server_id,
+            });
+        }
+
+        if !subscribe_msgs.is_empty() {
+            debug!("we sub to: {subscribe_msgs:?}");
+            self.send(AppMessage::Batch(subscribe_msgs));
+        }
     }
 
-    pub fn on_server_msg(&self, server_id: Uuid) {
+    pub fn on_server_msg(&self, server_id: Uuid, on_msg: impl Fn(Message) + Send + Sync + 'static) {
         #[cfg(feature = "hydrate")]
         {
             if let Some(broadcast) = self.servers_channels.get(&server_id) {
                 let rx = broadcast.1.clone();
                 spawn_local(async move {
                     while let Ok(msg) = rx.lock().await.recv().await {
-                        debug!("msg: {:?}", msg);
+                        on_msg(msg)
                     }
                 });
             }
         }
     }
 
-    pub fn on_app_msg(&self) {
+    pub fn on_app_msg(&self, on_msg: impl Fn(ClientMessage) + Send + Sync + 'static) {
         #[cfg(feature = "hydrate")]
         {
             let rx = self.app_channel.1.clone();
             spawn_local(async move {
                 while let Ok(msg) = rx.lock().await.recv().await {
-                    debug!("msg: {:?}", msg);
+                    on_msg(msg)
                 }
             });
         }
@@ -121,6 +135,7 @@ pub fn provide_ws_context() {
                 while let Some(message) = receiver_ws.next().await {
                     match message {
                         Ok(GlooMsg::Text(msg)) => {
+                            debug!("received msg from ws: {msg:?}");
                             let message = serde_json::from_str::<ClientMessage>(&msg)
                                 .expect("should receive an ClientMessage");
                             match message {
@@ -131,8 +146,8 @@ pub fn provide_ws_context() {
                                         debug!("Got a msg to server_id: {}, but we don't have a broadcast for this id", server_id)
                                     }
                                 }
-                                ClientMessage::ServerDeleted { .. } => {
-                                    let _ = app_sender.broadcast(message).await;
+                                msg => {
+                                    let _ = app_sender.broadcast(msg).await;
                                 }
                             }
                         }

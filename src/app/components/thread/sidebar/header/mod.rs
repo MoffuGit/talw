@@ -4,13 +4,14 @@ use self::menu::ThreadMenu;
 use crate::app::components::navigation::server::use_current_channel;
 use crate::app::components::thread::sidebar::CurrentThreadContext;
 use crate::app::routes::servers::server::use_current_server_context;
+use crate::entities::server::ServerStoreFields;
 use leptos::prelude::*;
 //use leptos_icons::Icon;
 use leptos_router::components::A;
 
 #[component]
 pub fn ThreadHeader() -> impl IntoView {
-    let server_id = use_current_server_context().server.id;
+    let server_id = use_current_server_context().server.id();
     let channel_id = move || use_current_channel().get().unwrap();
     view! {
         <div class="relative bg-base-300 shadow shadow-base-300/80 h-11 w-full flex justify-between align-middle p-2">
@@ -19,7 +20,7 @@ pub fn ThreadHeader() -> impl IntoView {
                 <ThreadMenu />
                 <A
                     href=move || {
-                        format!("/servers/{}/{}", server_id.simple(), channel_id().simple())
+                        format!("/servers/{}/{}", server_id.get().simple(), channel_id().simple())
                     }
                     {..}
                     class="inline-block p-1 hover:bg-base-content/5 rounded-lg"

@@ -6,7 +6,8 @@ use crate::app::api::thread::{check_member_on_thread, use_thread};
 use crate::app::components::modal::delete_thread::DeleteThreadModal;
 use crate::app::components::navigation::server::use_current_thread;
 use crate::app::components::thread::{JoinThread, LeaveThread};
-use crate::app::routes::servers::server::use_current_server_context;
+use crate::app::routes::servers::server::{use_current_server_context, CurrentServerContext};
+use crate::entities::server::ServerStoreFields;
 use crate::entities::thread::Thread;
 use leptos_router::components::A;
 
@@ -19,7 +20,11 @@ pub fn ThreadMenuContent(
     let thread_context = use_thread();
     let join_thread = thread_context.join_thread;
     let leave_thread = thread_context.leave_thread;
-    let current_server_context = use_current_server_context();
+    let CurrentServerContext {
+        server,
+        member_can_edit,
+        member,
+    } = use_current_server_context();
     let thread_name = StoredValue::new(thread.name.clone());
     let check_member_on_thread = Resource::new(
         move || (join_thread.version().get(), leave_thread.version().get()),
@@ -39,7 +44,7 @@ pub fn ThreadMenuContent(
                                     view! {
                                         <LeaveThread
                                             thread_id=thread.id
-                                            server_id=current_server_context.server.id
+                                            server_id=server.id().get()
                                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                         />
                                     },
@@ -49,7 +54,7 @@ pub fn ThreadMenuContent(
                                     view! {
                                         <JoinThread
                                             thread_id=thread.id
-                                            server_id=current_server_context.server.id
+                                            server_id=server.id().get()
                                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                         />
                                     },
@@ -68,7 +73,7 @@ pub fn ThreadMenuContent(
                                             href=move || {
                                                 format!(
                                                     "/servers/{}/thread/{}/{}",
-                                                    current_server_context.server.id.simple(),
+                                                    server.id().get().simple(),
                                                     thread.channel_id.simple(),
                                                     thread.id.simple(),
                                                 )
@@ -83,7 +88,7 @@ pub fn ThreadMenuContent(
                                             href=move || {
                                                 format!(
                                                     "/servers/{}/{}/{}",
-                                                    current_server_context.server.id.simple(),
+                                                    server.id().get().simple(),
                                                     thread.channel_id.simple(),
                                                     thread.id.simple(),
                                                 )
@@ -111,7 +116,7 @@ pub fn ThreadMenuContent(
                                                     href=move || {
                                                         format!(
                                                             "/servers/{}/thread/{}/{}",
-                                                            current_server_context.server.id.simple(),
+                                                            server.id().get().simple(),
                                                             thread.channel_id.simple(),
                                                             thread.id.simple(),
                                                         )
@@ -131,7 +136,7 @@ pub fn ThreadMenuContent(
                                                     href=move || {
                                                         format!(
                                                             "/servers/{}/{}/{}",
-                                                            current_server_context.server.id.simple(),
+                                                            server.id().get().simple(),
                                                             thread.channel_id.simple(),
                                                             thread.id.simple(),
                                                         )
@@ -148,15 +153,15 @@ pub fn ThreadMenuContent(
                                 })
                         })
                 }}
-                {(current_server_context.member_can_edit
-                    || current_server_context.member.id == thread.created_by)
+                {(member_can_edit
+                    || member.id == thread.created_by)
                     .then(|| {
                         view! {
                             <DeleteThreadModal
                                 content_ref=delete_thread_modal_ref
                                 thread_id=thread.id
                                 thread_name=thread_name.get_value()
-                                server_id=current_server_context.server.id
+                                server_id=server.id().get()
                                 class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                             >
                                 "Delete Thread"

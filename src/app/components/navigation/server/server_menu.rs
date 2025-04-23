@@ -8,6 +8,7 @@ use crate::app::components::overview::server::ServerOverviewTrigger;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
+use crate::entities::server::ServerStoreFields;
 //use icondata;
 use leptos::html;
 use leptos::prelude::*;
@@ -34,7 +35,7 @@ pub fn ServerMenu() -> impl IntoView {
                     <div class="h-6 flex items-center">
                         <div class="mr-1" />
                         <p class="block mr-auto text-base overflow-hidden font-semibold text-ellipsis whitespace-nowrap min-w-0">
-                            {server.name}
+                            {move || server.name().get()}
                         </p>
                         // <Icon icon=icondata::LuChevronDown />
                     // class="relative"
@@ -54,7 +55,7 @@ pub fn ServerMenu() -> impl IntoView {
                     <div class="w-56 origin-top starting:opacity-0 starting:-translate-y-2 starting:scale-95 transition-all flex flex-col h-auto p-1 bg-base-300 rounded-md border border-base-100 select-none">
                         <InvitePeopleModal
                             content_ref=invite_people_node
-                            invite_code=server.invite_code
+                            invite_code=server.invite_code()
                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                             on_click=Signal::derive(move || open.set(false))
                         >
@@ -97,7 +98,7 @@ fn ServerMenuAdminItems(
     let CurrentServerContext { server, .. } = use_current_server_context();
     view! {
         <ServerOverviewTrigger
-            server_id=server.id
+            server_id=server.id()
             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
         >
             "Server Settings"
@@ -106,7 +107,7 @@ fn ServerMenuAdminItems(
         <CreateChannelModal
             content_ref=create_channel_node
             on_click=on_click
-            server_id=server.id
+            server_id=server.id()
             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
         >
             <div>"Create Channel"</div>
@@ -115,7 +116,7 @@ fn ServerMenuAdminItems(
         <CreateCategoryModal
             content_ref=create_category_node
             on_click=on_click
-            server_id=server.id
+            server_id=server.id()
             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
         >
             <div>"Create Category"</div>

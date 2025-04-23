@@ -6,6 +6,7 @@ use crate::app::components::ui::collapsible::*;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
+use crate::entities::server::ServerStoreFields;
 use leptos::html;
 use leptos::prelude::*;
 
@@ -23,8 +24,8 @@ pub fn Category(category: EntCategory) -> impl IntoView {
     let name = StoredValue::new(name);
 
     let channels = Resource::new(
-        move || (),
-        move |_| get_channels_with_category(server.id, id),
+        move || (server.id().get()),
+        move |server_id| get_channels_with_category(server_id, id),
     );
 
     let create_channel_node = NodeRef::<html::Div>::new();
@@ -98,7 +99,7 @@ pub fn Category(category: EntCategory) -> impl IntoView {
                     <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
                         <CreateChannelModal
                             content_ref=create_channel_node
-                            server_id=server.id
+                            server_id=server.id()
                             category_id=id
                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                             category_name=name.get_value()
@@ -117,7 +118,7 @@ pub fn Category(category: EntCategory) -> impl IntoView {
                         <DeleteCategoryModal
                             content_ref=delete_category_node
                             category=category.get_value()
-                            server_id=server.id
+                            server_id=server.id().get()
                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                             on_click=Signal::derive(move || hidden_context_menu.set(false))
                         >

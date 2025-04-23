@@ -1,6 +1,7 @@
 use cfg_if::cfg_if;
 // use icondata::Icon;
 use leptos::prelude::IntoRender;
+use reactive_stores::Store;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -59,7 +60,7 @@ impl sqlx::Type<sqlx::MySql> for ChannelType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Eq, Store)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Channel {
     pub id: Uuid,

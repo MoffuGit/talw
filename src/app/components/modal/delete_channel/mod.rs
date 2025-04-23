@@ -5,11 +5,10 @@ use crate::entities::channel::Channel;
 use leptos::{html, prelude::*};
 use uuid::Uuid;
 
- 
 #[component]
 pub fn DeleteChannel(
     channel: Channel,
-    server_id: Uuid,
+    #[prop(into)] server_id: Signal<Uuid>,
     class: &'static str,
     #[prop(optional)] on_click: Signal<()>,
     #[prop(optional)] children: Option<Children>,
@@ -45,7 +44,7 @@ pub fn DeleteChannel(
                     </ModalClose>
                     <ActionForm action=delete_channel>
                         <input value=channel.id.to_string() type="hidden" name="channel_id" />
-                        <input value=server_id.to_string() type="hidden" name="server_id" />
+                        <input value=move || server_id.get().to_string() type="hidden" name="server_id" />
                         <button
                             type="submit"
                             class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-error text-error-content"

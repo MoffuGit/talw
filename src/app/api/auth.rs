@@ -2,7 +2,6 @@ use super::user::get_user;
 use crate::entities::user::User;
 use cfg_if::cfg_if;
 use leptos::prelude::*;
-use log::debug;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {

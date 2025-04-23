@@ -6,6 +6,7 @@ use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
 use crate::entities::channel::Channel;
+use crate::entities::server::ServerStoreFields;
 //use icondata;
 //use icondata:Icon;
 use leptos::html;
@@ -113,7 +114,7 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                     <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
                         <InvitePeopleModal
                             content_ref=invite_people_node
-                            invite_code=server.invite_code
+                            invite_code=server.invite_code()
                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                             on_click=Signal::derive(move || hidden.set(false))
                         >
@@ -133,7 +134,7 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                                     <DeleteChannel
                                         content_ref=delete_channel_node
                                         channel=stored_channel.get_value()
-                                        server_id=server.id
+                                        server_id=server.id()
                                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                         on_click=Signal::derive(move || hidden.set(false))
                                     >

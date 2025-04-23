@@ -2,14 +2,15 @@ use super::category::Category;
 use super::channel::Channel;
 use super::server_menu::ServerMenu;
 use crate::app::api::category::get_categories;
-use crate::app::api::category::use_category;
-use crate::app::api::channel::{get_general_channels, use_channel};
+use crate::app::api::channel::get_general_channels;
 use crate::app::components::modal::create_category::CreateCategoryModal;
 use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
+use crate::entities::server::ServerStoreFields;
 use leptos::prelude::*;
+use reactive_stores::Store;
 use uuid::Uuid;
 
 use crate::entities::category::Category as EntCategory;
@@ -20,42 +21,16 @@ pub struct ServerSideBarContext {
     pub open: RwSignal<bool>,
 }
 
+
+//NOTE: create the store structs
+
 #[component]
 pub fn ServerSideBar() -> impl IntoView {
-    let use_channel = use_channel();
-    let create_channel = use_channel.create_channel;
-    let delete_channel = use_channel.delete_channel;
-    let update_channel = use_channel.update_channel;
-
-    let use_category = use_category();
-    let delete_category = use_category.delete_category;
-    let create_category = use_category.create_category;
-    let rename_category = use_category.rename_category;
-
     let CurrentServerContext { server, .. } = use_current_server_context();
 
-    let channels = Resource::new(
-        move || {
-            (
-                delete_category.version().get(),
-                create_channel.version().get(),
-                delete_channel.version().get(),
-                update_channel.version().get(),
-            )
-        },
-        move |_| get_general_channels(server.id),
-    );
+    let channels = Resource::new(move || server.id().get(), get_general_channels);
 
-    let categories = Resource::new(
-        move || {
-            (
-                create_category.version().get(),
-                delete_category.version().get(),
-                rename_category.version().get(),
-            )
-        },
-        move |_| get_categories(server.id),
-    );
+    let categories = Resource::new(move || server.id().get(), get_categories);
     let open = use_context::<ServerSideBarContext>()
         .expect("should acces teh server sidebar context")
         .open;
@@ -69,26 +44,42 @@ pub fn ServerSideBar() -> impl IntoView {
                     <ServerMenu />
                     <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
                         <Transition>
-                            <For
-                                each=move || channels.get().and_then(Result::ok).unwrap_or_default()
-                                key=|channel| channel.id
-                                children=move |channel: EntChannel| {
-                                    view! { <Channel channel=channel.clone() /> }
-                                }
-                            />
-                            <For
-                                each=move || {
-                                    categories.get().and_then(Result::ok).unwrap_or_default()
-                                }
-                                key=|category| category.id
-                                children=move |category: EntCategory| {
-                                    view! { <Category category=category.clone() /> }
-                                }
-                            />
+                            {move || {
+                                Suspend::new(async move {
+                                    let channels = channels.await;
+                                    let categories = categories.await;
+                                    match (channels, categories)  {
+                                        (Ok(channels), Ok(categories)) => {
+                                            let categories_store = Store::new(categories);
+                                            let channel_store = Store::new(channels);
+                                            view!{
+                                                <For
+                                                    each=move || channel_store.channels
+                                                    key=|channel| channel.id
+                                                    children=move |channel: EntChannel| {
+                                                        view! { <Channel channel=channel.clone() /> }
+                                                    }
+                                                />
+                                                <For
+                                                    each=move || {
+                                                        categories.get().and_then(Result::ok).unwrap_or_default()
+                                                    }
+                                                    key=|category| category.id
+                                                    children=move |category: EntCategory| {
+                                                        view! { <Category category=category.clone() /> }
+                                                    }
+                                                />
+
+                                            }
+                                        },
+                                        => {}
+                                    }
+                                });
+                            }}
                         </Transition>
                     </div>
                 </div>
-                <SideBarContextMenu server_id=server.id />
+                <SideBarContextMenu server_id=server.id().get() />
             </div>
         </div>
     }

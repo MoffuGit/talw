@@ -3,6 +3,7 @@ use uuid::Uuid;
 
 use crate::entities::category::Category;
 use crate::entities::channel::Channel;
+use crate::entities::server::Server;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum AppMessage {
@@ -17,6 +18,7 @@ pub enum AppMessage {
 pub enum ClientMessage {
     ServerMessage(ServerMessage),
     ServerDeleted { server_id: Uuid },
+    JoinedToServer { server: Server, user_id: Uuid },
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -68,7 +70,6 @@ pub enum Message {
     MemberLeftServer {
         user_id: Uuid,
     },
-    ServerDeleted,
     ServerUpdated {
         name: Option<String>,
         image: Option<String>,

@@ -3,21 +3,22 @@ use std::str::FromStr;
 use crate::app::api::member::get_member;
 use crate::app::api::member::member_can_edit;
 use crate::app::api::server::get_server;
-use crate::app::api::server::use_server;
 use crate::app::components::navigation::server::sidebar::ServerSideBar;
 use crate::app::components::navigation::server::sidebar::ServerSideBarContext;
+use crate::app::routes::servers::ServersStore;
+use crate::app::routes::servers::ServersStoreStoreFields;
 use crate::entities::member::Member;
+use crate::entities::server::Server as ServerEntitie;
 use futures::try_join;
 use leptos::prelude::*;
 use leptos_router::components::Outlet;
 use leptos_router::hooks::use_params_map;
+use reactive_stores::Store;
 use uuid::Uuid;
-
-use crate::entities::server::Server as ServerEntitie;
 
 #[derive(Clone)]
 pub struct CurrentServerContext {
-    pub server: ServerEntitie,
+    pub server: Store<ServerEntitie>,
     pub member_can_edit: bool,
     pub member: Member,
 }
@@ -29,7 +30,8 @@ pub fn use_current_server_context() -> CurrentServerContext {
 #[component]
 pub fn Server() -> impl IntoView {
     let params_map = use_params_map();
-    let leave_server = use_server().leave_server;
+    let server_store =
+        use_context::<Store<ServersStore>>().expect("should acces to the server sotre");
     let server_id = move || {
         params_map.with(|map| {
             map.get("id")
@@ -38,7 +40,7 @@ pub fn Server() -> impl IntoView {
         })
     };
     let server_data = Resource::new(
-        move || (leave_server.version().get(), server_id()),
+        move || (server_store.servers().get(), server_id()),
         move |(_, server_id)| async move {
             let server = get_server(server_id);
             let member = get_member(server_id);
@@ -56,9 +58,18 @@ pub fn Server() -> impl IntoView {
     let inner_view = move || {
         server_data.and_then(|data| {
             outer_owner.with(|| {
+                let server = Store::new(
+                    server_store
+                        .servers()
+                        .get()
+                        .iter()
+                        .find(|server| server.id == data.0.id)
+                        .expect("should find the server on the server store")
+                        .clone(),
+                );
                 provide_context(ServerSideBarContext { open });
                 provide_context(CurrentServerContext {
-                    server: data.0.clone(),
+                    server,
                     member_can_edit: data.2,
                     member: data.1.clone(),
                 })

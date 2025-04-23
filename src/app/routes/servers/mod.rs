@@ -15,11 +15,11 @@ use crate::app::components::overview::server::ServerOverview;
 use crate::app::components::overview::user::provide_user_overview_context;
 use crate::app::components::overview::user::UserOverview;
 use crate::entities::server::Server;
+use crate::messages::ClientMessage;
 use crate::ws::client::provide_ws_context;
 use crate::ws::client::use_ws;
 use leptos::prelude::*;
 use leptos_router::components::Outlet;
-use log::debug;
 use reactive_stores::Store;
 use uuid::Uuid;
 
@@ -53,26 +53,6 @@ pub fn Servers() -> impl IntoView {
                 provide_context(server_store);
             });
 
-            //[1] susbcribe and create the broadcast receiver
-            //[2] let other users know that i connected
-            //[3] when user left, join or create a server:
-            //      uppdate the servers store
-            //      update the broadcast receiver list
-            //[4] when user edit the server, update the server store
-            //[5] when ws receive a msg about a server:
-            //      update the servers store, server store or/and broadcast receiver list
-
-            //the server ws should seend an AppMessage
-            //if is ServerMessage
-            //send it to server broadcast
-            //if not send it to app broadcast
-            //now i can handler all msg from the server
-            //move this to his own handler or function
-            //should depend of the ServerStore
-            //if ServerStore grow, sub to news,
-            //if shrink, then unsub
-            //can grow or shrink from AppMessages
-            //can update from ServerMessages
             let ws = use_ws();
             Effect::new(move |_| {
                 let servers = server_store
@@ -82,9 +62,17 @@ pub fn Servers() -> impl IntoView {
                     .map(|server| server.id)
                     .collect::<Vec<_>>();
                 ws.sync_channels(servers.clone(), user.id);
-                for server in servers {
-                    use_ws().on_server_msg(server);
-                }
+
+                ws.on_app_msg(move |msg| match msg {
+                    ClientMessage::ServerDeleted { server_id } => {
+                        server_store
+                            .update(|store| store.servers.retain(|server| server.id != server_id));
+                    }
+                    ClientMessage::JoinedToServer { server, .. } => {
+                        server_store.update(|store| store.servers.push(server));
+                    }
+                    _ => {}
+                });
             });
 
             view! {

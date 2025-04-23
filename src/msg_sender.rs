@@ -94,6 +94,9 @@ impl MsgReceiver {
             ClientMessage::ServerDeleted { server_id } => {
                 self.send_msg_to_sever(server_id, msg);
             }
+            ClientMessage::JoinedToServer { user_id, .. } => {
+                self.send_msg_to_user(user_id, msg);
+            }
         }
     }
 
@@ -146,6 +149,17 @@ impl MsgReceiver {
                     let _ = sender.send(AppMessage::ClientMessage(msg.clone()));
                 }
             }
+        }
+    }
+
+    pub fn send_msg_to_user(
+        &mut self,
+        user_id: Uuid,
+        msg: impl Into<ClientMessage> + std::fmt::Debug,
+    ) {
+        if let Some(channel) = self.channels.get(&user_id) {
+            let sender = channel.0.clone();
+            let _ = sender.send(AppMessage::ClientMessage(msg.into()));
         }
     }
 }

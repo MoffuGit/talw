@@ -12,7 +12,7 @@ cfg_if! {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, Store)]
+#[derive(Clone, Debug, Serialize, Deserialize, Store, PartialEq)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Server {
     pub id: Uuid,

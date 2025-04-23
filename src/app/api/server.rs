@@ -1,6 +1,6 @@
 use crate::entities::role::Role;
 use crate::entities::server::Server;
-use crate::messages::{AppMessage, Message, ServerMessage};
+use crate::messages::{AppMessage, ClientMessage, Message, ServerMessage};
 use cfg_if::cfg_if;
 use leptos::prelude::*;
 use server_fn::codec::{MultipartData, MultipartFormData};
@@ -335,13 +335,9 @@ pub async fn create_server(data: MultipartData) -> Result<Server, ServerFnError>
     )
     .await?;
     let msg_sender = msg_sender()?;
-    msg_sender.send(AppMessage::Subscribe {
+    msg_sender.send(ClientMessage::JoinedToServer {
+        server: server.clone(),
         user_id: user.id,
-        server_id: server.id,
-    });
-    msg_sender.send(ServerMessage {
-        server_id: server.id,
-        msg: Message::MemberJoinedServer { user_id: user.id },
     });
     redirect(&format!("/servers/{}", server.id.simple()));
     Ok(server)

@@ -5,6 +5,7 @@ use crate::app::components::modal::invite_people::InvitePeopleModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::{use_current_server_context, CurrentServerContext};
 use crate::entities::channel::Channel;
+use crate::entities::server::ServerStoreFields;
 use crate::entities::thread::Thread;
 //use icondata:Icon;
 use leptos::{html, prelude::*};
@@ -39,7 +40,7 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
             >
                 <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
                     <InvitePeopleModal
-                        invite_code=server.invite_code
+                        invite_code=server.invite_code()
                         class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                         on_click=Signal::derive(move || hidden.set(false))
                     >
@@ -57,7 +58,7 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
                                 </EditChannelModal>
                                 <DeleteChannel
                                     channel=channel.clone()
-                                    server_id=server.id
+                                    server_id=server.id()
                                     class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                                     on_click=Signal::derive(move || hidden.set(false))
                                 >
@@ -74,7 +75,7 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
                                     href=move || {
                                         format!(
                                             "/servers/{}/{}/{}",
-                                            server.id.simple(),
+                                            server.id().get().simple(),
                                             thread.channel_id.simple(),
                                             thread.id.simple(),
                                         )

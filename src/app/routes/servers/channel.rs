@@ -5,6 +5,7 @@ use crate::app::components::channel::header::ChannelHeader;
 use crate::app::components::channel::sidebars::{MemberSideBar, SideBarContext};
 use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::routes::servers::server::use_current_server_context;
+use crate::entities::server::ServerStoreFields;
 use leptos::prelude::*;
 //use leptos_icons::Icon;
 use leptos_router::components::Outlet;
@@ -13,7 +14,7 @@ use uuid::Uuid;
 
 #[component]
 pub fn ChannelView() -> impl IntoView {
-    let server_id = use_current_server_context().server.id;
+    let server_id = use_current_server_context().server.id();
     let params_map = use_params_map();
     let channel_id = move || {
         params_map
@@ -24,8 +25,8 @@ pub fn ChannelView() -> impl IntoView {
             .unwrap_or_default()
     };
     let channel = Resource::new(
-        move || channel_id(),
-        move |channel_id| get_channel(channel_id, server_id),
+        move || (channel_id(), server_id.get()),
+        move |(channel_id, server_id)| get_channel(channel_id, server_id),
     );
 
     provide_context(SideBarContext(RwSignal::new(false)));
@@ -56,7 +57,7 @@ pub fn ChannelView() -> impl IntoView {
                                                 </div>
                                             </div>
                                         </div>
-                                        <MemberSideBar server_id=server_id />
+                                        <MemberSideBar server_id=server_id.get() />
                                     </div>
                                 }
                             })

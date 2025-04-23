@@ -356,15 +356,19 @@ pub async fn leave_server(server_id: Uuid) -> Result<(), ServerFnError> {
     let pool = pool()?;
     let auth = auth_user()?;
     let msg_sender = msg_sender()?;
+    Member::get_from_user_on_server(auth.id, server_id, &pool).await?;
+    Member::delete_from_server(auth.id, server_id, &pool).await?;
     msg_sender.send(AppMessage::Unsubscribe {
         user_id: auth.id,
         server_id,
     });
-    Member::get_from_user_on_server(auth.id, server_id, &pool).await?;
-    Member::delete_from_server(auth.id, server_id, &pool).await?;
     msg_sender.send(ServerMessage {
         server_id,
         msg: Message::MemberLeftServer { user_id: auth.id },
+    });
+    msg_sender.send(ClientMessage::LeavedServer {
+        server_id,
+        user_id: auth.id,
     });
     redirect("/servers/me");
     Ok(())

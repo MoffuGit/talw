@@ -89,7 +89,7 @@ pub async fn rename_category(
             server_id,
             msg: Message::CategoryUpdated {
                 new_name,
-                id: category_id,
+                category_id,
             },
         });
         return Ok(());
@@ -108,7 +108,7 @@ pub async fn delete_category(server_id: Uuid, category_id: Uuid) -> Result<(), S
         Category::delete(category_id, server_id, &pool).await?;
         msg_sender()?.send(ServerMessage {
             server_id,
-            msg: Message::CategoryDeleted { id: category_id },
+            msg: Message::CategoryDeleted { category_id },
         });
         return Ok(());
     };

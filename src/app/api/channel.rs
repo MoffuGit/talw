@@ -50,14 +50,6 @@ pub async fn get_channel(channel_id: Uuid, server_id: Uuid) -> Result<Channel, S
     Ok(Channel::get_channel(channel_id, server_id, &pool).await?)
 }
 
-#[server(GetChannelTopic)]
-pub async fn get_channel_topic(channel_id: Uuid) -> Result<Option<String>, ServerFnError> {
-    auth_user()?;
-    let pool = pool()?;
-
-    Ok(Channel::get_channel_topic(channel_id, &pool).await?.0)
-}
-
 #[server(UpdateChannel)]
 pub async fn update_channel(
     channel_id: Uuid,
@@ -78,7 +70,11 @@ pub async fn update_channel(
 
         msg_sender()?.send(ServerMessage {
             server_id,
-            msg: Message::ChannelUpdated { topic, name },
+            msg: Message::ChannelUpdated {
+                topic,
+                name,
+                channel_id,
+            },
         });
         Ok(())
     } else {
@@ -137,6 +133,7 @@ pub async fn create_channel(
                     channel_type,
                     server_id,
                     category_id: None,
+                    topic: None,
                 },
             },
         });
@@ -173,6 +170,7 @@ pub async fn create_channel_with_category(
                     channel_type,
                     server_id,
                     category_id: Some(category_id),
+                    topic: None,
                 },
             },
         });

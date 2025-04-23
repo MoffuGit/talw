@@ -19,6 +19,7 @@ pub enum ClientMessage {
     ServerMessage(ServerMessage),
     ServerDeleted { server_id: Uuid },
     JoinedToServer { server: Server, user_id: Uuid },
+    LeavedServer { server_id: Uuid, user_id: Uuid },
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -47,7 +48,6 @@ impl From<ServerMessage> for ClientMessage {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum Message {
-    Batch(Vec<ServerMessage>),
     UserConnected {
         user_id: Uuid,
     },
@@ -87,6 +87,7 @@ pub enum Message {
         channel_id: Uuid,
     },
     ChannelUpdated {
+        channel_id: Uuid,
         topic: Option<String>,
         name: Option<String>,
     },
@@ -99,10 +100,10 @@ pub enum Message {
         new_category: Category,
     },
     CategoryUpdated {
-        id: Uuid,
+        category_id: Uuid,
         new_name: String,
     },
     CategoryDeleted {
-        id: Uuid,
+        category_id: Uuid,
     },
 }

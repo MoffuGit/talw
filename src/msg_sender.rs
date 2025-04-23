@@ -97,6 +97,9 @@ impl MsgReceiver {
             ClientMessage::JoinedToServer { user_id, .. } => {
                 self.send_msg_to_user(user_id, msg);
             }
+            ClientMessage::LeavedServer { user_id, .. } => {
+                self.send_msg_to_user(user_id, msg);
+            }
         }
     }
 

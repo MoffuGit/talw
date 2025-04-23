@@ -12,7 +12,7 @@ cfg_if! {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Copy, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Copy, Eq, Store)]
 #[cfg_attr(feature = "ssr", derive(Decode, Encode))]
 pub enum ChannelType {
     TEXT,
@@ -68,6 +68,7 @@ pub struct Channel {
     pub channel_type: ChannelType,
     pub server_id: Uuid,
     pub category_id: Option<Uuid>,
+    pub topic: Option<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
@@ -87,17 +88,6 @@ impl Channel {
             .execute(pool)
             .await?;
         Ok(())
-    }
-    pub async fn get_channel_topic(
-        channel_id: Uuid,
-        pool: &MySqlPool,
-    ) -> Result<ChannelTopic, Error> {
-        Ok(sqlx::query_as::<_, ChannelTopic>(
-            "SELECT channels.topic FROM channels WHERE channels.id = ?",
-        )
-        .bind(channel_id)
-        .fetch_one(pool)
-        .await?)
     }
     pub async fn create(
         name: &str,
@@ -172,7 +162,7 @@ impl Channel {
         server_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<Channel, Error> {
-        Ok(sqlx::query_as::<_, Channel>("SELECT channels.id,channels.name,channels.channel_type,channels.server_id,channels.category_id FROM channels LEFT JOIN servers ON servers.id = channels.server_id WHERE channels.id = ? AND servers.id = ?")
+        Ok(sqlx::query_as::<_, Channel>("SELECT channels.id,channels.name,channels.channel_type,channels.server_id,channels.category_id, channels.topic FROM channels LEFT JOIN servers ON servers.id = channels.server_id WHERE channels.id = ? AND servers.id = ?")
                     .bind(channel_id)
                     .bind(server_id)
                     .fetch_one(pool)

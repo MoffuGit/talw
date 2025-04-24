@@ -1,13 +1,14 @@
 use crate::app::api::category::use_category;
 use crate::app::components::ui::modal::ModalProvider;
 use crate::app::components::ui::modal::*;
-use crate::entities::category::Category;
+use crate::entities::category::{Category, CategoryStoreFields};
 use leptos::{html, prelude::*};
+use reactive_stores::Field;
 //use leptos_icons::Icon;
 
 #[component]
 pub fn EditCategoryModal(
-    category: Category,
+    #[prop(into)] category: Field<Category>,
     class: &'static str,
     on_click: Signal<()>,
     #[prop(optional)] children: Option<Children>,
@@ -28,7 +29,7 @@ pub fn EditCategoryModal(
             }
         });
     });
-    let name = StoredValue::new(category.name);
+    let name = category.name();
     view! {
         <ModalProvider content_ref=content_ref open=open on_close=Signal::derive(on_close)>
             <ModalTrigger class=class on_click=on_click>
@@ -52,7 +53,7 @@ pub fn EditCategoryModal(
                                 name="new_name"
                                 minlength="1"
                                 type="text"
-                                value=name.get_value()
+                                value=move || name.get()
                                 class="w-full h-10 bg-base-300 py-[10px]"
                             />
                         </div>
@@ -65,11 +66,11 @@ pub fn EditCategoryModal(
                             "Cancel"
                         </ModalClose>
                         <input
-                            value=category.server_id.to_string()
+                            value=category.server_id().get().to_string()
                             type="hidden"
                             name="server_id"
                         />
-                        <input value=category.id.to_string() type="hidden" name="category_id" />
+                        <input value=category.id().get().to_string() type="hidden" name="category_id" />
                         <button
                             type="submit"
                             class="relative flex justify-center items-center text-sm font-medium h-[38px] px-4 rounded bg-secondary text-seconday-content"

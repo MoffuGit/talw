@@ -2,36 +2,57 @@ use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::modal::delete_category::DeleteCategoryModal;
 use crate::app::components::modal::edit_category::EditCategoryModal;
 use crate::app::components::navigation::server::channel::Channel;
+use crate::app::components::navigation::server::sidebar::ChannelStore;
+use crate::app::components::navigation::server::sidebar::ChannelStoreStoreFields;
 use crate::app::components::ui::collapsible::*;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
+use crate::entities::category::CategoryStoreFields;
+use crate::entities::channel::ChannelStoreFields;
 use crate::entities::server::ServerStoreFields;
+use crate::messages::Message;
+use crate::ws::client::use_ws;
 use leptos::html;
 use leptos::prelude::*;
+use reactive_stores::Field;
+use reactive_stores::Store;
 
 use crate::app::api::channel::get_channels_with_category;
 use crate::entities::category::Category as EntCategory;
 
 #[component]
-pub fn Category(category: EntCategory) -> impl IntoView {
-    let category = StoredValue::new(category);
+pub fn Category(
+    #[prop(into)] category: Field<EntCategory>,
+    channels: Store<ChannelStore>,
+) -> impl IntoView {
     let collapsible_open = RwSignal::new(false);
     let hidden_context_menu = RwSignal::new(false);
+
     let CurrentServerContext { server, .. } = use_current_server_context();
 
-    let EntCategory { id, name, .. } = category.get_value();
-    let name = StoredValue::new(name);
-
-    let channels = Resource::new(
-        move || (server.id().get()),
-        move |server_id| get_channels_with_category(server_id, id),
-    );
+    let id = category.id();
+    let name = category.name();
 
     let create_channel_node = NodeRef::<html::Div>::new();
     let edit_category_node = NodeRef::<html::Div>::new();
     let delete_category_node = NodeRef::<html::Div>::new();
     let menu_open = RwSignal::new(false);
+    let ws = use_ws();
+
+    Effect::new(move |_| {
+        ws.on_server_msg(server.id().get(), move |msg| {
+            if let Message::CategoryUpdated {
+                category_id,
+                new_name,
+            } = msg
+            {
+                if category.id().get() == category_id {
+                    *category.name().write() = new_name;
+                }
+            }
+        });
+    });
 
     view! {
         <CollapsibleProvider open=collapsible_open>
@@ -64,7 +85,7 @@ pub fn Category(category: EntCategory) -> impl IntoView {
                                 <path d="m9 18 6-6-6-6" />
                             </svg>
                             <div class="box-border ml-0.5 text-ellipsis text-sm whitespace-nowrap overflow-hidden leading-4 tracking-wide mr-auto">
-                                {name.get_value()}
+                                {move || name.get()}
                             </div>
                         </div>
                     </CollapsibleTrigger>
@@ -100,16 +121,16 @@ pub fn Category(category: EntCategory) -> impl IntoView {
                         <CreateChannelModal
                             content_ref=create_channel_node
                             server_id=server.id()
-                            category_id=id
+                            category_id=id.get()
                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
-                            category_name=name.get_value()
+                            category_name=name
                             on_click=Signal::derive(move || hidden_context_menu.set(false))
                         >
                             <div>"Create Channel"</div>
                         </CreateChannelModal>
                         <EditCategoryModal
                             content_ref=edit_category_node
-                            category=category.get_value()
+                            category=category
                             on_click=Signal::derive(move || hidden_context_menu.set(false))
                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                         >
@@ -117,7 +138,7 @@ pub fn Category(category: EntCategory) -> impl IntoView {
                         </EditCategoryModal>
                         <DeleteCategoryModal
                             content_ref=delete_category_node
-                            category=category.get_value()
+                            category=category
                             server_id=server.id().get()
                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                             on_click=Signal::derive(move || hidden_context_menu.set(false))
@@ -128,19 +149,13 @@ pub fn Category(category: EntCategory) -> impl IntoView {
                 </ContextMenuContent>
             </ContextMenuProvider>
             <CollapsibleContent>
-                <Transition fallback=move || ()>
-                    {move || {
-                        channels
-                            .and_then(|channels| {
-                                channels
-                                    .iter()
-                                    .map(|channel| {
-                                        view! { <Channel channel=channel.clone() /> }
-                                    })
-                                    .collect_view()
-                            })
-                    }}
-                </Transition>
+                <For
+                    each=move || channels.channels()
+                    key=|channel| channel.id().get()
+                    let:channel
+                >
+                    <Channel channel=channel />
+                </For>
             </CollapsibleContent>
         </CollapsibleProvider>
     }

@@ -15,7 +15,7 @@ pub fn CreateChannelModal(
     #[prop(into)] server_id: Signal<Uuid>,
     #[prop(optional)] children: Option<Children>,
     #[prop(optional)] category_id: Option<Uuid>,
-    #[prop(optional)] category_name: Option<String>,
+    #[prop(optional, into)] category_name: Option<Signal<String>>,
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let open = RwSignal::new(false);
@@ -59,7 +59,7 @@ pub fn CreateChannelModal(
                     <ModalContent class="w-[440px] max-h-[720px] rounded p-0 h-auto overflow-hidden flex flex-col items-center">
                         <div class="text-start p-[16px] w-full">
                             <h1 class="font-bold text-[24px] leading-[30px]">"Create Channel"</h1>
-                            <p class="leading-[30px] text-xs">{format!("in {}", &category_name)}</p>
+                            <p class="leading-[30px] text-xs">{move || format!("in {}", category_name.get())}</p>
                             <ModalClose class="absolute right-2 top-2 flex items-center group bg-none">
                                 <div/>
                                 // <Icon icon=icondata::RiCloseSystemLine />

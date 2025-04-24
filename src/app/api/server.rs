@@ -195,7 +195,7 @@ pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     Ok(Server::get_user_servers(user.id, &pool).await?)
 }
 
-#[server(JoinServerWithInvitation, "/api")]
+#[server(JoinServerWithInvitation)]
 pub async fn join_server_with_invitation(invitation: String) -> Result<(), ServerFnError> {
     fn validate_invitation(invitation: String) -> Option<Uuid> {
         match Uuid::parse_str(&invitation) {

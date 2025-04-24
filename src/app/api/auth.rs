@@ -85,7 +85,7 @@ pub async fn login(
     }
 }
 
-#[server(Signup, "/api")]
+#[server(Signup)]
 pub async fn signup(
     username: String,
     password: String,
@@ -126,7 +126,7 @@ pub async fn signup(
     Ok(())
 }
 
-#[server(Logout, "/api")]
+#[server(Logout)]
 pub async fn logout() -> Result<(), ServerFnError> {
     let auth = auth()?;
 

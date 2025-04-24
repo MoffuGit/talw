@@ -64,7 +64,8 @@ pub fn Servers() -> impl IntoView {
                 ws.sync_channels(servers.clone(), user.id);
 
                 ws.on_app_msg(move |msg| match msg {
-                    ClientMessage::ServerDeleted { server_id } => {
+                    ClientMessage::LeavedServer { server_id, .. }
+                    | ClientMessage::ServerDeleted { server_id } => {
                         server_store
                             .update(|store| store.servers.retain(|server| server.id != server_id));
                     }

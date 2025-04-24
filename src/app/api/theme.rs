@@ -2,7 +2,7 @@ use cfg_if::cfg_if;
 use leptos::prelude::*;
 use leptos_meta::{Body, Html};
 
-#[server(ToggleTheme, "/api")]
+#[server(ToggleTheme)]
 pub async fn toggle_theme(theme: bool) -> Result<bool, ServerFnError> {
     use tower_cookies::cookie::SameSite;
     use tower_cookies::Cookie;

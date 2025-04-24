@@ -82,7 +82,7 @@ pub async fn update_channel(
     }
 }
 
-#[server(GetAllChannels, "/api")]
+#[server(GetAllChannels)]
 pub async fn get_all_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
     auth_user()?;
     let pool = pool()?;
@@ -90,7 +90,7 @@ pub async fn get_all_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnE
     Ok(Server::get_channels(server_id, &pool).await?)
 }
 
-#[server(GetGeneralChannels, "/api")]
+#[server(GetGeneralChannels)]
 pub async fn get_general_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
     auth_user()?;
     let pool = pool()?;
@@ -98,7 +98,7 @@ pub async fn get_general_channels(server_id: Uuid) -> Result<Vec<Channel>, Serve
     Ok(Server::get_general_channels(server_id, &pool).await?)
 }
 
-#[server(GetChannelsWithCategory, "/api")]
+#[server(GetChannelsWithCategory)]
 pub async fn get_channels_with_category(
     server_id: Uuid,
     category_id: Uuid,
@@ -109,7 +109,7 @@ pub async fn get_channels_with_category(
     Ok(Server::get_channels_with_category(server_id, category_id, &pool).await?)
 }
 
-#[server(CreateChannel, "/api")]
+#[server(CreateChannel)]
 pub async fn create_channel(
     name: String,
     channel_type: ChannelType,
@@ -142,7 +142,7 @@ pub async fn create_channel(
     Err(ServerFnError::new("You cant create a channel"))
 }
 
-#[server(CreateChannelWithCategory, "/api")]
+#[server(CreateChannelWithCategory)]
 pub async fn create_channel_with_category(
     name: String,
     channel_type: ChannelType,
@@ -181,7 +181,7 @@ pub async fn create_channel_with_category(
     Err(ServerFnError::new("You cant create a channel"))
 }
 
-#[server(DeleteChannel, "/api")]
+#[server(DeleteChannel)]
 pub async fn delete_channel(server_id: Uuid, channel_id: Uuid) -> Result<(), ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;

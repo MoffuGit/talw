@@ -256,7 +256,7 @@ pub async fn get_mutual_servers_image_url(
     Ok(res?)
 }
 
-#[server(GetUser, "/api")]
+#[server(GetUser)]
 pub async fn get_user() -> Result<Option<User>, ServerFnError> {
     let auth = auth()?;
     Ok(auth.current_user)

@@ -1,14 +1,14 @@
 use crate::app::api::category::use_category;
 use crate::app::components::ui::modal::*;
 use crate::app::ActionForm;
-use crate::entities::category::Category;
+use crate::entities::category::{Category, CategoryStoreFields};
 use leptos::{html, prelude::*};
+use reactive_stores::Field;
 use uuid::Uuid;
 
- 
 #[component]
 pub fn DeleteCategoryModal(
-    category: Category,
+    #[prop(into)] category: Field<Category>,
     class: &'static str,
     server_id: Uuid,
     on_click: Signal<()>,
@@ -16,6 +16,7 @@ pub fn DeleteCategoryModal(
     #[prop(optional)] content_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
     let delete_category = use_category().delete_category;
+    let name = category.name();
     view! {
         <ModalProvider content_ref=content_ref>
             <ModalTrigger class=class on_click=on_click>
@@ -23,12 +24,12 @@ pub fn DeleteCategoryModal(
             </ModalTrigger>
             <ModalContent class="w-[440px] rounded p-0 h-auto overflow-hidden flex flex-col items-center">
                 <h2 class="p-4  leading-[24px] text-[20px] font-bold text-start w-full">
-                    {format!("Delete '{}'", category.name)}
+                    {move || format!("Delete '{}'", name.get())}
                 </h2>
                 <div class="px-4 pb-10 w-full">
-                    {format!(
+                    {move || format!(
                         "Are you sure you want to delete {}? This cannnot be undone.",
-                        category.name,
+                        name.get(),
                     )}
                 </div>
                 <div class="relative p-4 flex justify-end w-full bg-base-300/80">
@@ -36,7 +37,7 @@ pub fn DeleteCategoryModal(
                         "Cancel"
                     </ModalClose>
                     <ActionForm action=delete_category>
-                        <input value=category.id.to_string() type="hidden" name="category_id" />
+                        <input value=category.id().get().to_string() type="hidden" name="category_id" />
                         <input value=server_id.to_string() type="hidden" name="server_id" />
                         <button
                             type="submit"

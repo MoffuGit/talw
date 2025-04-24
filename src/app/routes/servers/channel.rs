@@ -5,11 +5,15 @@ use crate::app::components::channel::header::ChannelHeader;
 use crate::app::components::channel::sidebars::{MemberSideBar, SideBarContext};
 use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::routes::servers::server::use_current_server_context;
+use crate::entities::channel::ChannelStoreFields;
 use crate::entities::server::ServerStoreFields;
+use crate::messages::Message;
+use crate::ws::client::use_ws;
 use leptos::prelude::*;
 //use leptos_icons::Icon;
 use leptos_router::components::Outlet;
-use leptos_router::hooks::use_params_map;
+use leptos_router::hooks::{use_navigate, use_params_map};
+use reactive_stores::Store;
 use uuid::Uuid;
 
 #[component]
@@ -37,9 +41,36 @@ pub fn ChannelView() -> impl IntoView {
                     {move || {
                         channel
                             .and_then(|channel| {
-                                let name = channel.name.clone();
+                                let channel = Store::new(channel.clone());
+                                let ws = use_ws();
+                                Effect::new(move |_| {
+                                    let navigate = use_navigate();
+                                    ws.on_server_msg(server_id.get(), move |msg| {
+                                        match msg {
+                                            Message::ChannelDeleted { channel_id } => {
+                                                if channel.id().get() == channel_id {
+                                                    navigate("/", Default::default())
+                                                }
+                                            },
+                                            Message::ChannelUpdated { topic, name, channel_id } => {
+                                                if channel.id().get() == channel_id {
+                                                    *channel.topic().write() = topic;
+                                                    if let Some(name) = name {
+                                                        *channel.name().write() = name;
+                                                    }
+                                                }
+                                            },
+                                            Message::CategoryDeleted { category_id } => {
+                                                if channel.category_id().get().is_some_and(|category| category == category_id)  {
+                                                    *channel.category_id().write() = None;
+                                                }
+                                            },
+                                            _ => {}
+                                        }
+                                    });
+                                });
                                 view! {
-                                    <ChannelHeader channel=channel.clone() />
+                                    <ChannelHeader channel=channel />
                                     <div class="w-full h-full flex bg-base-200">
                                         // NOTE:
                                         // this is the future chat
@@ -50,7 +81,7 @@ pub fn ChannelView() -> impl IntoView {
                                                 <div class="m-4 w-full grow bg-base-300/60 rounded-lg flex items-center px-4">
                                                     <Icon icon=IconData::CirclePlus class="w-7 h-7 stroke-base-content/40 grow-0 mr-4"  />
                                                     <div class="grow text-base-content/60">
-                                                        {format!("Message #{}", name)}
+                                                        {move || format!("Message #{}", channel.name().get())}
                                                     </div>
                                                     <Icon icon=IconData::Sticker class="w-7 h-7 stroke-base-content/40"/>
 

@@ -1,4 +1,5 @@
 use cfg_if::cfg_if;
+use reactive_stores::Store;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -10,7 +11,7 @@ cfg_if! {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Store)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Thread {
     pub id: Uuid,

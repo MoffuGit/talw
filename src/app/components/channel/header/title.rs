@@ -1,37 +1,38 @@
-use crate::app::api::channel::{get_channel_topic, use_channel};
 use crate::app::components::modal::delete_channel::DeleteChannel;
 use crate::app::components::modal::edit_channel::EditChannelModal;
 use crate::app::components::modal::invite_people::InvitePeopleModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::{use_current_server_context, CurrentServerContext};
-use crate::entities::channel::Channel;
+use crate::entities::channel::{Channel, ChannelStoreFields};
 use crate::entities::server::ServerStoreFields;
-use crate::entities::thread::Thread;
+use crate::entities::thread::{Thread, ThreadStoreFields};
 //use icondata:Icon;
 use leptos::{html, prelude::*};
 //use leptos_icons::Icon;
 use leptos_router::components::A;
-use uuid::Uuid;
+use reactive_stores::Field;
 
 #[component]
-pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -> impl IntoView {
+pub fn HeaderTitle(
+    #[prop(into)] channel: Field<Channel>,
+    #[prop(into, optional)] thread: Option<Field<Thread>>,
+) -> impl IntoView {
     let hidden = RwSignal::new(false);
     let CurrentServerContext {
         server,
         member_can_edit,
         ..
     } = use_current_server_context();
-    let channel_name = channel.name.clone();
-    let thread = thread.map(StoredValue::new);
+    let name = channel.name();
     let edit_channel_node = NodeRef::<html::Div>::new();
     let delete_channel_node = NodeRef::<html::Div>::new();
     view! {
         <ContextMenuProvider modal=false hidden=hidden>
             <ContextMenuTrigger class="relative flex items-center p-1.5 text-base select-none">
                 // <Icon icon=Icon::from(channel.channel_type) />
-                <div>{channel_name}</div>
-                <ChannelTopic channel_id=channel.id />
-                {thread.map(|thread| view! { <ChannelThread thread=thread.get_value() /> })}
+                <div>{move || name.get()}</div>
+                <ChannelTopic topic=channel.topic() />
+                {thread.map(|thread| view! { <ChannelThread thread=thread /> })}
             </ContextMenuTrigger>
 
             <ContextMenuContent
@@ -50,14 +51,14 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
                         member_can_edit.then(||
                             view! {
                                 <EditChannelModal
-                                    channel=channel.clone()
+                                    channel=channel
                                     class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                                     on_click=Signal::derive(move || hidden.set(false))
                                 >
                                     <div>"Edit Channel"</div>
                                 </EditChannelModal>
                                 <DeleteChannel
-                                    channel=channel.clone()
+                                    channel=channel
                                     server_id=server.id()
                                     class="flex justify-between hover:bg-base-content/10 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
                                     on_click=Signal::derive(move || hidden.set(false))
@@ -69,15 +70,14 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
                     }
                     {thread
                         .map(|thread| {
-                            let thread = thread.get_value();
                             view! {
                                 <A
                                     href=move || {
                                         format!(
                                             "/servers/{}/{}/{}",
                                             server.id().get().simple(),
-                                            thread.channel_id.simple(),
-                                            thread.id.simple(),
+                                            thread.channel_id().get().simple(),
+                                            thread.id().get().simple(),
                                         )
                                     }
                                     on:click=move |_| hidden.set(false)
@@ -95,34 +95,24 @@ pub fn HeaderTitle(channel: Channel, #[prop(optional)] thread: Option<Thread>) -
 }
 
 #[component]
-pub fn ChannelTopic(channel_id: Uuid) -> impl IntoView {
-    let channel_topic = Resource::new(
-        move || (use_channel().update_channel.version().get()),
-        move |_| get_channel_topic(channel_id),
-    );
+pub fn ChannelTopic(#[prop(into)] topic: Signal<Option<String>>) -> impl IntoView {
     view! {
-        <Transition fallback=move || ()>
-            {move || {
-                channel_topic
-                    .and_then(|topic| {
-                        topic
-                            .clone()
-                            .map(|topic| {
-                                view! {
-                                    <div class="divider divider-horizontal h-auto mx-0.5" />
-                                    <div>{topic}</div>
-                                }
-                            })
-                    })
-            }}
-        </Transition>
+        {move || {
+            topic.get().map(|topic| {
+                view! {
+                    <div class="divider divider-horizontal h-auto mx-0.5" />
+                    <div>{topic}</div>
+                }
+
+            })
+        }}
     }
 }
 
 #[component]
-pub fn ChannelThread(thread: Thread) -> impl IntoView {
+pub fn ChannelThread(#[prop(into)] thread: Field<Thread>) -> impl IntoView {
     view! {
         // <Icon icon=icondata::LuChevronRight />
-        <div>{thread.name}</div>
+        <div>{move || thread.name().get()}</div>
     }
 }

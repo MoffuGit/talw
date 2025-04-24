@@ -61,7 +61,7 @@ pub async fn get_members_from_role(role_id: Uuid) -> Result<Vec<Member>, ServerF
     Ok(Member::get_member_from_role(role_id, &pool).await?)
 }
 
-#[server(GetUserMembers, "/api")]
+#[server(GetUserMembers)]
 pub async fn get_user_members() -> Result<Vec<Member>, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;

@@ -178,7 +178,7 @@ pub async fn get_threads_from_channel(channel_id: Uuid) -> Result<Vec<Thread>, S
     Ok(Thread::get_threads_from_channel(channel_id, &pool).await?)
 }
 
-#[server(ToggleThreadWidth, "/api")]
+#[server(ToggleThreadWidth)]
 pub async fn toggle_thread_width(width: f64) -> Result<f64, ServerFnError> {
     use tower_cookies::cookie::SameSite;
     use tower_cookies::Cookie;

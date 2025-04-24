@@ -6,43 +6,64 @@ use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
 use crate::entities::channel::Channel;
+use crate::entities::channel::ChannelStoreFields;
 use crate::entities::server::ServerStoreFields;
+use crate::messages::Message;
+use crate::ws::client::use_ws;
 //use icondata;
 //use icondata:Icon;
 use leptos::html;
 use leptos::prelude::*;
 //use leptos_icons::Icon;
 use leptos_router::components::A;
+use log::debug;
+use reactive_stores::Field;
 
 use super::thread::Thread;
 
 #[component]
-pub fn Channel(channel: Channel) -> impl IntoView {
-    let Channel { id: channel_id, .. } = channel;
+pub fn Channel(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
+    let ws = use_ws();
+    Effect::new(move |_| {
+        ws.on_server_msg(channel.server_id().get(), move |msg| {
+            if let Message::ChannelUpdated {
+                topic,
+                name,
+                channel_id,
+            } = msg
+            {
+                if channel_id == channel.id().get() {
+                    *channel.topic().write() = topic;
+
+                    if let Some(name) = name {
+                        *channel.name().write() = name
+                    }
+                }
+            }
+        });
+    });
     view! {
         <ChannelMenu channel=channel />
-        <Thread channel_id=channel_id />
+        <Thread channel_id=channel.id().get() />
     }
 }
 
 #[component]
-pub fn ChannelMenu(channel: Channel) -> impl IntoView {
+pub fn ChannelMenu(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
     let CurrentServerContext {
         server,
         member_can_edit,
         ..
     } = use_current_server_context();
-    let Channel {
-        id,
-        name,
-        channel_type,
-        ..
-    } = channel.clone();
+
+    let id = channel.id();
+    let name = channel.name();
+
     let hidden = RwSignal::new(false);
     let use_current_channel = use_current_channel();
-    let is_current_channel =
-        move || use_current_channel.with(|current| current.is_some_and(|current| current == id));
-    let stored_channel = StoredValue::new(channel);
+    let is_current_channel = move || {
+        use_current_channel.with(|current| current.is_some_and(|current| current == id.get()))
+    };
     let invite_people_node = NodeRef::<html::Div>::new();
     let edit_channel_node = NodeRef::<html::Div>::new();
     let delete_channel_node = NodeRef::<html::Div>::new();
@@ -52,7 +73,7 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
             <ContextMenuProvider hidden=hidden open=open modal=false>
                 <ContextMenuTrigger class="relative box-border flex flex-col cursor-pointer">
                     <A
-                        href=move || id.simple().to_string()
+                        href=move || id.get().simple().to_string()
                         {..}
                         class=move || {
                             format!(
@@ -70,7 +91,7 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                         // <Icon icon=Icon::from(channel_type) />
                         // class="relative w-4 h-4 shrink-0 mr-1.5 fill-base-content"
                         <div class="whitespace-nowrap overflow-hidden text-ellipsis mr-auto leading-5 flex-auto relative text-sm">
-                            {name.clone()}
+                            {move || name.get()}
                         </div>
                     </A>
                     <div
@@ -125,7 +146,7 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                                 view! {
                                     <EditChannelModal
                                         content_ref=edit_channel_node
-                                        channel=stored_channel.get_value()
+                                        channel=channel
                                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                         on_click=Signal::derive(move || hidden.set(false))
                                     >
@@ -133,7 +154,7 @@ pub fn ChannelMenu(channel: Channel) -> impl IntoView {
                                     </EditChannelModal>
                                     <DeleteChannel
                                         content_ref=delete_channel_node
-                                        channel=stored_channel.get_value()
+                                        channel=channel
                                         server_id=server.id()
                                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                                         on_click=Signal::derive(move || hidden.set(false))

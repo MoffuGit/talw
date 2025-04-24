@@ -5,16 +5,20 @@ use crate::app::components::channel::header::title::HeaderTitle;
 use crate::app::components::channel::sidebars::MemberSideBarTrigger;
 use crate::app::components::navigation::server::sidebar::ServerSideBarTrigger;
 use crate::app::components::ui::tool_tip::*;
-use crate::entities::channel::Channel;
+use crate::entities::channel::{Channel, ChannelStoreFields};
 use crate::entities::thread::Thread;
 //use icondata;
 use leptos::prelude::*;
+use reactive_stores::Field;
 //use leptos_icons::Icon;
 
 use self::thread_menu::ThreadMenu;
 
 #[component]
-pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>) -> impl IntoView {
+pub fn ChannelHeader(
+    #[prop(into)] channel: Field<Channel>,
+    #[prop(optional, into)] thread: Option<Field<Thread>>,
+) -> impl IntoView {
     view! {
         <div class="relative bg-base-300 shadow shadow-base-300/80 h-11 w-full flex justify-between align-middle">
             <div class="relative flex-auto flex items-center overflow-hidden py-2">
@@ -38,11 +42,11 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
 
                 <div class="divider divider-horizontal h-auto m-0" />
 
-                {match &thread {
+                {match thread {
                     Some(thread) => {
-                        view! { <HeaderTitle channel=channel.clone() thread=thread.clone() /> }
+                        view! { <HeaderTitle channel=channel thread=thread /> }
                     }
-                    None => view! { <HeaderTitle channel=channel.clone() /> },
+                    None => view! { <HeaderTitle channel=channel /> },
                 }}
 
             </div>
@@ -53,7 +57,7 @@ pub fn ChannelHeader(channel: Channel, #[prop(optional)] thread: Option<Thread>)
                         view! {
                             <TooltipProvider>
                                 <TooltipTrigger close_on_click=true>
-                                    <ThreadMenu channel_id=channel.id server_id=channel.server_id />
+                                    <ThreadMenu channel_id=channel.id().get() server_id=channel.server_id().get() />
                                 </TooltipTrigger>
                                 <TooltipContent
                                     tooltip_of_side=10.0

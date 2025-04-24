@@ -28,10 +28,9 @@ pub fn App() -> impl IntoView {
     provide_auth_context();
 
     //NOTE:
-    //start sending messages
-    //check for reconnection
-    //add batching
+    //keeep progressing until chat msg
     //add unread and read messages
+    //use the thread and UserConnection msg for somethign
     //fix the icons
     //fix the ui of the modals and user overview
     //add flallbacks for the transitions

@@ -37,7 +37,7 @@ pub fn use_category() -> CategoryContext {
     use_context::<CategoryContext>().expect("have category context")
 }
 
-#[server(GetCategories, "/api")]
+#[server(GetCategories)]
 pub async fn get_categories(server_id: Uuid) -> Result<Vec<Category>, ServerFnError> {
     auth_user()?;
     let pool = pool()?;
@@ -45,7 +45,7 @@ pub async fn get_categories(server_id: Uuid) -> Result<Vec<Category>, ServerFnEr
     Ok(Server::get_server_categories(server_id, &pool).await?)
 }
 
-#[server(CreateCategory, "/api")]
+#[server(CreateCategory)]
 pub async fn create_category(server_id: Uuid, name: String) -> Result<Uuid, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;

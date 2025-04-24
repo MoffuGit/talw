@@ -1,34 +1,50 @@
+use std::collections::HashMap;
+
 use super::category::Category;
 use super::channel::Channel;
 use super::server_menu::ServerMenu;
 use crate::app::api::category::get_categories;
+use crate::app::api::channel::get_all_channels;
 use crate::app::api::channel::get_general_channels;
 use crate::app::components::modal::create_category::CreateCategoryModal;
 use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
+use crate::entities::category::Category as CategoryEntitie;
+use crate::entities::category::CategoryStoreFields;
+use crate::entities::channel::Channel as ChannelStruct;
+use crate::entities::channel::ChannelStoreFields;
 use crate::entities::server::ServerStoreFields;
+use crate::messages::Message;
+use crate::ws::client::use_ws;
 use leptos::prelude::*;
+use log::debug;
 use reactive_stores::Store;
 use uuid::Uuid;
-
-use crate::entities::category::Category as EntCategory;
-use crate::entities::channel::Channel as EntChannel;
 
 #[derive(Clone)]
 pub struct ServerSideBarContext {
     pub open: RwSignal<bool>,
 }
 
+#[derive(Debug, Clone, Store)]
+pub struct ChannelStore {
+    #[store(key: Uuid = |channel| channel.id)]
+    channels: Vec<ChannelStruct>,
+}
 
-//NOTE: create the store structs
+#[derive(Debug, Clone, Store)]
+pub struct CategoryStore {
+    #[store(key: Uuid = |category| category.id)]
+    categories: Vec<CategoryEntitie>,
+}
 
 #[component]
 pub fn ServerSideBar() -> impl IntoView {
     let CurrentServerContext { server, .. } = use_current_server_context();
 
-    let channels = Resource::new(move || server.id().get(), get_general_channels);
+    let channels = Resource::new(move || server.id().get(), get_all_channels);
 
     let categories = Resource::new(move || server.id().get(), get_categories);
     let open = use_context::<ServerSideBarContext>()
@@ -45,34 +61,102 @@ pub fn ServerSideBar() -> impl IntoView {
                     <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
                         <Transition>
                             {move || {
+                                debug!("before the suspend");
                                 Suspend::new(async move {
+                                    debug!("resolving the suspend");
                                     let channels = channels.await;
                                     let categories = categories.await;
                                     match (channels, categories)  {
-                                        (Ok(channels), Ok(categories)) => {
-                                            let categories_store = Store::new(categories);
-                                            let channel_store = Store::new(channels);
+                                        (Ok(all_channels), Ok(categories)) => {
+                                            debug!("matched the resources");
+                                            let channels_with_category: Store<HashMap<Uuid, Store<ChannelStore>>> = Store::new(HashMap::new());
+                                            let channels = Store::new(ChannelStore { channels: vec![] });
+                                            let categories = Store::new(CategoryStore { categories});
+
+                                            for channel in all_channels {
+                                                match channel.category_id {
+                                                    Some(category_id) => {
+                                                        channels_with_category.update(|channels| {
+                                                            channels
+                                                            .entry(category_id)
+                                                            .or_insert_with(|| Store::new(ChannelStore { channels: vec![] }))
+                                                            .update(|store| store.channels.push(channel));
+                                                        });
+                                                    }
+                                                    None => {
+                                                        channels.update(|store| store.channels.push(channel));
+                                                    }
+                                                }
+                                            }
+                                            // let ws = use_ws();
+                                            // Effect::new(move |_| {
+                                            //     ws.on_server_msg(server.id().get(), move |msg| {
+                                            //         match msg {
+                                            //             Message::ChannelDeleted { channel_id } => {
+                                            //                 channels.update(|store| {
+                                            //                     store.channels.retain(|channel| channel.id != channel_id);
+                                            //                 });
+                                            //                 channels_with_category.update(|channels| {
+                                            //                      channels.iter().for_each(|(_, store)| {
+                                            //                         store.update(|store| {
+                                            //                             store.channels.retain(|channel| channel.id != channel_id);
+                                            //                         });
+                                            //                     });
+                                            //                 });
+                                            //             }
+                                            //             Message::ChannelCreated { new_channel}  => {
+                                            //                     if let Some(category_id)= new_channel.category_id {
+                                            //                         if let Some(channels) = channels_with_category.get().get(&category_id) { channels.update(|store| store.channels.push(new_channel)); }
+                                            //                     } else {
+                                            //                         channels.update(|store| store.channels.push(new_channel));
+                                            //                     };
+                                            //             }
+                                            //             Message::CategoryDeleted { category_id } => {
+                                            //                 categories.update(|store| {
+                                            //                     store.categories.retain(|category| category.id != category_id);
+                                            //                 });
+                                            //                 channels_with_category.update(|store| {
+                                            //                     if let Some(store) = store.remove(&category_id) {
+                                            //                         store.channels().update(|channels| {
+                                            //                             channels.iter_mut().for_each(|channel| channel.category_id = None);
+                                            //                         });
+                                            //                         channels.channels().update(|channels| {
+                                            //                             channels.extend(store.channels().get())
+                                            //                         });
+                                            //                     }
+                                            //                 });
+                                            //             }
+                                            //             Message::CategoryCreated { new_category}  => {
+                                            //                 categories.update(|store| store.categories.push(new_category));
+                                            //             }
+                                            //             _ => {}
+                                            //         }
+                                            //     });
+                                            // });
+
                                             view!{
                                                 <For
-                                                    each=move || channel_store.channels
-                                                    key=|channel| channel.id
-                                                    children=move |channel: EntChannel| {
-                                                        view! { <Channel channel=channel.clone() /> }
-                                                    }
-                                                />
-                                                <For
-                                                    each=move || {
-                                                        categories.get().and_then(Result::ok).unwrap_or_default()
-                                                    }
-                                                    key=|category| category.id
-                                                    children=move |category: EntCategory| {
-                                                        view! { <Category category=category.clone() /> }
-                                                    }
-                                                />
-
-                                            }
+                                                    each=move || channels.channels()
+                                                    key=|channel| channel.id().get()
+                                                    let:channel
+                                                >
+                                                    <Channel channel=channel />
+                                                </For>
+                                                // <For
+                                                //     each=move || {
+                                                //         categories.categories()
+                                                //     }
+                                                //     key=|category| category.id().get()
+                                                //     children=move |category| {
+                                                //         let channels = *channels_with_category.get().get(&category.id().get()).expect("should exist the channels");
+                                                //         view!{
+                                                //             <Category category=category channels=channels/>
+                                                //         }
+                                                //     }
+                                                // />
+                                            }.into_any()
                                         },
-                                        => {}
+                                        msg => view!{<div>{format!("{msg:?}")}</div>}.into_any()
                                     }
                                 });
                             }}

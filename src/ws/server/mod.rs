@@ -22,7 +22,7 @@ use crate::{
     state::AppState,
 };
 
-pub type WsChannels = Arc<DashMap<Uuid, (Sender<AppMessage>, Arc<Mutex<Receiver<AppMessage>>>)>>;
+pub type WsChannels = Arc<DashMap<Uuid, Sender<AppMessage>>>;
 
 pub async fn ws_handler(
     auth_session: AuthSession,
@@ -40,20 +40,20 @@ async fn handle_socket(socket: WebSocket, state: AppState, user: User) {
 
     let channels = state.ws_channels.clone();
 
-    let rx = {
+    let mut rx = {
         match channels.get(&user.id) {
-            Some(channel) => channel.1.clone(),
+            Some(channel) => channel.subscribe(),
             None => {
                 let (tx, rx) = broadcast::channel::<AppMessage>(1000);
-                let rx = Arc::new(Mutex::new(rx));
-                channels.insert(user.id, (tx.clone(), rx.clone()));
+                // let rx = Arc::new(Mutex::new(rx));
+                channels.insert(user.id, tx.clone());
                 rx
             }
         }
     };
 
     let mut send_task = tokio::spawn(async move {
-        while let Ok(msg) = rx.lock().await.recv().await {
+        while let Ok(msg) = rx.recv().await {
             debug!("got this msg from the msg sender: {msg:?}");
             if let AppMessage::ClientMessage(msg) = msg {
                 if sender

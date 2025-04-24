@@ -147,8 +147,7 @@ impl MsgReceiver {
             debug!("sending msg: {msg:?} to users: {users:?}");
             let msg = std::convert::Into::<ClientMessage>::into(msg);
             for user in users {
-                if let Some(channel) = self.channels.get(user) {
-                    let sender = channel.0.clone();
+                if let Some(sender) = self.channels.get(user) {
                     let _ = sender.send(AppMessage::ClientMessage(msg.clone()));
                 }
             }
@@ -160,8 +159,7 @@ impl MsgReceiver {
         user_id: Uuid,
         msg: impl Into<ClientMessage> + std::fmt::Debug,
     ) {
-        if let Some(channel) = self.channels.get(&user_id) {
-            let sender = channel.0.clone();
+        if let Some(sender) = self.channels.get(&user_id) {
             let _ = sender.send(AppMessage::ClientMessage(msg.into()));
         }
     }

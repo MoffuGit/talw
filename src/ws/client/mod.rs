@@ -20,7 +20,7 @@ pub enum WsState {
     Stoped,
 }
 
-type Channels = Arc<DashMap<Uuid, (Sender<Message>, Arc<Mutex<Receiver<Message>>>)>>;
+type Channels = Arc<DashMap<Uuid, (Sender<Message>, Receiver<Message>)>>;
 
 #[derive(Clone)]
 pub struct WsContext {
@@ -60,8 +60,7 @@ impl WsContext {
 
         for server_id in new_servers.difference(&current_servers) {
             let (sender, receiver) = broadcast::<Message>(1000);
-            self.servers_channels
-                .insert(*server_id, (sender, Arc::new(Mutex::new(receiver))));
+            self.servers_channels.insert(*server_id, (sender, receiver));
             subscribe_msgs.push(AppMessage::Subscribe {
                 user_id,
                 server_id: *server_id,
@@ -78,9 +77,9 @@ impl WsContext {
         #[cfg(feature = "hydrate")]
         {
             if let Some(broadcast) = self.servers_channels.get(&server_id) {
-                let rx = broadcast.1.clone();
+                let mut rx = broadcast.1.clone();
                 spawn_local(async move {
-                    while let Ok(msg) = rx.lock().await.recv().await {
+                    while let Ok(msg) = rx.recv().await {
                         on_msg(msg)
                     }
                 });

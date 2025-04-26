@@ -35,39 +35,37 @@ pub fn ChannelView() -> impl IntoView {
 
     provide_context(SideBarContext(RwSignal::new(false)));
     view! {
-        <div class="w-full h-full flex relative overflow-hidden">
-            <div class="grow min-w-[400px] shrink-0 flex flex-col">
-                <Transition>
-                    {move || {
-                        channel
-                            .and_then(|channel| {
-                                let channel = Store::new(channel.clone());
+        <Transition>
+            <div class="w-full h-full flex relative overflow-hidden">
+                <div class="grow min-w-[400px] shrink-0 flex flex-col">
+                    {
+                        Suspend::new(async move {
+                            channel.await.map(|channel| {
+                                let channel = Store::new(channel);
                                 let ws = use_ws();
-                                Effect::new(move |_| {
-                                    let navigate = use_navigate();
-                                    ws.on_server_msg(server_id.get(), move |msg| {
-                                        match msg {
-                                            Message::ChannelDeleted { channel_id } => {
-                                                if channel.id().get() == channel_id {
-                                                    navigate("/", Default::default())
+                                let navigate = use_navigate();
+                                ws.on_server_msg(server_id.get(), move |msg| {
+                                    match msg {
+                                        Message::ChannelDeleted { channel_id } => {
+                                            if channel.id().get() == channel_id {
+                                                navigate("/", Default::default())
+                                            }
+                                        },
+                                        Message::ChannelUpdated { topic, name, channel_id } => {
+                                            if channel.id().get() == channel_id {
+                                                *channel.topic().write() = topic;
+                                                if let Some(name) = name {
+                                                    *channel.name().write() = name;
                                                 }
-                                            },
-                                            Message::ChannelUpdated { topic, name, channel_id } => {
-                                                if channel.id().get() == channel_id {
-                                                    *channel.topic().write() = topic;
-                                                    if let Some(name) = name {
-                                                        *channel.name().write() = name;
-                                                    }
-                                                }
-                                            },
-                                            Message::CategoryDeleted { category_id } => {
-                                                if channel.category_id().get().is_some_and(|category| category == category_id)  {
-                                                    *channel.category_id().write() = None;
-                                                }
-                                            },
-                                            _ => {}
-                                        }
-                                    });
+                                            }
+                                        },
+                                        Message::CategoryDeleted { category_id } => {
+                                            if channel.category_id().get().is_some_and(|category| category == category_id)  {
+                                                *channel.category_id().write() = None;
+                                            }
+                                        },
+                                        _ => {}
+                                    }
                                 });
                                 view! {
                                     <ChannelHeader channel=channel />
@@ -92,10 +90,11 @@ pub fn ChannelView() -> impl IntoView {
                                     </div>
                                 }
                             })
-                    }}
-                </Transition>
+                        })
+                    }
+                </div>
+                <Outlet />
             </div>
-            <Outlet />
-        </div>
+        </Transition>
     }
 }

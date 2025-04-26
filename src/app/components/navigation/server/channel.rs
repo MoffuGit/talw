@@ -16,7 +16,6 @@ use leptos::html;
 use leptos::prelude::*;
 //use leptos_icons::Icon;
 use leptos_router::components::A;
-use log::debug;
 use reactive_stores::Field;
 
 use super::thread::Thread;
@@ -24,23 +23,21 @@ use super::thread::Thread;
 #[component]
 pub fn Channel(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
     let ws = use_ws();
-    Effect::new(move |_| {
-        ws.on_server_msg(channel.server_id().get(), move |msg| {
-            if let Message::ChannelUpdated {
-                topic,
-                name,
-                channel_id,
-            } = msg
-            {
-                if channel_id == channel.id().get() {
-                    *channel.topic().write() = topic;
+    ws.on_server_msg(channel.server_id().get(), move |msg| {
+        if let Message::ChannelUpdated {
+            topic,
+            name,
+            channel_id,
+        } = msg
+        {
+            if channel_id == channel.id().get() {
+                *channel.topic().write() = topic;
 
-                    if let Some(name) = name {
-                        *channel.name().write() = name
-                    }
+                if let Some(name) = name {
+                    *channel.name().write() = name
                 }
             }
-        });
+        }
     });
     view! {
         <ChannelMenu channel=channel />

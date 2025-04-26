@@ -54,6 +54,20 @@ pub fn Servers() -> impl IntoView {
             });
 
             let ws = use_ws();
+
+            ws.sync_channels(servers.iter().map(|server| server.id).collect(), user.id);
+
+            ws.on_app_msg(move |msg| match msg {
+                ClientMessage::LeavedServer { server_id, .. }
+                | ClientMessage::ServerDeleted { server_id } => {
+                    server_store
+                        .update(|store| store.servers.retain(|server| server.id != server_id));
+                }
+                ClientMessage::JoinedToServer { server, .. } => {
+                    server_store.update(|store| store.servers.push(server));
+                }
+                _ => {}
+            });
             Effect::new(move |_| {
                 let servers = server_store
                     .servers()
@@ -62,18 +76,6 @@ pub fn Servers() -> impl IntoView {
                     .map(|server| server.id)
                     .collect::<Vec<_>>();
                 ws.sync_channels(servers.clone(), user.id);
-
-                ws.on_app_msg(move |msg| match msg {
-                    ClientMessage::LeavedServer { server_id, .. }
-                    | ClientMessage::ServerDeleted { server_id } => {
-                        server_store
-                            .update(|store| store.servers.retain(|server| server.id != server_id));
-                    }
-                    ClientMessage::JoinedToServer { server, .. } => {
-                        server_store.update(|store| store.servers.push(server));
-                    }
-                    _ => {}
-                });
             });
 
             view! {

@@ -56,27 +56,25 @@ pub fn Server() -> impl IntoView {
         server_data.and_then(|data| {
             let server = Store::new(data.0.clone());
             let ws = use_ws();
-            Effect::new(move |_| {
-                let navigate = use_navigate();
-                ws.on_app_msg(move |msg| match msg {
-                    ClientMessage::LeavedServer { server_id, .. }
-                    | ClientMessage::ServerDeleted { server_id } => {
-                        if server_id == server.id().get() {
-                            navigate("/home", Default::default())
-                        }
+            let navigate = use_navigate();
+            ws.on_app_msg(move |msg| match msg {
+                ClientMessage::LeavedServer { server_id, .. }
+                | ClientMessage::ServerDeleted { server_id } => {
+                    if server_id == server.id().get() {
+                        navigate("/home", Default::default())
                     }
-                    _ => {}
-                });
-                ws.on_server_msg(server.id().get(), move |msg| {
-                    if let crate::messages::Message::ServerUpdated { name, image } = msg {
-                        if let Some(name) = name {
-                            *server.name().write() = name;
-                        }
-                        if let Some(image) = image {
-                            *server.image_url().write() = Some(image);
-                        }
+                }
+                _ => {}
+            });
+            ws.on_server_msg(server.id().get(), move |msg| {
+                if let crate::messages::Message::ServerUpdated { name, image } = msg {
+                    if let Some(name) = name {
+                        *server.name().write() = name;
                     }
-                });
+                    if let Some(image) = image {
+                        *server.image_url().write() = Some(image);
+                    }
+                }
             });
 
             outer_owner.with(|| {

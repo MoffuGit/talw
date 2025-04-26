@@ -133,14 +133,13 @@ fn ServerMenuGuestItems(
     let CurrentServerContext { server, .. } = use_current_server_context();
     view! {
         <div class="bg-base-100 h-px my-1 -mx-1" />
-        //NOTE: FIX THIS
-        // <LeaveServer
-        //     content_ref=leave_server_node
-        //     server=server
-        //     class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
-        //     on_click=on_click
-        // >
-        //     <div>"Leave Server"</div>
-        // </LeaveServer>
+        <LeaveServer
+            content_ref=leave_server_node
+            server=server
+            class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-sm"
+            on_click=on_click
+        >
+            <div>"Leave Server"</div>
+        </LeaveServer>
     }
 }

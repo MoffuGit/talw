@@ -5,7 +5,7 @@ use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::futures::WebSocket as GlooWs;
 use gloo_net::websocket::Message as GlooMsg;
 use leptos::prelude::*;
-use leptos::task::spawn_local;
+use leptos::task::{spawn_local, spawn_local_scoped_with_cancellation};
 use log::debug;
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -26,7 +26,7 @@ type Channels = Arc<DashMap<Uuid, (Sender<Message>, Receiver<Message>)>>;
 pub struct WsContext {
     sender: Sender<WsMessage>,
     servers_channels: Channels,
-    app_channel: (Sender<ClientMessage>, Arc<Mutex<Receiver<ClientMessage>>>),
+    app_channel: (Sender<ClientMessage>, Receiver<ClientMessage>),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -77,8 +77,8 @@ impl WsContext {
         #[cfg(feature = "hydrate")]
         {
             if let Some(broadcast) = self.servers_channels.get(&server_id) {
-                let mut rx = broadcast.1.clone();
-                spawn_local(async move {
+                let mut rx = broadcast.1.new_receiver();
+                spawn_local_scoped_with_cancellation(async move {
                     while let Ok(msg) = rx.recv().await {
                         on_msg(msg)
                     }
@@ -90,9 +90,9 @@ impl WsContext {
     pub fn on_app_msg(&self, on_msg: impl Fn(ClientMessage) + Send + Sync + 'static) {
         #[cfg(feature = "hydrate")]
         {
-            let rx = self.app_channel.1.clone();
-            spawn_local(async move {
-                while let Ok(msg) = rx.lock().await.recv().await {
+            let mut rx = self.app_channel.1.new_receiver();
+            spawn_local_scoped_with_cancellation(async move {
+                while let Ok(msg) = rx.recv().await {
                     on_msg(msg)
                 }
             });
@@ -109,7 +109,6 @@ pub fn provide_ws_context() {
     let (sender_sb, sender_rb) = broadcast::<WsMessage>(1000);
     let servers_channels: Channels = Arc::new(DashMap::new());
     let (app_sender, app_receiver) = broadcast::<ClientMessage>(1000);
-    let app_receiver = Arc::new(Mutex::new(app_receiver));
 
     let connect = StoredValue::new({
         let channels = servers_channels.clone();
@@ -134,7 +133,6 @@ pub fn provide_ws_context() {
                 while let Some(message) = receiver_ws.next().await {
                     match message {
                         Ok(GlooMsg::Text(msg)) => {
-                            debug!("received msg from ws: {msg:?}");
                             let message = serde_json::from_str::<ClientMessage>(&msg)
                                 .expect("should receive an ClientMessage");
                             match message {

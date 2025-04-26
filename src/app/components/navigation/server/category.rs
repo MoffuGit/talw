@@ -18,7 +18,6 @@ use leptos::prelude::*;
 use reactive_stores::Field;
 use reactive_stores::Store;
 
-use crate::app::api::channel::get_channels_with_category;
 use crate::entities::category::Category as EntCategory;
 
 #[component]
@@ -40,18 +39,16 @@ pub fn Category(
     let menu_open = RwSignal::new(false);
     let ws = use_ws();
 
-    Effect::new(move |_| {
-        ws.on_server_msg(server.id().get(), move |msg| {
-            if let Message::CategoryUpdated {
-                category_id,
-                new_name,
-            } = msg
-            {
-                if category.id().get() == category_id {
-                    *category.name().write() = new_name;
-                }
+    ws.on_server_msg(server.id().get(), move |msg| {
+        if let Message::CategoryUpdated {
+            category_id,
+            new_name,
+        } = msg
+        {
+            if category.id().get() == category_id {
+                *category.name().write() = new_name;
             }
-        });
+        }
     });
 
     view! {

@@ -4,7 +4,7 @@ use super::category::Category;
 use super::channel::Channel;
 use super::server_menu::ServerMenu;
 use crate::app::api::category::get_categories;
-use crate::app::api::channel::get_all_channels;
+use crate::app::api::channel::get_channels;
 use crate::app::components::modal::create_category::CreateCategoryModal;
 use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::ui::context_menu::*;
@@ -42,7 +42,7 @@ pub struct CategoryStore {
 pub fn ServerSideBar() -> impl IntoView {
     let CurrentServerContext { server, .. } = use_current_server_context();
 
-    let channels = Resource::new(move || server.id().get(), get_all_channels);
+    let channels = Resource::new(move || server.id().get(), get_channels);
 
     let categories = Resource::new(move || server.id().get(), get_categories);
     let open = use_context::<ServerSideBarContext>()

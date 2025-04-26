@@ -20,7 +20,6 @@ cfg_if! {
 #[derive(Clone, Copy)]
 pub struct ChannelContext {
     pub create_channel: ServerAction<CreateChannel>,
-    pub create_channel_with_category: ServerAction<CreateChannelWithCategory>,
     pub delete_channel: ServerAction<DeleteChannel>,
     pub update_channel: ServerAction<UpdateChannel>,
 }
@@ -31,13 +30,11 @@ pub fn use_channel() -> ChannelContext {
 
 pub fn provide_channel_context() {
     let create_channel = ServerAction::<CreateChannel>::new();
-    let create_channel_with_category = ServerAction::<CreateChannelWithCategory>::new();
     let delete_channel = ServerAction::<DeleteChannel>::new();
     let update_channel = ServerAction::<UpdateChannel>::new();
 
     provide_context(ChannelContext {
         create_channel,
-        create_channel_with_category,
         delete_channel,
         update_channel,
     })
@@ -83,30 +80,11 @@ pub async fn update_channel(
 }
 
 #[server(GetAllChannels)]
-pub async fn get_all_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
+pub async fn get_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
     auth_user()?;
     let pool = pool()?;
 
     Ok(Server::get_channels(server_id, &pool).await?)
-}
-
-#[server(GetGeneralChannels)]
-pub async fn get_general_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
-    auth_user()?;
-    let pool = pool()?;
-
-    Ok(Server::get_general_channels(server_id, &pool).await?)
-}
-
-#[server(GetChannelsWithCategory)]
-pub async fn get_channels_with_category(
-    server_id: Uuid,
-    category_id: Uuid,
-) -> Result<Vec<Channel>, ServerFnError> {
-    auth_user()?;
-    let pool = pool()?;
-
-    Ok(Server::get_channels_with_category(server_id, category_id, &pool).await?)
 }
 
 #[server(CreateChannel)]
@@ -114,6 +92,7 @@ pub async fn create_channel(
     name: String,
     channel_type: ChannelType,
     server_id: Uuid,
+    category_id: Option<Uuid>,
 ) -> Result<Uuid, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
@@ -123,43 +102,12 @@ pub async fn create_channel(
             return Err(ServerFnError::new("the name have a min len of 1 char"));
         }
 
-        let channel_id = Channel::create(&name, channel_type, server_id, &pool).await?;
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::ChannelCreated {
-                new_channel: Channel {
-                    id: channel_id,
-                    name,
-                    channel_type,
-                    server_id,
-                    category_id: None,
-                    topic: None,
-                },
-            },
-        });
-        return Ok(channel_id);
-    }
-    Err(ServerFnError::new("You cant create a channel"))
-}
-
-#[server(CreateChannelWithCategory)]
-pub async fn create_channel_with_category(
-    name: String,
-    channel_type: ChannelType,
-    server_id: Uuid,
-    category_id: Uuid,
-) -> Result<Uuid, ServerFnError> {
-    let pool = pool()?;
-    let user = auth_user()?;
-
-    if user_can_edit(server_id, user.id, &pool).await? {
-        if name.len() <= 1 {
-            return Err(ServerFnError::new("min len is 1"));
-        }
-
-        let channel_id =
+        let channel_id = if let Some(category_id) = category_id {
             Channel::create_with_category(&name, channel_type, server_id, category_id, &pool)
-                .await?;
+                .await?
+        } else {
+            Channel::create(&name, channel_type, server_id, &pool).await?
+        };
 
         msg_sender()?.send(ServerMessage {
             server_id,
@@ -169,15 +117,13 @@ pub async fn create_channel_with_category(
                     name,
                     channel_type,
                     server_id,
-                    category_id: Some(category_id),
+                    category_id,
                     topic: None,
                 },
             },
         });
-
         return Ok(channel_id);
     }
-
     Err(ServerFnError::new("You cant create a channel"))
 }
 

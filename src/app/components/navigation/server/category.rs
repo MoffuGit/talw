@@ -118,7 +118,7 @@ pub fn Category(
                         <CreateChannelModal
                             content_ref=create_channel_node
                             server_id=server.id()
-                            category_id=id.get()
+                            category_id=id
                             class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                             category_name=name
                             on_click=Signal::derive(move || hidden_context_menu.set(false))

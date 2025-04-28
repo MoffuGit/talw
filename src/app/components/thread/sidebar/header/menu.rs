@@ -1,16 +1,16 @@
 use crate::app::components::menu::thread::ThreadMenuContent;
-use crate::app::components::thread::sidebar::CurrentThreadContext;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::app::components::ui::tool_tip::*;
+use crate::entities::thread::Thread;
 use leptos::html;
 use leptos::prelude::*;
+use reactive_stores::Store;
 use std::time::Duration;
 
 #[component]
 pub fn ThreadMenu() -> impl IntoView {
-    let current_thread = use_context::<CurrentThreadContext>()
-        .expect("SHould return the current thrread context")
-        .thread;
+    let current_thread =
+        use_context::<Store<Thread>>().expect("SHould return the current thrread context");
     let open = RwSignal::new(false);
     let delete_thread_modal_ref = NodeRef::<html::Div>::new();
     view! {
@@ -52,7 +52,7 @@ pub fn ThreadMenu() -> impl IntoView {
                 <ThreadMenuContent
                     delete_thread_modal_ref=delete_thread_modal_ref
                     open=open
-                    thread=current_thread.clone()
+                    thread=current_thread
                 />
             </DropdownContent>
         </DropdownProvider>

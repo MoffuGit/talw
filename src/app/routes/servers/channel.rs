@@ -52,10 +52,13 @@ pub fn ChannelView() -> impl IntoView {
                                             }
                                         },
                                         Message::ChannelUpdated { topic, name, channel_id } => {
-                                            if channel.id().get() == channel_id {
-                                                *channel.topic().write() = topic;
+                                            if channel_id == channel.id().get() {
+                                                if let Some(topic) = topic {
+                                                    *channel.topic().write() = Some(topic)
+                                                }
+
                                                 if let Some(name) = name {
-                                                    *channel.name().write() = name;
+                                                    *channel.name().write() = name
                                                 }
                                             }
                                         },

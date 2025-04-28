@@ -7,7 +7,7 @@ use uuid::Uuid;
 #[component]
 pub fn DeleteThreadModal(
     thread_id: Uuid,
-    thread_name: String,
+    #[prop(into)] thread_name: Signal<String>,
     server_id: Uuid,
     class: &'static str,
     #[prop(optional)] children: Option<Children>,
@@ -21,12 +21,12 @@ pub fn DeleteThreadModal(
             <ModalTrigger class=class>{children.map(|children| children())}</ModalTrigger>
             <ModalContent class="w-[440px] rounded p-0 h-auto overflow-hidden flex flex-col items-center">
                 <h2 class="p-4  leading-[24px] text-[20px] font-bold text-start w-full">
-                    {format!("Delete '{}'", thread_name)}
+                    {move || format!("Delete '{}'", thread_name.get())}
                 </h2>
                 <div class="px-4 pb-10 w-full">
-                    {format!(
+                    {move || format!(
                         "Are you sure you want to delete {}? This cannnot be undone.",
-                        thread_name,
+                        thread_name.get(),
                     )}
                 </div>
                 <div class="relative p-4 flex justify-end w-full bg-base-300/80">

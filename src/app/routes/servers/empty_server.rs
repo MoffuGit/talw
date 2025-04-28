@@ -5,7 +5,7 @@ use leptos_router::components::Redirect;
 use leptos_router::hooks::use_params_map;
 use uuid::Uuid;
 
-use crate::app::api::channel::{get_all_channels, use_channel};
+use crate::app::api::channel::{get_channels, use_channel};
 
 #[component]
 pub fn EmptyServer() -> impl IntoView {
@@ -18,7 +18,7 @@ pub fn EmptyServer() -> impl IntoView {
                     .with(|p| Uuid::from_str(&p.get("id").unwrap_or_default()).unwrap_or_default()),
             )
         },
-        move |(_, server_id)| get_all_channels(server_id),
+        move |(_, server_id)| get_channels(server_id),
     );
     view! {
         <Transition fallback=move || ()>

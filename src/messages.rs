@@ -77,6 +77,14 @@ pub enum Message {
     ThreadCreated {
         thread_id: Uuid,
     },
+    MemberJoinThread {
+        thread_id: Uuid,
+        user_id: Uuid,
+    },
+    MemberLeaveThread {
+        thread_id: Uuid,
+        user_id: Uuid,
+    },
     ThreadDeleted {
         thread_id: Uuid,
     },

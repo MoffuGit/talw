@@ -116,6 +116,13 @@ pub async fn join_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), ServerF
     let user = auth_user()?;
     if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
         Thread::add_member(thread_id, member.id, &pool).await?;
+        msg_sender()?.send(ServerMessage {
+            server_id,
+            msg: Message::MemberJoinThread {
+                thread_id,
+                user_id: user.id,
+            },
+        });
         Ok(())
     } else {
         Err(ServerFnError::new("You join into this thread"))
@@ -128,6 +135,13 @@ pub async fn leave_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), Server
     let user = auth_user()?;
     if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
         Thread::remove_member(thread_id, member.id, &pool).await?;
+        msg_sender()?.send(ServerMessage {
+            server_id,
+            msg: Message::MemberLeaveThread {
+                thread_id,
+                user_id: user.id,
+            },
+        });
         Ok(())
     } else {
         Err(ServerFnError::new("You can't leave this thread"))

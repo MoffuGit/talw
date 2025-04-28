@@ -6,9 +6,12 @@ use crate::app::components::channel::header::ChannelHeader;
 use crate::app::components::channel::sidebars::{MemberSideBar, SideBarContext};
 use crate::app::components::navigation::server::{use_current_channel, use_current_thread};
 use crate::app::routes::servers::server::use_current_server_context;
+use crate::entities::channel::ChannelStoreFields;
 use crate::entities::server::ServerStoreFields;
 use crate::entities::thread::ThreadStoreFields;
+use crate::ws::client::use_ws;
 use leptos::prelude::*;
+use leptos_router::hooks::use_navigate;
 use reactive_stores::Store;
 //use leptos_icons::Icon;
 
@@ -44,6 +47,33 @@ pub fn Thread() -> impl IntoView {
                                                 (Ok(channel), Ok(thread )) => {
                                                     let channel = Store::new(channel);
                                                     let thread = Store::new(thread);
+                                                    use_ws().on_server_msg(server_id.get(), move |msg| {
+                                                        match msg {
+                                                            crate::messages::Message::ThreadDeleted { thread_id } => {
+                                                                if thread_id == thread.id().get() {
+                                                                    use_navigate()("/", Default::default())
+                                                                }
+                                                            },
+                                                            crate::messages::Message::ChannelDeleted { channel_id } => {
+                                                                if channel_id == channel.id().get() {
+                                                                    use_navigate()("/", Default::default())
+                                                                }
+
+                                                            },
+                                                            crate::messages::Message::ChannelUpdated { channel_id, topic, name } => {
+                                                                if channel_id == channel.id().get() {
+                                                                    if let Some(topic) = topic {
+                                                                        *channel.topic().write() = Some(topic)
+                                                                    }
+
+                                                                    if let Some(name) = name {
+                                                                        *channel.name().write() = name
+                                                                    }
+                                                                }
+                                                            },
+                                                            _ => {}
+                                                        }
+                                                    });
                                                     view!{
                                                         <ChannelHeader
                                                             channel=channel
@@ -72,7 +102,7 @@ pub fn Thread() -> impl IntoView {
 
                                                     }.into_any()
                                                 }
-                                                _ => {}.into_any()
+                                                _ => ().into_any()
                                             }
                                         })
                                     }

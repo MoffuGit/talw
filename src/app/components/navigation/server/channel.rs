@@ -31,7 +31,9 @@ pub fn Channel(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
         } = msg
         {
             if channel_id == channel.id().get() {
-                *channel.topic().write() = topic;
+                if let Some(topic) = topic {
+                    *channel.topic().write() = Some(topic)
+                }
 
                 if let Some(name) = name {
                     *channel.name().write() = name
@@ -41,7 +43,7 @@ pub fn Channel(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
     });
     view! {
         <ChannelMenu channel=channel />
-        <Thread channel_id=channel.id().get() />
+        <Thread channel_id=channel.id().get() server_id=channel.server_id().get() />
     }
 }
 

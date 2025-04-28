@@ -2,12 +2,13 @@ mod menu;
 
 use self::menu::ThreadMenu;
 use crate::app::components::navigation::server::use_current_channel;
-use crate::app::components::thread::sidebar::CurrentThreadContext;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::server::ServerStoreFields;
+use crate::entities::thread::{Thread, ThreadStoreFields};
 use leptos::prelude::*;
 //use leptos_icons::Icon;
 use leptos_router::components::A;
+use reactive_stores::Store;
 
 #[component]
 pub fn ThreadHeader() -> impl IntoView {
@@ -36,11 +37,11 @@ pub fn ThreadHeader() -> impl IntoView {
 #[component]
 pub fn ThreadTitle() -> impl IntoView {
     let current_thread =
-        use_context::<CurrentThreadContext>().expect("SHould return the current thrread context");
+        use_context::<Store<Thread>>().expect("SHould return the current thrread context");
     view! {
         <div class="relative flex items-center p-1.5 text-base select-none">
             // <Icon icon=icondata::RiDiscussCommunicationFill />
-            <div>{current_thread.thread.name}</div>
+            <div>{move || current_thread.name().get()}</div>
         </div>
     }
 }

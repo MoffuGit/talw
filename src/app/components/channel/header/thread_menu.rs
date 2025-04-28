@@ -1,16 +1,18 @@
 use crate::app::api::member::{get_member_profile, get_thread_members};
-use crate::app::api::thread::{get_threads_from_channel, use_thread};
+use crate::app::api::thread::get_threads_from_channel;
 use crate::app::api::user::get_user_profile;
 use crate::app::components::menu::thread::ThreadMenuContent;
 use crate::app::components::modal::create_thread::CreatethreadModal;
+use crate::app::components::navigation::server::thread::{ThreadStore, ThreadStoreStoreFields};
 use crate::app::components::ui::context_menu::*;
 use crate::app::components::ui::dropdown_menu::*;
-use crate::entities::thread::Thread;
+use crate::entities::thread::{Thread, ThreadStoreFields};
 use crate::entities::user::Profile;
 //use icondata;
 use leptos::{html, prelude::*};
 //use leptos_icons::Icon;
 use leptos_router::components::A;
+use reactive_stores::{Field, Store};
 use uuid::Uuid;
 
 #[component]
@@ -99,17 +101,7 @@ pub fn ActiveThreads(
     create_thread_node: NodeRef<html::Div>,
     server_id: Uuid,
 ) -> impl IntoView {
-    let thread_context = use_thread();
-    let delete_thread = thread_context.delete_thread;
-    let get_threads = Resource::new(
-        move || {
-            (
-                delete_thread.version().get(),
-                thread_context.create_thread.version().get(),
-            )
-        },
-        move |_| get_threads_from_channel(channel_id),
-    );
+    let get_threads = Resource::new(move || (), move |_| get_threads_from_channel(channel_id));
     view! {
         <div class="w-full h-auto relative">
             <div class="flex w-full justify-between items-center my-2">
@@ -127,25 +119,28 @@ pub fn ActiveThreads(
                 </CreatethreadModal>
             </div>
             <div class="w-full min-h-[342px] w-full max-h-[720px] overflow-y-scroll overflow-x-hidden space-y-2">
-                <Transition fallback=move || ()>
-                    {move || {
-                        get_threads
-                            .and_then(|threads| {
-                                threads
-                                    .iter()
-                                    .map(|thread| {
-                                        view! {
-                                            <ThreadLink
-                                                thread=thread.clone()
-                                                open=open
-                                                context_menu_ref=context_menu_ref
-                                                delete_thread_modal_ref=delete_thread_modal_ref
-                                            />
-                                        }
-                                    })
-                                    .collect_view()
+                <Transition>
+                    {
+                        Suspend::new(async move {
+                            get_threads.await.map(|threads| {
+                                let thread_store = Store::new(ThreadStore { threads });
+                                view!{
+                                    <For
+                                        each=move || thread_store.threads()
+                                        key=|thread| thread.id().get()
+                                        let:thread
+                                    >
+                                        <ThreadLink
+                                            thread=thread
+                                            open=open
+                                            context_menu_ref=context_menu_ref
+                                            delete_thread_modal_ref=delete_thread_modal_ref
+                                        />
+                                    </For>
+                                }
                             })
-                    }}
+                        })
+                    }
                 </Transition>
             </div>
         </div>
@@ -154,17 +149,16 @@ pub fn ActiveThreads(
 
 #[component]
 pub fn ThreadLink(
-    thread: Thread,
+    #[prop(into)] thread: Field<Thread>,
     open: RwSignal<bool>,
     context_menu_ref: NodeRef<html::Div>,
     delete_thread_modal_ref: NodeRef<html::Div>,
 ) -> impl IntoView {
-    let created_by_profile = Resource::new(|| (), move |_| get_member_profile(thread.created_by));
-    let name = StoredValue::new(thread.name.to_string());
-    let thread_id = thread.id;
-    let thread = StoredValue::new(thread);
+    let created_by_profile = Resource::new(move || thread.created_by().get(), get_member_profile);
+    let name = thread.name();
+    let id = thread.id();
     view! {
-        <Transition fallback=move || ()>
+        <Transition >
             {move || {
                 created_by_profile
                     .and_then(|profile| {
@@ -176,12 +170,12 @@ pub fn ThreadLink(
                                 <ContextMenuTrigger class="w-full h-auto">
                                     <A
                                         on:click=move |_| open.set(false)
-                                        href=format!("{}", thread_id.simple())
+                                        href=format!("{}", id.get().simple())
                                         {..}
                                         class="w-full h-20 hover:bg-base-content/10 rounded-md inline-block flex justify-between items-center px-2"
                                     >
                                         <div class="flex flex-col w-auto h-auto">
-                                            <div class="font-semibold text-lg">{name.get_value()}</div>
+                                            <div class="font-semibold text-lg">{move || name.get()}</div>
                                             <div class="flex items-center text-sm">
                                                 {if let Some(url) = member_url.get_value() {
                                                     view! {
@@ -199,7 +193,7 @@ pub fn ThreadLink(
                                                 }} {format!("Started by {}", created_by.get_value())}
                                             </div>
                                         </div>
-                                        <ThreadMembers thread_id=thread_id />
+                                        <ThreadMembers thread_id=id.get() />
                                     </A>
                                 </ContextMenuTrigger>
                                 <ContextMenuContent
@@ -208,7 +202,7 @@ pub fn ThreadLink(
                                 >
                                     <ThreadMenuContent
                                         delete_thread_modal_ref=delete_thread_modal_ref
-                                        thread=thread.get_value()
+                                        thread=thread
                                         open=open
                                     />
                                 </ContextMenuContent>

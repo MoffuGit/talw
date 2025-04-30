@@ -10,10 +10,7 @@ use futures::{SinkExt, StreamExt};
 use http::StatusCode;
 use log::debug;
 use std::sync::Arc;
-use tokio::sync::{
-    broadcast::{self, Receiver, Sender},
-    Mutex,
-};
+use tokio::sync::broadcast::{self, Sender};
 use uuid::Uuid;
 
 use crate::{

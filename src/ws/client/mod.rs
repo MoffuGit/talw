@@ -1,6 +1,5 @@
 use async_broadcast::{broadcast, Receiver, Sender};
 use dashmap::DashMap;
-use futures::lock::Mutex;
 use futures::{SinkExt, StreamExt};
 use gloo_net::websocket::futures::WebSocket as GlooWs;
 use gloo_net::websocket::Message as GlooMsg;

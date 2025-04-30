@@ -1,0 +1,1 @@
+ALTER TABLE members ADD status enum ("ONLINE", "OFFLINE") DEFAULT "OFFLINE";

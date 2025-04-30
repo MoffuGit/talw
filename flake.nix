@@ -30,6 +30,8 @@
               nodejs
               openssl
               pkg-config
+              gcc
+              glib
               cargo-leptos
               (rust-bin.selectLatestNightlyWith (
                 toolchain:
@@ -42,7 +44,7 @@
                 }
               ))
             ];
-	
+
 	 shellHook = ''
 MYSQL_HOME="$PWD/mysql"
 export MYSQL_SOCKET="$MYSQL_HOME/mysql.sock"

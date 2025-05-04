@@ -1,4 +1,4 @@
-use crate::entities::member::Member;
+use crate::entities::member::{Member, Status};
 use crate::entities::role::Role;
 use crate::entities::user::Profile;
 use cfg_if::cfg_if;
@@ -31,6 +31,14 @@ pub async fn get_member(server_id: Uuid) -> Result<Member, ServerFnError> {
     Ok(Member::get_from_user_on_server(user.id, server_id, &pool).await?)
 }
 
+#[server(GetUnfilterThreadMembers)]
+pub async fn get_unfilter_thread_members(thread_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(Member::get_unfilter_thread_members(thread_id, &pool).await?)
+}
+
 #[server(GetThreadMembers)]
 pub async fn get_thread_members(thread_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
     let pool = pool()?;
@@ -39,41 +47,20 @@ pub async fn get_thread_members(thread_id: Uuid) -> Result<Vec<Member>, ServerFn
     Ok(Member::get_thread_members(thread_id, &pool).await?)
 }
 
+#[server(GetMembers)]
+pub async fn get_members(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(Member::get_members(server_id, &pool).await?)
+}
+
 #[server(GetMemberRoles)]
 pub async fn get_member_roles(member_id: Uuid) -> Result<Vec<Role>, ServerFnError> {
     let pool = pool()?;
     auth_user()?;
 
     Ok(Role::get_member_roles(member_id, &pool).await?)
-}
-
-#[server(GetMembersWithoutRole)]
-pub async fn get_members_without_role(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
-    let pool = pool()?;
-    auth_user()?;
-    Ok(Member::get_members_without_role(server_id, &pool).await?)
-}
-
-#[server(GetMembersFromRole)]
-pub async fn get_members_from_role(role_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
-    let pool = pool()?;
-    auth_user()?;
-    Ok(Member::get_member_from_role(role_id, &pool).await?)
-}
-
-#[server(GetUserMembers)]
-pub async fn get_user_members() -> Result<Vec<Member>, ServerFnError> {
-    let pool = pool()?;
-    let user = auth_user()?;
-
-    Ok(Member::get_user_members(user.id, &pool).await?)
-}
-
-#[server(GetServerMembers)]
-pub async fn get_server_members(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
-    let pool = pool()?;
-    auth_user()?;
-    Ok(Member::get_server_members(server_id, &pool).await?)
 }
 
 #[server(MemberCanEdit)]

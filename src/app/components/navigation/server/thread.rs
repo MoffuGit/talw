@@ -2,6 +2,7 @@ use crate::app::api::thread::get_thread;
 use crate::app::api::thread::get_threads_for_member;
 use crate::app::components::menu::thread::ThreadMenuContent;
 use crate::app::routes::servers::server::use_current_server_context;
+use crate::entities::member::MemberStoreFields;
 use crate::entities::thread::ThreadStoreFields;
 use crate::ws::client::use_ws;
 use leptos::html;
@@ -27,7 +28,7 @@ pub fn Thread(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
     let member = use_current_server_context().member;
     let threads = Resource::new(
         move || (),
-        move |_| get_threads_for_member(channel_id, member.id),
+        move |_| get_threads_for_member(channel_id, member.id().get()),
     );
 
     view! {
@@ -47,7 +48,7 @@ pub fn Thread(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
                                     });
                                 },
                                 crate::messages::Message::MemberJoinThread { thread_id, user_id } => {
-                                    if member.user_id == user_id {
+                                    if member.user_id().get() == user_id {
                                         spawn_local(async move {
                                             if let Ok(thread) = get_thread(thread_id, channel_id).await {
                                                 thread_store.threads().update(|threads| threads.push(thread));
@@ -56,7 +57,7 @@ pub fn Thread(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
                                     }
                                 },
                                 crate::messages::Message::MemberLeaveThread { thread_id, user_id } => {
-                                    if member.user_id == user_id {
+                                    if member.user_id().get() == user_id {
                                         thread_store.threads().update(|threads| threads.retain(|thread| thread.id != thread_id));
                                     }
                                 },

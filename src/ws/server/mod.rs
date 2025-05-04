@@ -14,7 +14,10 @@ use tokio::sync::broadcast::{self, Sender};
 use uuid::Uuid;
 
 use crate::{
-    entities::user::{AuthSession, User},
+    entities::{
+        member::{Member, Status},
+        user::{AuthSession, User},
+    },
     messages::AppMessage,
     state::AppState,
 };
@@ -49,6 +52,12 @@ async fn handle_socket(socket: WebSocket, state: AppState, user: User) {
         }
     };
 
+    let pool = state.pool;
+
+    if let Err(err) = Member::update_member_status(user.id, Status::ONLINE, &pool).await {
+        debug!("{err:?}");
+    }
+
     let mut send_task = tokio::spawn(async move {
         while let Ok(msg) = rx.recv().await {
             debug!("got this msg from the msg sender: {msg:?}");
@@ -79,6 +88,9 @@ async fn handle_socket(socket: WebSocket, state: AppState, user: User) {
                 }
             }
 
+            if let Err(err) = Member::update_member_status(user.id, Status::OFFLINE, &pool).await {
+                debug!("{err:?}");
+            }
             msg_sender.send(AppMessage::ClosedConnection { user_id: user.id });
             Ok(())
         });

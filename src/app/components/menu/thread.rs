@@ -8,6 +8,7 @@ use crate::app::components::modal::delete_thread::DeleteThreadModal;
 use crate::app::components::navigation::server::use_current_thread;
 use crate::app::components::thread::{JoinThread, LeaveThread};
 use crate::app::routes::servers::server::{use_current_server_context, CurrentServerContext};
+use crate::entities::member::MemberStoreFields;
 use crate::entities::server::ServerStoreFields;
 use crate::entities::thread::{Thread, ThreadStoreFields};
 use crate::ws::client::use_ws;
@@ -49,12 +50,12 @@ pub fn ThreadMenuContent(
                                         }
                                     },
                                     crate::messages::Message::MemberJoinThread { thread_id, user_id } => {
-                                        if thread_id == thread.id().get() && user_id == member.user_id {
+                                        if thread_id == thread.id().get() && user_id == member.user_id().get() {
                                             exist.set(true);
                                         }
                                     },
                                     crate::messages::Message::MemberLeaveThread { thread_id, user_id } => {
-                                        if thread_id == thread.id().get() && user_id == member.user_id {
+                                        if thread_id == thread.id().get() && user_id == member.user_id().get() {
                                             exist.set(false);
                                         }
                                     },
@@ -181,7 +182,7 @@ pub fn ThreadMenuContent(
                         })
                 }}
                 {(member_can_edit
-                    || member.id == thread.created_by().get())
+                    || member.id().get() == thread.created_by().get())
                     .then(|| {
                         view! {
                             <DeleteThreadModal

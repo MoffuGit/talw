@@ -59,9 +59,7 @@ pub fn ServerSideBar() -> impl IntoView {
                     <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
                         <Transition>
                             {                                Suspend::new(async move {
-                                    let channels = channels.await;
-                                    let categories = categories.await;
-                                    match (channels, categories)  {
+                                    match (channels.await, categories.await)  {
                                         (Ok(channels), Ok(categories)) => {
                                             let channels_with_category: Store<HashMap<Uuid, Store<ChannelStore>>> = Store::new(HashMap::new());
                                             let general_channels = Store::new(ChannelStore { channels: vec![] });

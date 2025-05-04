@@ -1,11 +1,12 @@
 use cfg_if::cfg_if;
+use log::debug;
 use reactive_stores::Store;
 use serde::{Deserialize, Serialize};
-use sqlx::{Decode, Encode};
 use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use sqlx::{Decode, Encode};
         use super::Error;
         use super::server::Server;
         use super::role::Role;
@@ -13,7 +14,7 @@ cfg_if! {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, Store)]
+#[derive(Serialize, Deserialize, Clone, Debug, Store, PartialEq)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Member {
     pub id: Uuid,
@@ -28,8 +29,8 @@ pub struct Member {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq, Copy, Eq)]
 #[cfg_attr(feature = "ssr", derive(Decode, Encode))]
 pub enum Status {
-    Online,
-    Offline,
+    ONLINE,
+    OFFLINE,
 }
 
 #[cfg(feature = "ssr")]
@@ -50,8 +51,10 @@ impl Member {
         pool: &MySqlPool,
     ) -> Result<Vec<Member>, Error> {
         Ok(sqlx::query_as::<_, Member>(
-        r#"
-            SELECT members.id, members.server_id, members.user_id, members.name, members.image_url, members.status, members.role_id FROM members WHERE members.server_id = ?
+            r#"
+            SELECT mv.*
+            FROM members_with_profile_fallback mv 
+            WHERE mv.server_id = ?
         "#,
         )
         .bind(server_id)
@@ -59,23 +62,25 @@ impl Member {
         .await?)
     }
 
-    // pub async fn update_member_status(
-    //     user_id: Uuid,
-    //     status: Status,
-    //     pool: &MySqlPool,
-    // ) -> Result<(), Error> {
-    //     sqlx::query("UPDATE members SET members.status = ? WHERE members.user_id = ?")
-    //         .bind(status)
-    //         .bind(user_id)
-    //         .execute(pool)
-    //         .await?;
-    //     Ok(())
-    // }
+    pub async fn update_member_status(
+        user_id: Uuid,
+        status: Status,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        sqlx::query("UPDATE members SET members.status = ? WHERE members.user_id = ?")
+            .bind(status)
+            .bind(user_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
 
     pub async fn get(member_id: Uuid, pool: &MySqlPool) -> Result<Member, Error> {
         Ok(sqlx::query_as::<_, Member>(
-        r#"
-                SELECT members.id, members.server_id, members.user_id, members.name, members.image_url, members.status, members.role_id FROM members WHERE members.id = ?
+            r#"
+                SELECT mv.* 
+                FROM members_with_profile_fallback mv 
+                WHERE mv.id = ?
             "#,
         )
         .bind(member_id)
@@ -87,15 +92,20 @@ impl Member {
         server_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<Member, Error> {
-        Ok(sqlx::query_as::<_, Member>(
-        r#"
-                SELECT members.id, members.server_id, members.user_id, members.name, members.image_url, members.status, members.role_id FROM members WHERE members.user_id = ? AND members.server_id = ?
+        let result = sqlx::query_as::<_, Member>(
+            r#"
+                SELECT *
+                FROM members_with_profile_fallback mv 
+                WHERE mv.user_id = ? 
+                AND mv.server_id = ?
             "#,
         )
         .bind(user_id)
         .bind(server_id)
         .fetch_one(pool)
-        .await?)
+        .await;
+        debug!("{result:?}");
+        Ok(result?)
     }
 
     pub async fn get_thread_members(
@@ -103,57 +113,30 @@ impl Member {
         pool: &MySqlPool,
     ) -> Result<Vec<Member>, Error> {
         Ok(sqlx::query_as::<_, Member>(
-                    "SELECT members.id, members.server_id, members.user_id, members.name, members.image_url, members.status, members.role_id FROM members JOIN threads_members ON members.id = threads_members.member_id JOIN threads ON threads.id = threads_members.thread_id WHERE threads.id = ? LIMIT 5",
-                )
-                .bind(thread_id)
-                .fetch_all(pool)
-                .await?)
+            "SELECT mv.*
+            FROM members_with_profile_fallback mv 
+            JOIN threads_members 
+            ON mv.id = threads_members.member_id 
+            JOIN threads 
+            ON threads.id = threads_members.thread_id 
+            LEFT JOIN roles r ON mv.role_id = r.id
+            WHERE threads.id = ?
+            ORDER BY
+                CASE
+                    WHEN mv.status = 'ONLINE' THEN 0
+                    WHEN mv.status = 'OFFLINE' THEN 1
+                END ASC,
+                CASE
+                    WHEN mv.role_id IS NOT NULL THEN r.priority
+                    ELSE 0
+                END DESC
+        ",
+        )
+        .bind(thread_id)
+        .fetch_all(pool)
+        .await?)
     }
 
-    pub async fn get_members_without_role(
-        server_id: Uuid,
-        pool: &MySqlPool,
-    ) -> Result<Vec<Member>, Error> {
-        Ok(sqlx::query_as::<_, Member>(
-            r#"
-                    SELECT m.id, m.server_id, m.user_id, m.name, m.image_url, m.status, m.role_id
-                    FROM members m
-                    WHERE m.server_id = ?
-                    AND NOT EXISTS (
-                        SELECT 1
-                        FROM member_roles mr
-                        WHERE mr.member_id = m.id
-                    )
-                    "#,
-        )
-        .bind(server_id)
-        .fetch_all(pool)
-        .await?)
-    }
-    pub async fn get_members_from_role(
-        role_id: Uuid,
-        pool: &MySqlPool,
-    ) -> Result<Vec<Member>, Error> {
-        Ok(sqlx::query_as::<_, Member>(
-            r#"
-                    SELECT DISTINCT m.id, m.server_id, m.user_id, m.name, m.image_url, m.status, m.role_id
-                    FROM members m
-                    JOIN member_roles mr ON m.id = mr.member_id
-                    JOIN roles r ON mr.role_id = r.id
-                    WHERE r.priority = ?
-                    AND NOT EXIST (
-                        SELECT 1
-                        FROM member_roles mr2
-                        JOIN roles r2 ON mr2.role_id = r2.id
-                        WHERE mr2.member_id = m.id
-                        AND r2.priority > ? )
-                    "#,
-        )
-        .bind(role_id)
-        .bind(role_id)
-        .fetch_all(pool)
-        .await?)
-    }
     pub async fn member_can_edit(user: Uuid, pool: &MySqlPool) -> Result<bool, Error> {
         match Role::get_member_roles(user, pool)
             .await?
@@ -166,10 +149,15 @@ impl Member {
     }
 
     pub async fn get_user_members(user_id: Uuid, pool: &MySqlPool) -> Result<Vec<Member>, Error> {
-        Ok(sqlx::query_as::<_, Member>("SELECT members.id, members.server_id, members.user_id, members.name, members.image_url, members.status, members.role_id FROM members WHERE members.user_id = ?")
-                    .bind(user_id)
-                    .fetch_all(pool)
-                    .await?)
+        Ok(sqlx::query_as::<_, Member>(
+            r#"
+        SELECT mv.*
+        FROM members_with_profile_fallback mv 
+        WHERE mv.user_id = ?"#,
+        )
+        .bind(user_id)
+        .fetch_all(pool)
+        .await?)
     }
 
     pub async fn get_user_member(
@@ -178,7 +166,7 @@ impl Member {
         pool: &MySqlPool,
     ) -> Result<Member, Error> {
         let res = sqlx::query_as::<_, Member>(
-            "SELECT * FROM members WHERE members.user_id = ? AND members.server_id = ?",
+            "SELECT mv.* FROM members_with_profile_fallback mv WHERE mv.user_id = ? AND mv.server_id = ?",
         )
         .bind(user_id)
         .bind(server_id)
@@ -242,25 +230,152 @@ impl Member {
         Ok(())
     }
 
-    pub async fn get_online_members_without_role(
-        server_id: Uuid,
-        pool: &MySqlPool,
-    ) -> Result<Vec<Member>, Error> {
-        todo!()
-    }
-
-    pub async fn get_online_members_with_role(
-        server_id: Uuid,
-        id: Uuid,
-        pool: &MySqlPool,
-    ) -> Result<Vec<Member>, Error> {
-        todo!()
+    pub async fn get_members(server_id: Uuid, pool: &MySqlPool) -> Result<Vec<Member>, Error> {
+        let res = sqlx::query_as::<_, Member>(
+            r#"
+            SELECT mv.*
+            FROM members_with_profile_fallback mv
+            LEFT JOIN roles r ON mv.role_id = r.id
+            WHERE mv.server_id = ?
+            ORDER BY
+                CASE
+                    WHEN mv.status = 'ONLINE' THEN 0
+                    WHEN mv.status = 'OFFLINE' THEN 1
+                END ASC,
+                CASE
+                    WHEN mv.role_id IS NOT NULL THEN r.priority
+                    ELSE 0
+                END DESC
+            "#,
+        )
+        .bind(server_id)
+        .fetch_all(pool)
+        .await;
+        debug!("{res:?}");
+        Ok(res?)
     }
 
     pub async fn get_offline_members(
         server_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<Vec<Member>, Error> {
-        todo!()
+        Ok(sqlx::query_as::<_, Member>(
+            r#"
+                SELECT mv.*
+                FROM members_with_profile_fallback mv
+                WHERE mv.server_id = ?
+                AND mv.status = 'OFFLINE'
+            "#,
+        )
+        .bind(server_id)
+        .fetch_all(pool)
+        .await?)
+    }
+
+    pub async fn get_thread_online_members_without_role(
+        thread_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Vec<Member>, Error> {
+        Ok(sqlx::query_as::<_, Member>(
+            r#"
+            SELECT mv.*
+            FROM members_with_profile_fallback mv
+            JOIN threads_members tm ON mv.id = tm.member_id
+            WHERE tm.thread_id = ?
+            AND NOT mv.status = 'OFFLINE'
+            AND NOT EXISTS (
+                SELECT 1
+                FROM member_roles mr
+                WHERE mr.member_id = mv.id
+            )
+            "#,
+        )
+        .bind(thread_id)
+        .fetch_all(pool)
+        .await?)
+    }
+
+    pub async fn get_thread_offline_members(
+        thread_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Vec<Member>, Error> {
+        Ok(sqlx::query_as::<_, Member>(
+            r#"
+            SELECT mv.*
+            FROM members_with_profile_fallback mv
+            JOIN threads_members tm ON mv.id = tm.member_id
+            WHERE tm.thread_id = ?
+            AND mv.status = 'OFFLINE'
+            "#,
+        )
+        .bind(thread_id)
+        .fetch_all(pool)
+        .await?)
+    }
+
+    pub async fn get_thread_online_members_with_role(
+        thread_id: Uuid,
+        role_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Vec<Member>, Error> {
+        Ok(sqlx::query_as::<_, Member>(
+            r#"
+                SELECT mv.*
+                FROM members_with_profile_fallback mv
+                JOIN threads_members tm ON mv.id = tm.member_id
+                JOIN member_roles mr ON mv.id = mr.member_id
+                JOIN roles r ON mr.role_id = r.id
+                WHERE tm.thread_id = ?
+                AND NOT mv.status = 'OFFLINE'
+                AND r.id = ? -- Check if the role ID matches
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM member_roles mr2
+                    JOIN roles r2 ON mr2.role_id = r2.id
+                    WHERE mr2.member_id = mv.id
+                    AND r2.priority > r.priority
+                )
+            "#,
+        )
+        .bind(thread_id)
+        .bind(role_id)
+        .fetch_all(pool)
+        .await?)
+    }
+
+    pub async fn get_members_with_role(
+        role_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Vec<Member>, Error> {
+        Ok(sqlx::query_as::<_, Member>(
+            r#"
+            SELECT DISTINCT mv.*
+            FROM members_with_profile_fallback mv
+            WHERE mv.role_id = ?
+            "#,
+        )
+        .bind(role_id)
+        .fetch_all(pool)
+        .await?)
+    }
+
+    pub async fn get_unfilter_thread_members(
+        thread_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Vec<Member>, Error> {
+        Ok(sqlx::query_as::<_, Member>(
+            "SELECT mv.*
+            FROM members_with_profile_fallback mv 
+            JOIN threads_members 
+            ON mv.id = threads_members.member_id 
+            JOIN threads 
+            ON threads.id = threads_members.thread_id 
+            WHERE mv.server_id = ?
+            LIMIT 5
+        ",
+        )
+        .bind(thread_id)
+        .fetch_all(pool)
+        .await?)
     }
 }

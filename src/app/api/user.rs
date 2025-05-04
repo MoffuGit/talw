@@ -29,6 +29,11 @@ pub struct UserContext {
     pub edit_user_data: ServerAction<EditUserData>,
 }
 
+pub fn use_user() -> UserContext {
+    use_context::<UserContext>()
+        .expect("should return the user context, check if you really provided the context")
+}
+
 pub fn provide_user_context(user_id: Uuid) {
     let edit_banner_image = Action::new_local(|data: &FormData| {
         let data = data.clone();
@@ -228,11 +233,6 @@ pub async fn edit_profile_image(data: MultipartData) -> Result<(), ServerFnError
     Err(ServerFnError::new(
         "Something go wrong when uploading the file",
     ))
-}
-
-pub fn use_user() -> UserContext {
-    use_context::<UserContext>()
-        .expect("should return the user context, check if you really provided the context")
 }
 
 #[server(GetUserProfile)]

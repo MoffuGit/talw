@@ -3,6 +3,7 @@ use uuid::Uuid;
 
 use crate::entities::category::Category;
 use crate::entities::channel::Channel;
+use crate::entities::member::Member;
 use crate::entities::server::Server;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -48,10 +49,15 @@ impl From<ServerMessage> for ClientMessage {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum Message {
-    UserConnected {
+    MemberUpdated {
+        member_id: Uuid,
+        name: Option<String>,
+        image_url: Option<String>,
+    },
+    MemberConnected {
         user_id: Uuid,
     },
-    UserDisconnected {
+    MemberDisconnected {
         user_id: Uuid,
     },
     ChannelMessage {
@@ -65,10 +71,10 @@ pub enum Message {
         //content: Message
     },
     MemberJoinedServer {
-        user_id: Uuid,
+        member: Member,
     },
     MemberLeftServer {
-        user_id: Uuid,
+        member_id: Uuid,
     },
     ServerUpdated {
         name: Option<String>,

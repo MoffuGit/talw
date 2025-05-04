@@ -6,9 +6,11 @@ use crate::app::api::server::get_server;
 use crate::app::components::navigation::server::sidebar::ServerSideBar;
 use crate::app::components::navigation::server::sidebar::ServerSideBarContext;
 use crate::entities::member::Member;
+use crate::entities::member::MemberStoreFields;
 use crate::entities::server::Server as ServerEntitie;
 use crate::entities::server::ServerStoreFields;
 use crate::messages::ClientMessage;
+use crate::messages::Message;
 use crate::ws::client::use_ws;
 use futures::try_join;
 use leptos::prelude::*;
@@ -22,7 +24,7 @@ use uuid::Uuid;
 pub struct CurrentServerContext {
     pub server: Store<ServerEntitie>,
     pub member_can_edit: bool,
-    pub member: Member,
+    pub member: Store<Member>,
 }
 
 pub fn use_current_server_context() -> CurrentServerContext {
@@ -52,9 +54,10 @@ pub fn Server() -> impl IntoView {
     //https://github.com/leptos-rs/leptos/issues/3042
     let outer_owner = Owner::current().unwrap();
 
-    let inner_view = move || {
-        server_data.and_then(|data| {
-            let server = Store::new(data.0.clone());
+    let inner_view = Suspend::new(async move {
+        server_data.await.map(|(server, member, can_edit)| {
+            let server = Store::new(server);
+            let member = Store::new(member);
             let ws = use_ws();
             let navigate = use_navigate();
             ws.on_app_msg(move |msg| match msg {
@@ -66,8 +69,22 @@ pub fn Server() -> impl IntoView {
                 }
                 _ => {}
             });
-            ws.on_server_msg(server.id().get(), move |msg| {
-                if let crate::messages::Message::ServerUpdated { name, image } = msg {
+            ws.on_server_msg(server.id().get(), move |msg| match msg {
+                Message::MemberUpdated {
+                    member_id,
+                    name,
+                    image_url,
+                } => {
+                    if member_id == member.id().get() {
+                        if let Some(name) = name {
+                            *member.name().write() = name
+                        }
+                        if let Some(image_url) = image_url {
+                            *member.image_url().write() = Some(image_url);
+                        }
+                    }
+                }
+                Message::ServerUpdated { name, image } => {
                     if let Some(name) = name {
                         *server.name().write() = name;
                     }
@@ -75,14 +92,15 @@ pub fn Server() -> impl IntoView {
                         *server.image_url().write() = Some(image);
                     }
                 }
+                _ => {}
             });
 
             outer_owner.with(|| {
                 provide_context(ServerSideBarContext { open });
                 provide_context(CurrentServerContext {
                     server,
-                    member_can_edit: data.2,
-                    member: data.1.clone(),
+                    member_can_edit: can_edit,
+                    member,
                 })
             });
             view! {
@@ -92,7 +110,7 @@ pub fn Server() -> impl IntoView {
                 </div>
             }
         })
-    };
+    });
 
     //NOTE: handle the on error with a redirect
     view! {

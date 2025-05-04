@@ -4,13 +4,12 @@ pub mod title;
 use crate::app::components::channel::header::title::HeaderTitle;
 use crate::app::components::channel::sidebars::MemberSideBarTrigger;
 use crate::app::components::navigation::server::sidebar::ServerSideBarTrigger;
+use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::components::ui::tool_tip::*;
 use crate::entities::channel::{Channel, ChannelStoreFields};
 use crate::entities::thread::Thread;
-//use icondata;
 use leptos::prelude::*;
 use reactive_stores::Field;
-//use leptos_icons::Icon;
 
 use self::thread_menu::ThreadMenu;
 
@@ -23,21 +22,7 @@ pub fn ChannelHeader(
         <div class="relative bg-base-300 shadow shadow-base-300/80 h-11 w-full flex justify-between align-middle">
             <div class="relative flex-auto flex items-center overflow-hidden py-2">
                 <ServerSideBarTrigger class="relative flex items-center ml-3 mr-1 hover:bg-base-100 rounded-md p-1 cursor-pointer">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="lucide lucide-panel-left"
-                    >
-                        <rect width="18" height="18" x="3" y="3" rx="2" />
-                        <path d="M9 3v18" />
-                    </svg>
+                    <Icon icon=IconData::PanelLeft/>
                 </ServerSideBarTrigger>
 
                 <div class="divider divider-horizontal h-auto m-0" />
@@ -73,8 +58,7 @@ pub fn ChannelHeader(
                         close_on_click=true
                         class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
                     >
-                        <div/>
-                        // <Icon icon=icondata::LuPin />
+                        <Icon icon=IconData::Pin/>
                     </TooltipTrigger>
                     <TooltipContent
                         tip="Pinned Messages"
@@ -88,9 +72,7 @@ pub fn ChannelHeader(
                         close_on_click=true
                         class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
                     >
-                        <div/>
-                        // <Icon icon=icondata::LuSearch />
-                    // class="w-5 h-5"
+                        <Icon icon=IconData::Search class="w-5 h-5" />
                     </TooltipTrigger>
                     <TooltipContent
                         tooltip_of_side=10.0

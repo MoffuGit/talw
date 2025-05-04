@@ -1,12 +1,14 @@
+mod collapsible;
+mod group;
+mod profile;
 mod server;
 mod thread;
+use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::components::ui::tool_tip::{
     ToolTipSide, TooltipContent, TooltipProvider, TooltipTrigger,
 };
-//use icondata;
 use leptos::either::Either;
 use leptos::prelude::*;
-//use leptos_icons::Icon;
 use std::time::Duration;
 use uuid::Uuid;
 
@@ -37,7 +39,7 @@ pub fn MemberSideBarTrigger() -> impl IntoView {
                 on_click=Signal::derive(move || open.update(|open| *open = !*open))
             >
                 <div/>
-                // <Icon icon=icondata::LuUsers />
+                <Icon icon=IconData::Users />
             </TooltipTrigger>
             <TooltipContent
                 arrow=true

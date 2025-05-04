@@ -6,7 +6,12 @@ SELECT
     COALESCE(m.name, p.name) AS name,
     COALESCE(m.image_url, p.image_url) AS image_url,
     m.status,
-    m.role_id
+    (SELECT r.id
+     FROM member_roles mr
+     JOIN roles r ON mr.role_id = r.id
+     WHERE mr.member_id = m.id
+     ORDER BY r.priority DESC
+     LIMIT 1) AS role_id
 FROM
     members m
 JOIN

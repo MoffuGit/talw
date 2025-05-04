@@ -1,6 +1,5 @@
 CREATE TABLE IF NOT EXISTS members (
   id binary(16) NOT NULL UNIQUE,
-  role ENUM ("ADMIN", "GUEST") DEFAULT "GUEST",
   user_id binary(16) NOT NULL,
   FOREIGN KEY (user_id) REFERENCES users (id),
   server_id binary(16) NOT NULL,

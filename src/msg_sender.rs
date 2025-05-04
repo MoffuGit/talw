@@ -68,7 +68,7 @@ impl MsgReceiver {
             server_id,
             ServerMessage {
                 server_id,
-                msg: Message::UserConnected { user_id },
+                msg: Message::MemberConnected { user_id },
             },
         );
     }
@@ -79,7 +79,7 @@ impl MsgReceiver {
             server_id,
             ServerMessage {
                 server_id,
-                msg: Message::UserDisconnected { user_id },
+                msg: Message::MemberDisconnected { user_id },
             },
         );
     }
@@ -110,7 +110,7 @@ impl MsgReceiver {
                 server_id,
                 ServerMessage {
                     server_id,
-                    msg: Message::UserDisconnected { user_id },
+                    msg: Message::MemberDisconnected { user_id },
                 },
             );
         }

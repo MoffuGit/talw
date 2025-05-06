@@ -92,17 +92,17 @@ pub async fn create_thread(
     let user = auth_user()?;
 
     if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
-        let id = Thread::create(name, channel_id, member.id, &pool).await?;
-        Thread::add_member(id, member.id, &pool).await?;
+        let thread = Thread::create(name, channel_id, member.id, &pool).await?;
+        Thread::add_member(thread.id, member.id, &pool).await?;
         leptos_axum::redirect(&format!(
             "/servers/{}/{}/{}",
             server_id.simple(),
             channel_id.simple(),
-            id.simple()
+            thread.id.simple()
         ));
         msg_sender()?.send(ServerMessage {
             server_id,
-            msg: Message::ThreadCreated { thread_id: id },
+            msg: Message::ThreadCreated { thread },
         });
         Ok(())
     } else {
@@ -118,10 +118,7 @@ pub async fn join_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), ServerF
         Thread::add_member(thread_id, member.id, &pool).await?;
         msg_sender()?.send(ServerMessage {
             server_id,
-            msg: Message::MemberJoinThread {
-                thread_id,
-                user_id: user.id,
-            },
+            msg: Message::MemberJoinThread { thread_id, member },
         });
         Ok(())
     } else {

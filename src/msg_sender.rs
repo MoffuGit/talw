@@ -64,13 +64,6 @@ impl MsgReceiver {
     pub fn handle_sub_msg(&mut self, server_id: Uuid, user_id: Uuid) {
         debug!("we are going to subscribe the user {user_id} to {server_id}");
         self.subscriptions.subscribe(user_id, server_id);
-        self.send_msg_to_sever(
-            server_id,
-            ServerMessage {
-                server_id,
-                msg: Message::MemberConnected { user_id },
-            },
-        );
     }
 
     pub fn handle_unsub_msg(&mut self, server_id: Uuid, user_id: Uuid) {

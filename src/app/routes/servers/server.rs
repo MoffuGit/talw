@@ -99,6 +99,9 @@ pub fn Server() -> impl IntoView {
                 provide_context(ServerSideBarContext { open });
                 provide_context(CurrentServerContext {
                     server,
+                    //WARN: the can should be a list of roles, not a bool, then from that list of
+                    //role you can check if the member can edit,
+                    //this list of roles should get updated whit the RoleUpdted Message
                     member_can_edit: can_edit,
                     member,
                 })

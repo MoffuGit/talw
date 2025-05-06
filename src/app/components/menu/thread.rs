@@ -49,8 +49,8 @@ pub fn ThreadMenuContent(
                                             open.set(false);
                                         }
                                     },
-                                    crate::messages::Message::MemberJoinThread { thread_id, user_id } => {
-                                        if thread_id == thread.id().get() && user_id == member.user_id().get() {
+                                    crate::messages::Message::MemberJoinThread { thread_id, member: msg_membe } => {
+                                        if thread_id == thread.id().get() && msg_membe.user_id == member.user_id().get() {
                                             exist.set(true);
                                         }
                                     },

@@ -28,18 +28,17 @@ pub fn App() -> impl IntoView {
     provide_auth_context();
 
     //NOTE:
-    //keeep progressing until chat msg
-    //add unread and read messages
-    //use the thread and UserConnection msg for somethign
+    //work on the messages struct and tables
     //fix the icons
     //fix the ui of the modals and user overview
     //add flallbacks for the transitions
-    //add things to user stuff and search stuff servers stuff
     //work in the server overview
-    //add roles
+    //upgrade the roles, right now they dont send a msg or work for something, i need to upgrade them
+    //upgrade the invitations
     //add notifications
     //add inbox
     //add friends
+    //add things to user stuff and search stuff servers stuff
     //add pinned channels and conversations
     //add the voice channel, stream sound and meaby video
     //add the optin to change the width of the sidebar

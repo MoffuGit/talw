@@ -3,10 +3,12 @@ use crate::app::api::user::{get_mutual_servers_image_url, get_user_banner};
 use crate::app::components::overview::user::UserOverviewTrigger;
 use crate::app::components::ui::dropdown_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
-use crate::entities::user::Profile;
+use crate::entities::member::{Member, MemberStoreFields};
+use crate::entities::user::BannerStoreFields;
 use leptos::either::Either;
 use leptos::prelude::*;
 use leptos_use::use_document;
+use reactive_stores::Store;
 use uuid::Uuid;
 
 #[component]
@@ -15,17 +17,15 @@ pub fn MemberBanner(
     align: MenuAlign,
     class: &'static str,
     children: Children,
-    member_id: Uuid,
-    user_id: Uuid,
-    profile: Profile,
+    member: Member,
 ) -> impl IntoView {
     let is_open = RwSignal::new(false);
     let limit_y = use_document()
         .body()
         .map(|body| body.get_bounding_client_rect().height() - 320.0);
-    let name = StoredValue::new(profile.name);
-    let image_url = StoredValue::new(profile.image_url);
-    let user_member = use_current_server_context().member.id;
+    let name = StoredValue::new(member.name);
+    let image_url = StoredValue::new(member.image_url);
+    let user_member = use_current_server_context().member.id();
     view! {
         <DropdownProvider modal=false open=is_open>
             <DropdownTrigger class=class>{children()}</DropdownTrigger>
@@ -40,18 +40,19 @@ pub fn MemberBanner(
                     is_open.get()
                 }>
                     {move || {
-                        let banner = Resource::new(move || (), move |_| get_user_banner(user_id));
+                        let banner = Resource::new(move || (member.user_id), get_user_banner);
                         view! {
                             <Transition>
-                                {move || {
-                                    banner
-                                        .and_then(|banner| {
-                                            let about = StoredValue::new(banner.about.clone());
-                                            let banner_url = StoredValue::new(banner.image_url.clone());
+                                {
+                                    Suspend::new(async move {
+                                        banner.await.map(|banner| {
+                                            let banner = Store::new(banner.clone());
+                                            let about = banner.about();
+                                            let banner_url = banner.image_url();
                                             view! {
                                                 <div class="relative w-full h-full flex flex-col select-none w-56 origin-right starting:opacity-0 starting:translate-x-2 starting:scale-95 transition-all rounded-md bg-base-300">
                                                     {move || {
-                                                        if let Some(url) = banner_url.get_value() {
+                                                        if let Some(url) = banner_url.get() {
                                                             Either::Left(
                                                                 view! {
                                                                     <img
@@ -85,17 +86,17 @@ pub fn MemberBanner(
                                                         )
                                                     }} <div class="relative w-auto mt-14 m-4">
                                                         <div class="text-xl font-semibold">{name.get_value()}</div>
-                                                        <MutualServers user_id=user_id />
-                                                        <MemberRoles member_id=member_id />
+                                                        <MutualServers user_id=member.user_id/>
+                                                        <MemberRoles member_id=member.id/>
                                                         {move || {
                                                             about
-                                                                .get_value()
+                                                                .get()
                                                                 .map(|about| {
                                                                     view! { <div>{about}</div> }
                                                                 })
                                                         }}
                                                         {move || {
-                                                            if member_id != user_member {
+                                                            if member.id != user_member.get() {
                                                                 Either::Left(
                                                                     view! {
                                                                         <div class="flex my-4 border border-base-100 hover:bg-base-content/10 rounded-md w-full h-12 px-4 items-center cursor-pointer">
@@ -118,8 +119,10 @@ pub fn MemberBanner(
                                                     </div>
                                                 </div>
                                             }
+
                                         })
-                                }}
+                                    })
+                                }
                             </Transition>
                         }
                     }}
@@ -201,11 +204,7 @@ pub fn MemberRoles(member_id: Uuid) -> impl IntoView {
 
 #[component]
 pub fn About(about: Option<String>) -> impl IntoView {
-    view! {
-        {if let Some(about) = &about {
-            view! { <div>{about.clone()}</div> }.into_any()
-        } else {
-            ().into_any()
-        }}
-    }
+    about.map(|about| {
+        view! { <div>{about}</div> }
+    })
 }

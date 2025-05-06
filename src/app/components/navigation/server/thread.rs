@@ -47,8 +47,8 @@ pub fn Thread(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
                                         threads.retain(|thread| thread.id != thread_id);
                                     });
                                 },
-                                crate::messages::Message::MemberJoinThread { thread_id, user_id } => {
-                                    if member.user_id().get() == user_id {
+                                crate::messages::Message::MemberJoinThread { thread_id, member: msg_member } => {
+                                    if member.user_id().get() == msg_member.user_id {
                                         spawn_local(async move {
                                             if let Ok(thread) = get_thread(thread_id, channel_id).await {
                                                 thread_store.threads().update(|threads| threads.push(thread));

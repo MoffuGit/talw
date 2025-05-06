@@ -7,6 +7,7 @@ use uuid::Uuid;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use sqlx::{Decode, Encode};
+        use sqlx::QueryBuilder;
         use super::Error;
         use super::server::Server;
         use super::role::Role;
@@ -63,6 +64,19 @@ impl Member {
     }
 
     pub async fn update_member_status(
+        member_id: Uuid,
+        status: Status,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        sqlx::query("UPDATE members SET members.status = ? WHERE members.id = ?")
+            .bind(status)
+            .bind(member_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn update_members_status(
         user_id: Uuid,
         status: Status,
         pool: &MySqlPool,
@@ -137,6 +151,49 @@ impl Member {
         .await?)
     }
 
+    pub async fn get_thread_filtered_members(
+        thread_id: Uuid,
+        role_id: Option<Uuid>,
+        status: Option<Status>,
+        pool: &MySqlPool,
+    ) -> Result<Vec<Member>, Error> {
+        let mut query_builder = QueryBuilder::new(
+            "
+            SELECT mv.*
+            FROM members_with_profile_fallback mv 
+            JOIN threads_members 
+            ON mv.id = threads_members.member_id 
+            JOIN threads 
+            ON threads.id = threads_members.thread_id 
+            LEFT JOIN roles r ON mv.role_id = r.id
+            WHERE threads.id = ",
+        );
+        query_builder.push_bind(thread_id);
+        if role_id.is_some() {
+            query_builder.push(" AND mv.role_id = ").push_bind(role_id);
+        }
+        if status.is_some() {
+            query_builder.push(" AND mv.status = ").push_bind(status);
+        }
+        query_builder.push(
+            r#"
+        ORDER BY
+            CASE
+                WHEN mv.status = 'ONLINE' THEN 0
+                WHEN mv.status = 'OFFLINE' THEN 1
+                ELSE 2
+            END ASC,
+            CASE
+                WHEN mv.role_id IS NOT NULL THEN r.priority
+                ELSE 0
+            END DESC
+        "#,
+        );
+        let query = query_builder.build_query_as::<Member>();
+
+        Ok(query.fetch_all(pool).await?)
+    }
+
     pub async fn member_can_edit(user: Uuid, pool: &MySqlPool) -> Result<bool, Error> {
         match Role::get_member_roles(user, pool)
             .await?
@@ -179,7 +236,7 @@ impl Member {
         server: Uuid,
         name: &str,
         pool: &MySqlPool,
-    ) -> Result<Uuid, Error> {
+    ) -> Result<Member, Error> {
         let id = Uuid::new_v4();
         sqlx::query("INSERT INTO members (id, user_id, server_id,name) VALUES (?,?,?, ?)")
             .bind(id)
@@ -188,7 +245,15 @@ impl Member {
             .bind(name)
             .execute(pool)
             .await?;
-        Ok(id)
+        Ok(Member {
+            id,
+            user_id: user,
+            server_id: server,
+            name: name.to_string(),
+            image_url: None,
+            status: Status::OFFLINE,
+            role_id: None,
+        })
     }
 
     pub async fn create_member_from_invitation(
@@ -231,7 +296,7 @@ impl Member {
     }
 
     pub async fn get_members(server_id: Uuid, pool: &MySqlPool) -> Result<Vec<Member>, Error> {
-        let res = sqlx::query_as::<_, Member>(
+        Ok(sqlx::query_as::<_, Member>(
             r#"
             SELECT mv.*
             FROM members_with_profile_fallback mv
@@ -250,9 +315,51 @@ impl Member {
         )
         .bind(server_id)
         .fetch_all(pool)
-        .await;
-        debug!("{res:?}");
-        Ok(res?)
+        .await?)
+    }
+
+    pub async fn get_filtred_members(
+        server_id: Uuid,
+        role_id: Option<Uuid>,
+        status: Option<Status>,
+        pool: &MySqlPool,
+    ) -> Result<Vec<Member>, Error> {
+        let mut query_builder = QueryBuilder::new(
+            r#"
+        SELECT mv.*
+        FROM members_with_profile_fallback mv
+        LEFT JOIN roles r ON mv.role_id = r.id
+        WHERE mv.server_id = "#,
+        );
+
+        query_builder.push_bind(server_id);
+
+        if role_id.is_some() {
+            query_builder.push(" AND mv.role_id = ").push_bind(role_id);
+        }
+
+        if status.is_some() {
+            query_builder.push(" AND mv.status = ").push_bind(status);
+        }
+
+        query_builder.push(
+            r#"
+        ORDER BY
+            CASE
+                WHEN mv.status = 'ONLINE' THEN 0
+                WHEN mv.status = 'OFFLINE' THEN 1
+                ELSE 2
+            END ASC,
+            CASE
+                WHEN mv.role_id IS NOT NULL THEN r.priority
+                ELSE 0
+            END DESC
+        "#,
+        );
+
+        let query = query_builder.build_query_as::<Member>();
+
+        Ok(query.fetch_all(pool).await?)
     }
 
     pub async fn get_offline_members(
@@ -359,7 +466,7 @@ impl Member {
         .await?)
     }
 
-    pub async fn get_unfilter_thread_members(
+    pub async fn get_five_thread_members(
         thread_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<Vec<Member>, Error> {

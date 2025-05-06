@@ -4,7 +4,9 @@ use uuid::Uuid;
 use crate::entities::category::Category;
 use crate::entities::channel::Channel;
 use crate::entities::member::Member;
+use crate::entities::role::Role;
 use crate::entities::server::Server;
+use crate::entities::thread::Thread;
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum AppMessage {
@@ -18,9 +20,18 @@ pub enum AppMessage {
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum ClientMessage {
     ServerMessage(ServerMessage),
-    ServerDeleted { server_id: Uuid },
-    JoinedToServer { server: Server, user_id: Uuid },
-    LeavedServer { server_id: Uuid, user_id: Uuid },
+    ServerDeleted {
+        server_id: Uuid,
+    },
+    JoinedToServer {
+        server: Server,
+        user_id: Uuid,
+        member: Member,
+    },
+    LeavedServer {
+        server_id: Uuid,
+        user_id: Uuid,
+    },
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
@@ -49,13 +60,25 @@ impl From<ServerMessage> for ClientMessage {
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum Message {
+    RoleCreated {
+        role: Role,
+    },
+    RoleDeleted {
+        role_id: Uuid,
+    },
+    RoleUpdated {
+        role_id: Uuid,
+        name: Option<String>,
+        priority: Option<u8>,
+        can_edit: Option<bool>,
+    },
     MemberUpdated {
         member_id: Uuid,
         name: Option<String>,
         image_url: Option<String>,
     },
     MemberConnected {
-        user_id: Uuid,
+        member: Member,
     },
     MemberDisconnected {
         user_id: Uuid,
@@ -74,18 +97,18 @@ pub enum Message {
         member: Member,
     },
     MemberLeftServer {
-        member_id: Uuid,
+        user_id: Uuid,
     },
     ServerUpdated {
         name: Option<String>,
         image: Option<String>,
     },
     ThreadCreated {
-        thread_id: Uuid,
+        thread: Thread,
     },
     MemberJoinThread {
         thread_id: Uuid,
-        user_id: Uuid,
+        member: Member,
     },
     MemberLeaveThread {
         thread_id: Uuid,

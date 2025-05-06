@@ -11,7 +11,7 @@ cfg_if! {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Store)]
+#[derive(Serialize, Deserialize, Debug, Clone, Store, PartialEq)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Thread {
     pub id: Uuid,
@@ -172,16 +172,22 @@ WHERE t.id = ?
         channel_id: Uuid,
         created_by: Uuid,
         pool: &MySqlPool,
-    ) -> Result<Uuid, Error> {
+    ) -> Result<Thread, Error> {
         let id = Uuid::new_v4();
         sqlx::query("INSERT INTO threads (id, name, channel_id, created_by) VALUES ( ?, ?, ?, ?)")
             .bind(id)
-            .bind(name)
+            .bind(&name)
             .bind(channel_id)
             .bind(created_by)
             .execute(pool)
             .await?;
-        Ok(id)
+        let thread = Thread {
+            id,
+            name,
+            channel_id,
+            created_by,
+        };
+        Ok(thread)
     }
 
     pub async fn rename(new_name: String, channel_id: Uuid, pool: &MySqlPool) -> Result<(), Error> {

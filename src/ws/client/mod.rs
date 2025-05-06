@@ -6,10 +6,11 @@ use gloo_net::websocket::Message as GlooMsg;
 use leptos::prelude::*;
 use leptos::task::{spawn_local, spawn_local_scoped_with_cancellation};
 use log::debug;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 use uuid::Uuid;
 
+use crate::entities::member::Member;
 use crate::messages::{AppMessage, ClientMessage, Message, ServerMessage};
 
 #[derive(PartialEq, Debug, Clone)]
@@ -30,7 +31,7 @@ pub struct WsContext {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum WsMessage {
-    AppMessage(AppMessage),
+    AppMessage(Box<AppMessage>),
     Close,
 }
 
@@ -40,12 +41,12 @@ impl WsContext {
         {
             let sb = self.sender.clone();
             spawn_local(async move {
-                let _ = sb.broadcast(WsMessage::AppMessage(msg)).await;
+                let _ = sb.broadcast(WsMessage::AppMessage(Box::new(msg))).await;
             });
         }
     }
 
-    pub fn sync_channels(&self, servers: Vec<Uuid>, user_id: Uuid) {
+    pub fn sync_channels(&self, servers: Vec<Uuid>, members: HashMap<Uuid, Member>, user_id: Uuid) {
         debug!("Syncing channels for servers: {servers:?}");
 
         let new_servers: HashSet<_> = servers.iter().cloned().collect();
@@ -64,6 +65,19 @@ impl WsContext {
                 user_id,
                 server_id: *server_id,
             });
+            if let Some(member) = members.get(server_id) {
+                subscribe_msgs.push(AppMessage::from(ServerMessage {
+                    server_id: *server_id,
+                    msg: Message::MemberConnected {
+                        member: member.clone(),
+                    },
+                }));
+            } else {
+                debug!(
+                    "No member found for user_id: {} in server: {}",
+                    user_id, server_id
+                );
+            }
         }
 
         if !subscribe_msgs.is_empty() {

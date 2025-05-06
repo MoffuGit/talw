@@ -223,12 +223,16 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
                 .await
             {
                 Ok(server_id) => {
+                    let server = Server::get_server(server_id, &pool).await?;
+                    let member = Member::get_from_user_on_server(user.id, server_id, &pool).await?;
+                    msg_sender.send(ClientMessage::JoinedToServer {
+                        server,
+                        member: member.clone(),
+                        user_id: user.id,
+                    });
                     msg_sender.send(ServerMessage {
                         server_id,
-                        msg: Message::MemberJoinedServer {
-                            member: Member::get_from_user_on_server(user.id, server_id, &pool)
-                                .await?,
-                        },
+                        msg: Message::MemberJoinedServer { member },
                     });
                     redirect(&format!("/servers/{}", server_id))
                 }
@@ -313,7 +317,7 @@ pub async fn create_server(data: MultipartData) -> Result<Server, ServerFnError>
             }
         }
     }
-    Member::create(user.id, server.id, &user.name, &pool).await?;
+    let member = Member::create(user.id, server.id, &user.name, &pool).await?;
     Channel::create(
         "general",
         crate::entities::channel::ChannelType::TEXT,
@@ -340,11 +344,12 @@ pub async fn create_server(data: MultipartData) -> Result<Server, ServerFnError>
     )
     .await?;
     let msg_sender = msg_sender()?;
+    redirect(&format!("/servers/{}", server.id.simple()));
     msg_sender.send(ClientMessage::JoinedToServer {
         server: server.clone(),
+        member,
         user_id: user.id,
     });
-    redirect(&format!("/servers/{}", server.id.simple()));
     Ok(server)
 }
 
@@ -370,7 +375,7 @@ pub async fn leave_server(server_id: Uuid) -> Result<(), ServerFnError> {
     msg_sender.send(ServerMessage {
         server_id,
         msg: Message::MemberLeftServer {
-            member_id: member.id,
+            user_id: member.user_id,
         },
     });
     msg_sender.send(ClientMessage::LeavedServer {

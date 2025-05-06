@@ -1,13 +1,14 @@
-use crate::app::api::member::{get_member_profile, get_thread_members};
+use crate::app::api::member::{get_five_thread_members, get_member_profile};
 use crate::app::api::thread::get_threads_from_channel;
-use crate::app::api::user::get_user_profile;
 use crate::app::components::menu::thread::ThreadMenuContent;
 use crate::app::components::modal::create_thread::CreatethreadModal;
 use crate::app::components::navigation::server::thread::{ThreadStore, ThreadStoreStoreFields};
 use crate::app::components::ui::context_menu::*;
 use crate::app::components::ui::dropdown_menu::*;
+use crate::app::components::ui::icons::{Icon, IconData};
 use crate::entities::thread::{Thread, ThreadStoreFields};
-use crate::entities::user::Profile;
+use crate::messages::Message;
+use crate::ws::client::use_ws;
 //use icondata;
 use leptos::{html, prelude::*};
 //use leptos_icons::Icon;
@@ -107,7 +108,7 @@ pub fn ActiveThreads(
             <div class="flex w-full justify-between items-center my-2">
                 <div class="h-6 w-[200px] border border-base-100 rounded p-1.5 flex items-center justify-between">
                     "Search"
-                    // <Icon icon=icondata::LuSearch />
+                    <Icon icon=IconData::Search />
                 </div>
                 <CreatethreadModal
                     content_ref=create_thread_node
@@ -124,6 +125,21 @@ pub fn ActiveThreads(
                         Suspend::new(async move {
                             get_threads.await.map(|threads| {
                                 let thread_store = Store::new(ThreadStore { threads });
+                                use_ws().on_server_msg(server_id, move |msg| {
+                                    match msg {
+                                        Message::ThreadCreated { thread } => {
+                                            thread_store.threads().update(|threads| {
+                                                threads.push(thread);
+                                            });
+                                        },
+                                        Message::ThreadDeleted { thread_id } => {
+                                            thread_store.threads().update(|threads| {
+                                                threads.retain(|thread| thread.id != thread_id);
+                                            });
+                                        },
+                                        _ => {}
+                                    }
+                                });
                                 view!{
                                     <For
                                         each=move || thread_store.threads()
@@ -216,7 +232,7 @@ pub fn ThreadLink(
 
 #[component]
 pub fn ThreadMembers(thread_id: Uuid) -> impl IntoView {
-    let thread_members = Resource::new(|| (), move |_| get_thread_members(thread_id));
+    let thread_members = Resource::new(|| (), move |_| get_five_thread_members(thread_id));
 
     view! {
         <Transition fallback=move || ()>
@@ -228,29 +244,20 @@ pub fn ThreadMembers(thread_id: Uuid) -> impl IntoView {
                                 .clone()
                                 .into_iter()
                                 .map(|member| {
-                                    let member_profile = Resource::new(
-                                        || (),
-                                        move |_| get_user_profile(member.user_id),
-                                    );
-                                    view! {
-                                        {move || {
-                                            if let Some(Ok(Profile { image_url, .. })) = member_profile
-                                                .get()
-                                            {
-                                                view! {
-                                                    <img
-                                                        class="w-4 h-4 object-cover rounded-full mr-1"
-                                                        src=image_url
-                                                    />
-                                                }
-                                                    .into_any()
-                                            } else {
-                                                view! {
-                                                    <div class="w-4 h-4 rounded-full bg-white border-base-200 mr-1" />
-                                                }
-                                                    .into_any()
-                                            }
-                                        }}
+                                    if let Some(image_url) = member.image_url
+                                    {
+                                        view! {
+                                            <img
+                                            class="w-4 h-4 object-cover rounded-full mr-1"
+                                            src=image_url
+                                            />
+                                        }
+                                            .into_any()
+                                    } else {
+                                        view! {
+                                            <div class="w-4 h-4 rounded-full bg-white border-base-200 mr-1" />
+                                        }
+                                            .into_any()
                                     }
                                 })
                                 .collect_view()

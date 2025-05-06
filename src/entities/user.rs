@@ -1,4 +1,5 @@
 use cfg_if::cfg_if;
+use reactive_stores::Store;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -31,7 +32,7 @@ impl Default for User {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug, Store)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Banner {
     pub id: Uuid,

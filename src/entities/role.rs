@@ -10,6 +10,13 @@ cfg_if! {
     }
 }
 
+//NOTE: this is a work on progress, is missing a lot of things
+//every role should have a list of things that get acces to, then user should fetch his roles per
+//server and in base of te access that it has, the ui should change, for example more buttons or
+//more settings in some areas, then on the server, when a user call a function,the function can
+//acces the roles and check if the change is valid for the user, the roles on the server side
+//should be on a store, this store get updated with ws messages, RolesUpdates, RolesCreated,
+//RolesDeleted, RoleAddedToMember...
 #[derive(Serialize, Deserialize, Clone, Debug, Hash, Store, Eq, PartialEq)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Role {

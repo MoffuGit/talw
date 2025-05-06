@@ -7,6 +7,7 @@ use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use super::auth;
         use super::auth_user;
         use super::user_can_edit;
         use super::pool;
@@ -23,6 +24,37 @@ pub async fn get_member_profile(member_id: Uuid) -> Result<Option<Profile>, Serv
     Ok(User::get_profile(member.user_id, &pool).await.ok())
 }
 
+#[server(GetUserMembers)]
+pub async fn get_user_members() -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+
+    Ok(Member::get_user_members(user.id, &pool).await?)
+}
+
+#[server(GetUserMembersAndConnect)]
+pub async fn get_user_members_and_connect() -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+
+    Member::update_members_status(user.id, Status::ONLINE, &pool).await?;
+    Ok(Member::get_user_members(user.id, &pool).await?)
+}
+
+#[server(UpdateMemberStatus)]
+pub async fn update_member_status(member_id: Uuid, status: Status) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    auth()?;
+    Ok(Member::update_member_status(member_id, status, &pool).await?)
+}
+
+#[server(UpdateMembersStatus)]
+pub async fn update_members_status(user_id: Uuid, status: Status) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    auth()?;
+    Ok(Member::update_members_status(user_id, status, &pool).await?)
+}
+
 #[server(GetMember)]
 pub async fn get_member(server_id: Uuid) -> Result<Member, ServerFnError> {
     let pool = pool()?;
@@ -32,11 +64,11 @@ pub async fn get_member(server_id: Uuid) -> Result<Member, ServerFnError> {
 }
 
 #[server(GetUnfilterThreadMembers)]
-pub async fn get_unfilter_thread_members(thread_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
+pub async fn get_five_thread_members(thread_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
     let pool = pool()?;
     auth_user()?;
 
-    Ok(Member::get_unfilter_thread_members(thread_id, &pool).await?)
+    Ok(Member::get_five_thread_members(thread_id, &pool).await?)
 }
 
 #[server(GetThreadMembers)]
@@ -47,12 +79,36 @@ pub async fn get_thread_members(thread_id: Uuid) -> Result<Vec<Member>, ServerFn
     Ok(Member::get_thread_members(thread_id, &pool).await?)
 }
 
+#[server(GetThreadFilteredMembers)]
+pub async fn get_thread_filtered_members(
+    thread_id: Uuid,
+    role_id: Option<Uuid>,
+    status: Option<Status>,
+) -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(Member::get_thread_filtered_members(thread_id, role_id, status, &pool).await?)
+}
+
 #[server(GetMembers)]
 pub async fn get_members(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
     let pool = pool()?;
     auth_user()?;
 
     Ok(Member::get_members(server_id, &pool).await?)
+}
+
+#[server(GetFilteredMembers)]
+pub async fn get_filtred_members(
+    server_id: Uuid,
+    role_id: Option<Uuid>,
+    status: Option<Status>,
+) -> Result<Vec<Member>, ServerFnError> {
+    let pool = pool()?;
+    auth_user()?;
+
+    Ok(Member::get_filtred_members(server_id, role_id, status, &pool).await?)
 }
 
 #[server(GetMemberRoles)]

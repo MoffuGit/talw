@@ -142,7 +142,7 @@ pub async fn edit_server_image(data: MultipartData) -> Result<(), ServerFnError>
             .await
         {
             if let Some(current_image_key) = Server::get_server_image_key(server_id, &pool).await? {
-                println!("deleting the file with key: {}", current_image_key);
+                println!("deleting the file with key: {current_image_key}");
                 uploadthing
                     .delete_files(vec![current_image_key])
                     .await
@@ -217,7 +217,7 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
     let invitation = validate_invitation(invitation)
         .ok_or_else(|| ServerFnError::new("Your invitation is invalid"))?;
     match Member::check_member_from_invitation(user.id, invitation, &pool).await {
-        Ok(uuid) => redirect(&format!("/servers/{}", uuid)),
+        Ok(uuid) => redirect(&format!("/servers/{uuid}")),
         Err(crate::entities::Error::NotFound) => {
             match Member::create_member_from_invitation(user.id, invitation, &user.name, &pool)
                 .await
@@ -234,7 +234,7 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
                         server_id,
                         msg: Message::MemberJoinedServer { member },
                     });
-                    redirect(&format!("/servers/{}", server_id))
+                    redirect(&format!("/servers/{server_id}"))
                 }
                 Err(crate::entities::Error::NotFound) => {
                     return Err(ServerFnError::new("Your invitation is invalid"))

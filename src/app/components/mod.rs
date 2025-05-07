@@ -1,4 +1,5 @@
 pub mod channel;
+pub mod chat;
 pub mod menu;
 pub mod modal;
 pub mod navigation;

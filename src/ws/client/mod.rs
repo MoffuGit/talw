@@ -73,10 +73,7 @@ impl WsContext {
                     },
                 }));
             } else {
-                debug!(
-                    "No member found for user_id: {} in server: {}",
-                    user_id, server_id
-                );
+                debug!("No member found for user_id: {user_id} in server: {server_id}");
             }
         }
 
@@ -133,7 +130,7 @@ pub fn provide_ws_context() {
                     ws
                 }
                 Err(err) => {
-                    debug!("error: {:?}", err);
+                    debug!("error: {err:?}");
                     return;
                 }
             };
@@ -153,7 +150,7 @@ pub fn provide_ws_context() {
                                     if let Some(broadcast) = channels.get(&server_id) {
                                         let _ = broadcast.0.clone().broadcast(msg).await;
                                     } else {
-                                        debug!("Got a msg to server_id: {}, but we don't have a broadcast for this id", server_id)
+                                        debug!("Got a msg to server_id: {server_id}, but we don't have a broadcast for this id")
                                     }
                                 }
                                 msg => {

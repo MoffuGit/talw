@@ -80,7 +80,7 @@ impl MsgReceiver {
     pub fn handle_client_message(&mut self, msg: ClientMessage) {
         match msg {
             ClientMessage::ServerMessage(ref server_message) => {
-                debug!("we send this to servers: {:?}", server_message);
+                debug!("we send this to servers: {server_message:?}");
                 let server_id = server_message.server_id;
                 self.send_msg_to_sever(server_id, msg);
             }

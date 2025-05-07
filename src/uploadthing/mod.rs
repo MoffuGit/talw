@@ -22,7 +22,7 @@ impl Default for UploadThing {
         let client = Client::new();
         UploadThing {
             host: "https://api.uploadthing.com".to_string(),
-            user_agent: format!("talw/{}/rust", VERSION),
+            user_agent: format!("talw/{VERSION}/rust"),
             api_key,
             version: VERSION.to_string(),
             client,
@@ -129,7 +129,7 @@ impl UploadThing {
             .data
             .first()
             .expect("acces to the first value");
-        println!("this is the data: {:?}", presigned_url);
+        println!("this is the data: {presigned_url:?}");
         if let (Some(urls), Some(chunk_size)) = (&presigned_url.urls, &presigned_url.chunk_size) {
             self.upload_multipart(&opts, &chunks, presigned_url, urls, chunk_size, &file_data)
                 .await?;
@@ -211,7 +211,7 @@ impl UploadThing {
             Ok(res) => match res.json::<serde_json::Value>().await {
                 Err(err) => Err(err.into()),
                 Ok(json) => {
-                    println!("poll json: {:?}", json);
+                    println!("poll json: {json:?}");
                     if json["status"] == "done" {
                         return Ok(());
                     }
@@ -219,7 +219,7 @@ impl UploadThing {
                 }
             },
             Err(err) => {
-                eprintln!("[UT] Error polling for file data for {}: {}", url, err);
+                eprintln!("[UT] Error polling for file data for {url}: {err}");
                 Err(anyhow!(err))
             }
         }

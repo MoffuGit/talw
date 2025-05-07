@@ -158,7 +158,7 @@ pub async fn edit_image_banner(data: MultipartData) -> Result<(), ServerFnError>
                     if let Some(current_image_key) =
                         User::get_banner_image_key(auth.id, &pool).await?
                     {
-                        println!("deleting the file with key: {}", current_image_key);
+                        println!("deleting the file with key: {current_image_key}");
                         uploadthing
                             .delete_files(vec![current_image_key])
                             .await
@@ -215,7 +215,7 @@ pub async fn edit_profile_image(data: MultipartData) -> Result<(), ServerFnError
                     if let Some(current_image_key) =
                         User::get_profile_image_key(auth.id, &pool).await?
                     {
-                        println!("deleting the file with key: {}", current_image_key);
+                        println!("deleting the file with key: {current_image_key}");
                         uploadthing
                             .delete_files(vec![current_image_key])
                             .await

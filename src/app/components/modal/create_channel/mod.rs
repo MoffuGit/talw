@@ -61,7 +61,7 @@ pub fn CreateChannelModal(
                         move || {
                             category_name.get().map(|name| {
                                 view!{
-                                    <p class="leading-[30px] text-xs">{format!("in {}", name)}</p>
+                                    <p class="leading-[30px] text-xs">{format!("in {name}")}</p>
                                 }
                             })
                         }

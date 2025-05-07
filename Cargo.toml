@@ -62,7 +62,7 @@ chrono = { version = "0.4.31", features = ["serde"] }
 # icondata = "0.5.0"
 strum = { version = "0.27", features = ["derive", "strum_macros"] }
 strum_macros = "0.27"
-leptos-u.0-rc1se = "0.16.0-beta"
+leptos-use = "0.16.0-beta"
 reqwest = { version = "0.12.5", features = ["json", "multipart"] }
 server_fn = { version = "0.8.0-rc1", features = ["multipart"] }
 multer = "3.1.0"

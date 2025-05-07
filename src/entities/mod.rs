@@ -1,6 +1,7 @@
 pub mod category;
 pub mod channel;
 pub mod member;
+pub mod message;
 pub mod role;
 pub mod server;
 pub mod thread;

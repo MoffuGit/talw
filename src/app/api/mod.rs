@@ -2,6 +2,7 @@ pub mod auth;
 pub mod category;
 pub mod channel;
 pub mod member;
+pub mod messages;
 pub mod server;
 pub mod theme;
 pub mod thread;

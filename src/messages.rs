@@ -4,6 +4,7 @@ use uuid::Uuid;
 use crate::entities::category::Category;
 use crate::entities::channel::Channel;
 use crate::entities::member::Member;
+use crate::entities::message::ChannelMessage;
 use crate::entities::role::Role;
 use crate::entities::server::Server;
 use crate::entities::thread::Thread;
@@ -85,8 +86,7 @@ pub enum Message {
     },
     ChannelMessage {
         channel_id: Uuid,
-        content: String,
-        //content: Message
+        content: ChannelMessage,
     },
     ThreadMessage {
         thread_id: Uuid,

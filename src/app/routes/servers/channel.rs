@@ -19,16 +19,17 @@ use uuid::Uuid;
 pub fn ChannelView() -> impl IntoView {
     let server_id = use_current_server_context().server.id();
     let params_map = use_params_map();
-    let channel_id = move || {
+    let channel_id = Signal::derive(move || {
         params_map
             .with(|map| {
                 map.get("channel_id")
                     .and_then(|id| Uuid::from_str(&id).ok())
             })
             .unwrap_or_default()
-    };
+    });
+
     let channel = Resource::new(
-        move || (channel_id(), server_id.get()),
+        move || (channel_id.get(), server_id.get()),
         move |(channel_id, server_id)| get_channel(channel_id, server_id),
     );
 
@@ -38,7 +39,7 @@ pub fn ChannelView() -> impl IntoView {
             <div class="grow min-w-[400px] shrink-0 flex flex-col">
                 <Transition>
                 {
-                    Suspend::new(async move {
+                    move || Suspend::new(async move {
                         channel.await.map(|channel| {
                             let channel = Store::new(channel);
                             let ws = use_ws();
@@ -70,10 +71,9 @@ pub fn ChannelView() -> impl IntoView {
                                 }
                             });
                             view! {
-                                <div/>
                                 <ChannelHeader channel=channel />
-                                <div class="w-full h-full flex bg-base-200">
-                                    <Chat channel_id=channel.id().get() name=channel.name()/>
+                                <div class="relative overflow-auto flex shrink grow bg-base-200">
+                                    <Chat channel_id=channel.id() name=channel.name()/>
                                     <MemberSideBar server_id=server_id.get() />
                                 </div>
                             }

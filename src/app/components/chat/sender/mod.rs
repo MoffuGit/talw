@@ -153,8 +153,8 @@ use web_sys::{window, HtmlDivElement, Node, Range};
 // }
 
 #[component]
-pub fn Input(
-    channel_id: Uuid,
+pub fn Sender(
+    channel_id: Signal<Uuid>,
     thread_id: Option<Uuid>,
     #[prop(into)] name: Field<String>,
 ) -> impl IntoView {
@@ -198,8 +198,10 @@ pub fn Input(
                         </div>
                     </div>
                 <Icon icon=IconData::Sticker on:click=move |_| {
-                    send_msg.dispatch(SendMessage { server_id: server.id().get(), channel_id, message: message.get(), member_id: member.id().get() });
-                } class="w-7 h-7 stroke-base-300/60 fill-base-content/40 mb-3.5 mt-auto"/>
+                        let channel_id = channel_id.get();
+                        send_msg.dispatch(SendMessage { server_id: server.id().get(), channel_id, message: message.get(), member_id: member.id().get() });
+                    }
+                    class="w-7 h-7 stroke-base-300/60 fill-base-content/40 mb-3.5 mt-auto"/>
             </div>
         </div>
     }

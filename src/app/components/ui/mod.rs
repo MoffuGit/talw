@@ -2,6 +2,7 @@ pub mod collapsible;
 pub mod context_menu;
 pub mod dropdown_menu;
 pub mod icons;
+pub mod markdown;
 pub mod menu;
 pub mod modal;
 pub mod overview;

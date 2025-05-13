@@ -50,7 +50,12 @@ pub fn MemberBanner(
                                             let about = banner.about();
                                             let banner_url = banner.image_url();
                                             view! {
-                                                <div class="relative w-full h-full flex flex-col select-none w-56 origin-right starting:opacity-0 starting:translate-x-2 starting:scale-95 transition-all rounded-md bg-base-300">
+                                                <div class=format!("relative w-full h-full flex flex-col select-none w-56 {} starting:opacity-0 starting:translate-x-2 starting:scale-95 transition-all rounded-md bg-base-300", match side {
+                                                    MenuSide::Bottom =>  "origin-top",
+                                                    MenuSide::Left => "origin-right",
+                                                    MenuSide::Right => "origin-left",
+                                                    MenuSide::Top => "origin-bottom",
+                                                })>
                                                     {move || {
                                                         if let Some(url) = banner_url.get() {
                                                             Either::Left(

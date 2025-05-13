@@ -28,7 +28,7 @@ pub fn ServerMemberSideBar(server_id: uuid::Uuid) -> impl IntoView {
     let roles = Resource::new(|| (), move |_| get_server_roles(server_id));
     view! {
         <div
-            class="h-full shrink-0 bg-base-300 flex flex-col items-stretch justify-between ease-linear duration-200 transition-[width]"
+            class="h-full overflow-x-hidden shrink-0 bg-base-300 flex flex-col items-stretch justify-between ease-linear duration-200 transition-[width]"
             style=move || if open.get() { "width: 240px" } else { "width: 0px" }
         >
             <Transition>

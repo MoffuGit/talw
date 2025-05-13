@@ -54,7 +54,7 @@ pub fn DropdownTrigger(
     view! { <MenuTrigger class=class>{children.map(|children| children())}</MenuTrigger> }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub enum MenuSide {
     Bottom,
     Left,

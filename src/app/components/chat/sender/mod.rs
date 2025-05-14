@@ -155,7 +155,7 @@ use web_sys::{window, HtmlDivElement, Node, Range};
 #[component]
 pub fn Sender(
     channel_id: Signal<Uuid>,
-    thread_id: Option<Uuid>,
+    thread_id: Option<Signal<Uuid>>,
     #[prop(into)] name: Field<String>,
 ) -> impl IntoView {
     let message = RwSignal::new(String::default());

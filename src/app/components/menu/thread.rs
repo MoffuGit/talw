@@ -50,13 +50,13 @@ pub fn ThreadMenuContent(
                                             open.set(false);
                                         }
                                     },
-                                    crate::messages::Message::MemberJoinThread { thread_id, member: msg_membe } => {
-                                        if thread_id == thread.id().get() && msg_membe.user_id == member.user_id().get() {
+                                    crate::messages::Message::MemberJoinThread { thread_id, member_id } => {
+                                        if thread_id == thread.id().get() && member_id == member.id().get() {
                                             exist.set(true);
                                         }
                                     },
-                                    crate::messages::Message::MemberLeaveThread { thread_id, user_id } => {
-                                        if thread_id == thread.id().get() && user_id == member.user_id().get() {
+                                    crate::messages::Message::MemberLeaveThread { thread_id, member_id } => {
+                                        if thread_id == thread.id().get() && member_id == member.id().get() {
                                             exist.set(false);
                                         }
                                     },

@@ -18,6 +18,7 @@ cfg_if! {
 pub struct ChannelMessage {
     pub id: Uuid,
     pub channel_id: Uuid,
+    pub thread_id: Option<Uuid>,
     pub sender: Member,
     pub message_reference: Option<Box<ChannelMessage>>,
     pub content: String,
@@ -71,6 +72,7 @@ pub struct SqlReaction {
 pub struct SqlChannelMessage {
     pub id: Uuid,
     pub channel_id: Uuid,
+    pub thread_id: Option<Uuid>,
     pub sender_id: Uuid,
     pub message_reference: Option<Uuid>,
     pub content: String,
@@ -176,6 +178,7 @@ impl ChannelMessage {
                 id,
                 channel_id,
                 sender_id,
+                thread_id,
                 message_reference,
                 content,
                 timestamp,
@@ -206,6 +209,7 @@ impl ChannelMessage {
         Ok(ChannelMessage {
             id: sql_message.id,
             channel_id: sql_message.channel_id,
+            thread_id: sql_message.thread_id,
             sender,
             message_reference: None,
             content: sql_message.content,
@@ -221,6 +225,82 @@ impl ChannelMessage {
         })
     }
 
+    pub async fn get_thread_messages(
+        thread_id: Uuid,
+        member_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Vec<ChannelMessage>, Error> {
+        let messages: Vec<SqlChannelMessage> = sqlx::query_as(
+            r#"
+            SELECT
+                id as id,
+                channel_id,
+                thread_id,
+                sender_id,
+                message_reference as message_reference,
+                content,
+                timestamp,
+                edited_timestamp,
+                pinned,
+                mention_everyone
+            FROM
+                channel_messages
+            WHERE
+                thread_id = ?
+            ORDER BY
+                timestamp ASC
+            "#,
+        )
+        .bind(thread_id)
+        .fetch_all(pool)
+        .await?;
+
+        let mut full_messages = vec![];
+
+        for message in messages {
+            let msg_sender: Member =
+                sqlx::query_as("SELECT * FROM members_with_profile_fallback WHERE id = ?")
+                    .bind(message.sender_id)
+                    .fetch_one(pool)
+                    .await?;
+
+            let msg_reference = if let Some(reference) = message.message_reference {
+                Some(Box::new(
+                    ChannelMessage::get_message_reference(reference, pool).await?,
+                ))
+            } else {
+                None
+            };
+
+            let msg_mentions = ChannelMessage::get_message_mentions(message.id, pool).await?;
+            let msg_roles_mentions =
+                ChannelMessage::get_message_role_mentions(message.id, pool).await?;
+            let msg_attachments = ChannelMessage::get_message_attachments(message.id, pool).await?;
+            let msg_embeds = ChannelMessage::get_message_embeds(message.id, pool).await?;
+            let msg_reactions =
+                ChannelMessage::get_message_reactions(message.id, member_id, pool).await?;
+            full_messages.push(ChannelMessage {
+                id: message.id,
+                channel_id: message.channel_id,
+                thread_id: message.thread_id,
+                sender: msg_sender,
+                message_reference: msg_reference,
+                content: message.content,
+                timestamp: message.timestamp,
+                edited_timestamp: message.edited_timestamp,
+                pinned: message.pinned,
+                mention_everyone: message.mention_everyone,
+                mentions: msg_mentions,
+                mentions_roles: msg_roles_mentions,
+                attachments: msg_attachments,
+                embeds: msg_embeds,
+                reactions: msg_reactions,
+            });
+        }
+
+        Ok(full_messages)
+    }
+
     pub async fn get_channel_messages(
         channel_id: Uuid,
         member_id: Uuid,
@@ -231,6 +311,7 @@ impl ChannelMessage {
             SELECT
                 id as id,
                 channel_id,
+                thread_id,
                 sender_id,
                 message_reference as message_reference,
                 content,
@@ -277,6 +358,7 @@ impl ChannelMessage {
             full_messages.push(ChannelMessage {
                 id: message.id,
                 channel_id: message.channel_id,
+                thread_id: message.thread_id,
                 sender: msg_sender,
                 message_reference: msg_reference,
                 content: message.content,
@@ -360,6 +442,7 @@ impl ChannelMessage {
             SELECT
                 id,
                 channel_id,
+                thread_id,
                 sender_id,
                 message_reference,
                 content,
@@ -384,6 +467,7 @@ impl ChannelMessage {
         Ok(ChannelMessage {
             id: sql_message.id,
             channel_id: sql_message.channel_id,
+            thread_id: sql_message.thread_id,
             sender,
             message_reference: None,
             content: sql_message.content,

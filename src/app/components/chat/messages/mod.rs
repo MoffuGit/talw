@@ -8,7 +8,7 @@ use leptos::prelude::*;
 use reactive_stores::Field;
 use uuid::Uuid;
 
-use crate::app::api::messages::get_messages;
+use crate::app::api::messages::{get_messages, get_thread_messages};
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::message::ChannelMessage;
 use crate::entities::server::ServerStoreFields;
@@ -70,11 +70,17 @@ impl MessageGroup {
 #[component]
 pub fn ChatMessages(
     channel_id: Signal<Uuid>,
+    thread_id: Option<Signal<Uuid>>,
     #[prop(into)] member_id: Field<Uuid>,
 ) -> impl IntoView {
     let messages = Resource::new(
-        move || (channel_id.get(), member_id.get()),
-        move |(channel_id, member_id)| get_messages(channel_id, member_id),
+        move || (channel_id.get(), member_id.get(), thread_id.get()),
+        move |(channel_id, member_id, thread_id)| async move {
+            if let Some(thread_id) = thread_id {
+                return get_thread_messages(thread_id, member_id).await;
+            }
+            get_messages(channel_id, member_id).await
+        },
     );
     let server = use_current_server_context().server;
     let node: NodeRef<Div> = NodeRef::new();

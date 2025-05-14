@@ -43,7 +43,7 @@ pub fn Channel(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
     });
     view! {
         <ChannelMenu channel=channel />
-        // <Thread channel_id=channel.id().get() server_id=channel.server_id().get() />
+        <Thread channel_id=channel.id() server_id=channel.server_id() />
     }
 }
 

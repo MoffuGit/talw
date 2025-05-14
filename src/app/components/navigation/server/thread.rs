@@ -24,11 +24,14 @@ pub struct ThreadStore {
 }
 
 #[component]
-pub fn Thread(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
+pub fn Thread(
+    #[prop(into)] channel_id: Signal<Uuid>,
+    #[prop(into)] server_id: Signal<Uuid>,
+) -> impl IntoView {
     let member = use_current_server_context().member;
     let threads = Resource::new(
-        move || (),
-        move |_| get_threads_for_member(channel_id, member.id().get()),
+        move || (channel_id.get(), member.id().get()),
+        move |(channel_id, member_id)| get_threads_for_member(channel_id, member_id),
     );
 
     view! {
@@ -41,23 +44,23 @@ pub fn Thread(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
                                 threads
                             });
 
-                            use_ws().on_server_msg(server_id, move |msg| match msg {
+                            use_ws().on_server_msg(server_id.get(), move |msg| match msg {
                                 crate::messages::Message::ThreadDeleted { thread_id } => {
                                     thread_store.threads().update(|threads| {
                                         threads.retain(|thread| thread.id != thread_id);
                                     });
                                 },
-                                crate::messages::Message::MemberJoinThread { thread_id, member: msg_member } => {
-                                    if member.user_id().get() == msg_member.user_id {
+                                crate::messages::Message::MemberJoinThread { thread_id, member_id } => {
+                                    if member.id().get() == member_id {
                                         spawn_local(async move {
-                                            if let Ok(thread) = get_thread(thread_id, channel_id).await {
+                                            if let Ok(thread) = get_thread(thread_id, channel_id.get()).await {
                                                 thread_store.threads().update(|threads| threads.push(thread));
                                             }
                                         });
                                     }
                                 },
-                                crate::messages::Message::MemberLeaveThread { thread_id, user_id } => {
-                                    if member.user_id().get() == user_id {
+                                crate::messages::Message::MemberLeaveThread { thread_id, member_id } => {
+                                    if member.id().get() == member_id {
                                         thread_store.threads().update(|threads| threads.retain(|thread| thread.id != thread_id));
                                     }
                                 },

@@ -118,11 +118,11 @@ pub enum Message {
     },
     MemberJoinThread {
         thread_id: Uuid,
-        member: Member,
+        member_id: Uuid,
     },
     MemberLeaveThread {
         thread_id: Uuid,
-        user_id: Uuid,
+        member_id: Uuid,
     },
     ThreadDeleted {
         thread_id: Uuid,

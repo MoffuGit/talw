@@ -79,36 +79,12 @@ pub async fn get_thread_members(thread_id: Uuid) -> Result<Vec<Member>, ServerFn
     Ok(Member::get_thread_members(thread_id, &pool).await?)
 }
 
-#[server(GetThreadFilteredMembers)]
-pub async fn get_thread_filtered_members(
-    thread_id: Uuid,
-    role_id: Option<Uuid>,
-    status: Option<Status>,
-) -> Result<Vec<Member>, ServerFnError> {
-    let pool = pool()?;
-    auth_user()?;
-
-    Ok(Member::get_thread_filtered_members(thread_id, role_id, status, &pool).await?)
-}
-
 #[server(GetMembers)]
 pub async fn get_members(server_id: Uuid) -> Result<Vec<Member>, ServerFnError> {
     let pool = pool()?;
     auth_user()?;
 
     Ok(Member::get_members(server_id, &pool).await?)
-}
-
-#[server(GetFilteredMembers)]
-pub async fn get_filtred_members(
-    server_id: Uuid,
-    role_id: Option<Uuid>,
-    status: Option<Status>,
-) -> Result<Vec<Member>, ServerFnError> {
-    let pool = pool()?;
-    auth_user()?;
-
-    Ok(Member::get_filtred_members(server_id, role_id, status, &pool).await?)
 }
 
 #[server(GetMemberRoles)]

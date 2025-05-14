@@ -26,6 +26,17 @@ pub async fn get_messages(
     Ok(ChannelMessage::get_channel_messages(channel_id, member_id, &pool).await?)
 }
 
+#[server(GetThreadMessages)]
+pub async fn get_thread_messages(
+    thread_id: Uuid,
+    member_id: Uuid,
+) -> Result<Vec<ChannelMessage>, ServerFnError> {
+    let pool = pool()?;
+    auth()?;
+
+    Ok(ChannelMessage::get_thread_messages(thread_id, member_id, &pool).await?)
+}
+
 #[server(SendMessage)]
 pub async fn send_message(
     server_id: Uuid,

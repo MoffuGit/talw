@@ -5,9 +5,10 @@ use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::components::ui::tool_tip::{
     ToolTipSide, TooltipContent, TooltipProvider, TooltipTrigger,
 };
+use crate::app::routes::servers::MemberStore;
 use leptos::prelude::*;
+use reactive_stores::Store;
 use std::time::Duration;
-use uuid::Uuid;
 
 use self::profile::Profile;
 
@@ -20,13 +21,12 @@ use crate::entities::role::RoleStoreFields;
 pub struct SideBarContext(pub RwSignal<bool>);
 
 #[component]
-pub fn MemberSideBar(#[prop(optional)] thread_id: Option<Uuid>) -> impl IntoView {
+pub fn MemberSideBar(members: Store<MemberStore>) -> impl IntoView {
     let open = use_context::<SideBarContext>()
         .expect("should acces to the SideBarContext")
         .0;
     let server_context = use_current_server_context();
     let roles = server_context.roles;
-    let members = server_context.members;
     view! {
         <div
             class="h-full overflow-x-hidden shrink-0 bg-base-300 flex flex-col items-stretch justify-between ease-linear duration-200 transition-[width]"

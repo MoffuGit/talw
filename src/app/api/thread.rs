@@ -118,7 +118,10 @@ pub async fn join_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), ServerF
         Thread::add_member(thread_id, member.id, &pool).await?;
         msg_sender()?.send(ServerMessage {
             server_id,
-            msg: Message::MemberJoinThread { thread_id, member },
+            msg: Message::MemberJoinThread {
+                thread_id,
+                member_id: member.id,
+            },
         });
         Ok(())
     } else {
@@ -136,7 +139,7 @@ pub async fn leave_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), Server
             server_id,
             msg: Message::MemberLeaveThread {
                 thread_id,
-                user_id: user.id,
+                member_id: member.id,
             },
         });
         Ok(())

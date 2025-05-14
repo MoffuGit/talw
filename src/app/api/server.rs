@@ -371,11 +371,12 @@ pub async fn leave_server(server_id: Uuid) -> Result<(), ServerFnError> {
     msg_sender.send(AppMessage::Unsubscribe {
         user_id: auth.id,
         server_id,
+        member_id: member.id,
     });
     msg_sender.send(ServerMessage {
         server_id,
         msg: Message::MemberLeftServer {
-            user_id: member.user_id,
+            member_id: member.id,
         },
     });
     msg_sender.send(ClientMessage::LeavedServer {

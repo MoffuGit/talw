@@ -97,7 +97,7 @@ pub fn Thread() -> impl IntoView {
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <MemberSideBar server_id=server_id.get() thread_id=thread_id />
+                                                            <MemberSideBar thread_id=thread_id />
                                                         </div>
 
                                                     }.into_any()

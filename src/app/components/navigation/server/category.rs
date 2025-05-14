@@ -54,9 +54,9 @@ pub fn Category(
     view! {
         <CollapsibleProvider open=collapsible_open>
             <ContextMenuProvider modal=false hidden=hidden_context_menu open=menu_open>
-                <ContextMenuTrigger class="relative mt-0.5 mx-2 py-px group select-none w-full">
-                    <CollapsibleTrigger class="cursor-pointer box-border flex items-center justify-between">
-                        <div class="flex flex-auto overflow-hidden items-center py-1.5 px-2 hover:bg-base-100 rounded-lg h-8">
+                <ContextMenuTrigger class="relative group mt-0.5 px-2 w-full select-none min-w-[240px]">
+                    <div class="relative box-border flex flex-col cursor-pointer">
+                        <CollapsibleTrigger class="relative flex group items-center py-1.5 px-2 rounded-md hover:bg-base-100 h-8">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
@@ -84,30 +84,30 @@ pub fn Category(
                             <div class="box-border ml-0.5 text-ellipsis text-sm whitespace-nowrap overflow-hidden leading-4 tracking-wide mr-auto">
                                 {move || name.get()}
                             </div>
-                        </div>
-                    </CollapsibleTrigger>
-                    <div
-                        on:click=move |_| {
-                            menu_open.set(true);
-                        }
-                        class="absolute right-1 top-1.5 p-0.5 hover:bg-base-100 rounded opacity-0 group-hover:opacity-100"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="lucide lucide-ellipsis"
+                        </CollapsibleTrigger>
+                        <div
+                            on:click=move |_| {
+                                menu_open.set(true);
+                            }
+                            class="absolute right-1 top-1.5 p-0.5 hover:bg-base-100 rounded opacity-0 group-hover:opacity-100"
                         >
-                            <circle cx="12" cy="12" r="1" />
-                            <circle cx="19" cy="12" r="1" />
-                            <circle cx="5" cy="12" r="1" />
-                        </svg>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="16"
+                                height="16"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="lucide lucide-ellipsis"
+                            >
+                                <circle cx="12" cy="12" r="1" />
+                                <circle cx="19" cy="12" r="1" />
+                                <circle cx="5" cy="12" r="1" />
+                            </svg>
+                        </div>
                     </div>
                 </ContextMenuTrigger>
                 <ContextMenuContent

@@ -1,39 +1,13 @@
-use std::collections::HashMap;
-
 use leptos::either::Either;
 use leptos::prelude::*;
+use reactive_stores::Store;
 use uuid::Uuid;
 
 use crate::app::components::channel::member::banner::MemberBanner;
 use crate::app::components::channel::sidebars::collapsible::Collapsible;
 use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
-use crate::entities::member::{Member, Status};
-
-#[component]
-pub fn Pagination(
-    members: RwSignal<HashMap<Uuid, Member>>,
-    pagination: Resource<Result<Vec<Member>, ServerFnError>>,
-    children: ChildrenFn,
-) -> impl IntoView {
-    view! {
-        <Transition>
-            {
-                Suspend::new(async move {
-                    let _ = pagination.await.map(|page| {
-                        members.update(|members| {
-                            for member in page {
-                                members.insert(member.user_id,member);
-                            }
-                        });
-                    });
-                    view!{
-                        {children()}
-                    }
-                })
-            }
-        </Transition>
-    }
-}
+use crate::app::routes::servers::{MemberStore, MemberStoreStoreFields};
+use crate::entities::member::Status;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Groups {
@@ -43,21 +17,21 @@ pub enum Groups {
 
 #[component]
 pub fn Group(
-    members: RwSignal<HashMap<Uuid, Member>>,
+    members: Store<MemberStore>,
     #[prop(into)] name: Signal<String>,
     group: Groups,
 ) -> impl IntoView {
     let group = Memo::new(move |_| {
         members
+            .members()
             .get()
-            .values()
+            .into_iter()
             .filter(|member| match group {
                 Groups::Online(role_id) => {
                     member.status == Status::ONLINE && member.role_id == role_id
                 }
                 Groups::Offline => member.status == Status::OFFLINE,
             })
-            .cloned()
             .collect::<Vec<_>>()
     });
     view! {

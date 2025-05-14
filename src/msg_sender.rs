@@ -61,18 +61,18 @@ impl MsgReceiver {
         }
     }
 
-    pub fn handle_sub_msg(&mut self, server_id: Uuid, user_id: Uuid) {
-        debug!("we are going to subscribe the user {user_id} to {server_id}");
-        self.subscriptions.subscribe(user_id, server_id);
+    pub fn handle_sub_msg(&mut self, server_id: Uuid, user_id: Uuid, member_id: Uuid) {
+        self.subscriptions.subscribe(user_id, server_id, member_id);
     }
 
-    pub fn handle_unsub_msg(&mut self, server_id: Uuid, user_id: Uuid) {
-        self.subscriptions.unsubscribe(user_id, server_id);
+    pub fn handle_unsub_msg(&mut self, server_id: Uuid, user_id: Uuid, member_id: Uuid) {
+        self.subscriptions
+            .unsubscribe(user_id, server_id, member_id);
         self.send_msg_to_sever(
             server_id,
             ServerMessage {
                 server_id,
-                msg: Message::MemberDisconnected { user_id },
+                msg: Message::MemberDisconnected { member_id },
             },
         );
     }
@@ -98,12 +98,12 @@ impl MsgReceiver {
 
     pub fn handle_user_disconnect(&mut self, user_id: Uuid) {
         let servers = self.subscriptions.unsubscribe_all(user_id);
-        for server_id in servers {
+        for (server_id, member_id) in servers {
             self.send_msg_to_sever(
                 server_id,
                 ServerMessage {
                     server_id,
-                    msg: Message::MemberDisconnected { user_id },
+                    msg: Message::MemberDisconnected { member_id },
                 },
             );
         }
@@ -117,11 +117,19 @@ impl MsgReceiver {
             AppMessage::ClosedConnection { user_id } => {
                 self.handle_user_disconnect(user_id);
             }
-            AppMessage::Subscribe { user_id, server_id } => {
-                self.handle_sub_msg(server_id, user_id);
+            AppMessage::Subscribe {
+                user_id,
+                server_id,
+                member_id,
+            } => {
+                self.handle_sub_msg(server_id, user_id, member_id);
             }
-            AppMessage::Unsubscribe { user_id, server_id } => {
-                self.handle_unsub_msg(server_id, user_id);
+            AppMessage::Unsubscribe {
+                user_id,
+                server_id,
+                member_id,
+            } => {
+                self.handle_unsub_msg(server_id, user_id, member_id);
             }
             AppMessage::Batch(app_messages) => {
                 for msg in app_messages {

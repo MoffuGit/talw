@@ -53,10 +53,10 @@ pub fn ServerSideBar() -> impl IntoView {
             class="flex h-full relative inset-y-0 bg-base-300 z-40 ease-linear duration-200 transition-[width] overflow-hidden border-l-base-100 border-l border-0 shrink-0"
             style=move || if open.get() { "width: 240px" } else { "width: 0px" }
         >
-            <div class="w-[240px] h-full flex flex-col items-center relative scrollbar-none overflow-y-scroll overflow-x-hidden shrink-0">
+            <div class="w-[240px] h-full flex flex-col items-center relative shrink-0">
                 <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
                     <ServerMenu />
-                    <div class="overflow-x-hidden overflow-y-scroll pr-2 flex flex-col flex-auto items-stretch">
+                    <div class="scrollbar-none overflow-y-scroll overflow-x-hidden flex flex-col relative w-full items-stretch">
                         <Transition>
                             {move || Suspend::new(async move {
                                     match (channels.await, categories.await)  {
@@ -153,7 +153,7 @@ pub fn ServerSideBar() -> impl IntoView {
                                                 />
                                             }.into_any()
                                         },
-                                        msg => view!{<div>{format!("{msg:?}")}</div>}.into_any()
+                                        _ => ().into_any()
                                     }
                                 })}
                         </Transition>

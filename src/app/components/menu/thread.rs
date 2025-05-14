@@ -24,6 +24,7 @@ pub fn ThreadMenuContent(
         server,
         member_can_edit,
         member,
+        ..
     } = use_current_server_context();
     let thread_name = thread.name();
     let check_member_on_thread = Resource::new(move || thread.id().get(), check_member_on_thread);

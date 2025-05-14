@@ -32,6 +32,7 @@ pub fn ChannelView() -> impl IntoView {
         move || (channel_id.get(), server_id.get()),
         move |(channel_id, server_id)| get_channel(channel_id, server_id),
     );
+    //NOTE: Move the roles and member into here
 
     provide_context(SideBarContext(RwSignal::new(false)));
     view! {
@@ -74,7 +75,7 @@ pub fn ChannelView() -> impl IntoView {
                                 <ChannelHeader channel=channel />
                                 <div class="relative overflow-auto flex shrink grow bg-base-200">
                                     <Chat channel_id=channel.id() name=channel.name()/>
-                                    <MemberSideBar server_id=server_id.get() />
+                                    <MemberSideBar />
                                 </div>
                             }
                         })

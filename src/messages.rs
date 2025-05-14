@@ -12,9 +12,19 @@ use crate::entities::thread::Thread;
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum AppMessage {
     ClientMessage(ClientMessage),
-    ClosedConnection { user_id: Uuid },
-    Subscribe { user_id: Uuid, server_id: Uuid },
-    Unsubscribe { user_id: Uuid, server_id: Uuid },
+    ClosedConnection {
+        user_id: Uuid,
+    },
+    Subscribe {
+        user_id: Uuid,
+        server_id: Uuid,
+        member_id: Uuid,
+    },
+    Unsubscribe {
+        user_id: Uuid,
+        server_id: Uuid,
+        member_id: Uuid,
+    },
     Batch(Vec<AppMessage>),
 }
 
@@ -79,14 +89,14 @@ pub enum Message {
         image_url: Option<String>,
     },
     MemberConnected {
-        member: Member,
+        member_id: Uuid,
     },
     MemberDisconnected {
-        user_id: Uuid,
+        member_id: Uuid,
     },
     ChannelMessage {
         channel_id: Uuid,
-        content: ChannelMessage,
+        content: Box<ChannelMessage>,
     },
     ThreadMessage {
         thread_id: Uuid,
@@ -97,7 +107,7 @@ pub enum Message {
         member: Member,
     },
     MemberLeftServer {
-        user_id: Uuid,
+        member_id: Uuid,
     },
     ServerUpdated {
         name: Option<String>,

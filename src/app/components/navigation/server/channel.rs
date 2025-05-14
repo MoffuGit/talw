@@ -43,7 +43,7 @@ pub fn Channel(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
     });
     view! {
         <ChannelMenu channel=channel />
-        <Thread channel_id=channel.id().get() server_id=channel.server_id().get() />
+        // <Thread channel_id=channel.id().get() server_id=channel.server_id().get() />
     }
 }
 
@@ -68,7 +68,7 @@ pub fn ChannelMenu(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
     let delete_channel_node = NodeRef::<html::Div>::new();
     let open = RwSignal::new(false);
     view! {
-        <div class="relative py-px mx-2 group mt-0.5 w-full">
+        <div class="relative group mt-0.5 px-2 w-full select-none min-w-[240px]">
             <ContextMenuProvider hidden=hidden open=open modal=false>
                 <ContextMenuTrigger class="relative box-border flex flex-col cursor-pointer">
                     <A
@@ -89,7 +89,7 @@ pub fn ChannelMenu(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
                     >
                         // <Icon icon=Icon::from(channel_type) />
                         // class="relative w-4 h-4 shrink-0 mr-1.5 fill-base-content"
-                        <div class="whitespace-nowrap overflow-hidden text-ellipsis mr-auto leading-5 flex-auto relative text-sm">
+                        <div class="whitespace-nowrap overflow-hidden text-ellipsis leading-5 flex-auto relative text-sm">
                             {move || name.get()}
                         </div>
                     </A>

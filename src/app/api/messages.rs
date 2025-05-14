@@ -41,7 +41,7 @@ pub async fn send_message(
             server_id,
             msg: Message::ChannelMessage {
                 channel_id,
-                content,
+                content: Box::new(content),
             },
         }),
         Err(err) => debug!("{err:?}"),

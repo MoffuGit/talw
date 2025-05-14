@@ -61,15 +61,16 @@ impl WsContext {
         for server_id in new_servers.difference(&current_servers) {
             let (sender, receiver) = broadcast::<Message>(1000);
             self.servers_channels.insert(*server_id, (sender, receiver));
-            subscribe_msgs.push(AppMessage::Subscribe {
-                user_id,
-                server_id: *server_id,
-            });
             if let Some(member) = members.get(server_id) {
+                subscribe_msgs.push(AppMessage::Subscribe {
+                    user_id,
+                    server_id: *server_id,
+                    member_id: member.id,
+                });
                 subscribe_msgs.push(AppMessage::from(ServerMessage {
                     server_id: *server_id,
                     msg: Message::MemberConnected {
-                        member: member.clone(),
+                        member_id: member.id,
                     },
                 }));
             } else {

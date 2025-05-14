@@ -50,15 +50,15 @@ pub fn ServerSideBar() -> impl IntoView {
         .open;
     view! {
         <div
-            class="flex h-full relative inset-y-0 bg-base-300 z-40 ease-linear duration-200 transition-[width] overflow-hidden border-l-base-100 border-l border-0"
+            class="flex h-full relative inset-y-0 bg-base-300 z-40 ease-linear duration-200 transition-[width] overflow-hidden border-l-base-100 border-l border-0 shrink-0"
             style=move || if open.get() { "width: 240px" } else { "width: 0px" }
         >
             <div class="w-[240px] h-full flex flex-col items-center relative scrollbar-none overflow-y-scroll overflow-x-hidden shrink-0">
                 <div class="w-full flex flex-col items-stretch justify-start flex-auto relative">
                     <ServerMenu />
-                    <div class="overflow-x-hidden overflow-y-scroll pr-2 flex-auto">
+                    <div class="overflow-x-hidden overflow-y-scroll pr-2 flex flex-col flex-auto items-stretch">
                         <Transition>
-                            {                                Suspend::new(async move {
+                            {move || Suspend::new(async move {
                                     match (channels.await, categories.await)  {
                                         (Ok(channels), Ok(categories)) => {
                                             let channels_with_category: Store<HashMap<Uuid, Store<ChannelStore>>> = Store::new(HashMap::new());

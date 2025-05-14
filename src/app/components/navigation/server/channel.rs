@@ -68,7 +68,7 @@ pub fn ChannelMenu(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
     let delete_channel_node = NodeRef::<html::Div>::new();
     let open = RwSignal::new(false);
     view! {
-        <div class="relative py-px ml-2 group mt-0.5">
+        <div class="relative py-px mx-2 group mt-0.5 w-full">
             <ContextMenuProvider hidden=hidden open=open modal=false>
                 <ContextMenuTrigger class="relative box-border flex flex-col cursor-pointer">
                     <A

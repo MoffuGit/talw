@@ -36,7 +36,7 @@ pub fn ChannelView() -> impl IntoView {
     provide_context(SideBarContext(RwSignal::new(false)));
     view! {
         <div class="w-full h-full flex relative overflow-hidden">
-            <div class="grow min-w-[400px] shrink-0 flex flex-col">
+            <div class="min-w-[400px] flex-auto flex flex-col">
                 <Transition>
                 {
                     move || Suspend::new(async move {

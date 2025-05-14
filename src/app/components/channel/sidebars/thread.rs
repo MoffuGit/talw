@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::app::api::member::{get_members, get_thread_filtered_members};
+use crate::app::api::member::get_thread_filtered_members;
 use crate::app::api::server::get_server_roles;
 use crate::app::components::channel::sidebars::group::{Group, Groups, Pagination};
 use crate::app::components::channel::sidebars::profile::Profile;

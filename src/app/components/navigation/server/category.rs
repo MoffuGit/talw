@@ -54,7 +54,7 @@ pub fn Category(
     view! {
         <CollapsibleProvider open=collapsible_open>
             <ContextMenuProvider modal=false hidden=hidden_context_menu open=menu_open>
-                <ContextMenuTrigger class="relative mt-0.5 ml-2 py-px group select-none">
+                <ContextMenuTrigger class="relative mt-0.5 mx-2 py-px group select-none w-full">
                     <CollapsibleTrigger class="cursor-pointer box-border flex items-center justify-between">
                         <div class="flex flex-auto overflow-hidden items-center py-1.5 px-2 hover:bg-base-100 rounded-lg h-8">
                             <svg

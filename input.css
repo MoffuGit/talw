@@ -9,7 +9,13 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-geist: "Geist, sans-serif"
+    --font-geist: "Geist", "sans-serif";
+
+    --color-note: #6495ED;
+    --color-tip: #BA55D3;
+    --color-important: #48D1CC;
+    --color-warn: #FFBF00;
+    --color-caution: #FF6347;
 
     --animate-tooltip-open: "tooltip-open 0.1s linear 1",
     @keyframes tooltip-open {
@@ -23,7 +29,7 @@
         }
 
         ,
-    }
+    };
 }
 
 /* @plugin "daisyui/theme" { */

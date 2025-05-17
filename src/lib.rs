@@ -7,6 +7,7 @@ pub mod msg_sender;
 pub mod state;
 #[cfg(feature = "ssr")]
 pub mod subs;
+#[cfg(feature = "ssr")]
 pub mod uploadthing;
 pub mod ws;
 

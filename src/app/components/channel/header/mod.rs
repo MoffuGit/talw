@@ -24,15 +24,8 @@ pub fn ChannelHeader(
                 <ServerSideBarTrigger class="relative flex items-center ml-3 mr-1 hover:bg-base-100 rounded-md p-1 cursor-pointer">
                     <Icon icon=IconData::PanelLeft/>
                 </ServerSideBarTrigger>
-
                 <div class="divider divider-horizontal h-auto m-0" />
-
-                {match thread {
-                    Some(thread) => {
-                        view! { <HeaderTitle channel=channel thread=thread /> }
-                    }
-                    None => view! { <HeaderTitle channel=channel /> },
-                }}
+                <HeaderTitle channel=channel thread=thread />
 
             </div>
             <div class="h-auto relative flex items-center px-4 space-x-2.5">
@@ -53,7 +46,9 @@ pub fn ChannelHeader(
                                 />
                             </TooltipProvider>
                         }
-                    })} <TooltipProvider>
+                    })
+                }
+                <TooltipProvider>
                     <TooltipTrigger
                         close_on_click=true
                         class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
@@ -67,7 +62,9 @@ pub fn ChannelHeader(
                         class="rounded-md w-auto h-auto py-1.5 px-2.5 text-sm text-base-100 bg-base-content border-base-content"
                         tooltip_side=ToolTipSide::Bottom
                     />
-                </TooltipProvider> <MemberSideBarTrigger /> <TooltipProvider>
+                </TooltipProvider>
+                <MemberSideBarTrigger />
+                <TooltipProvider>
                     <TooltipTrigger
                         close_on_click=true
                         class="hover:bg-base-100 rounded-md p-1 cursor-pointer"

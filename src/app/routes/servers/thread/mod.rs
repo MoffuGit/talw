@@ -46,7 +46,7 @@ pub fn Thread() -> impl IntoView {
             <div class="grow min-w-[400px] shrink-0 flex flex-col">
                 <Transition>
                     {
-                        Suspend::new(async move {
+                        move || Suspend::new(async move {
                             match (channel.await, thread.await, members.await) {
                                 (Ok(channel), Ok(thread ), Ok(members)) => {
                                     let channel = Store::new(channel);

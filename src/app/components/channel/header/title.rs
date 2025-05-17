@@ -15,7 +15,7 @@ use reactive_stores::Field;
 #[component]
 pub fn HeaderTitle(
     #[prop(into)] channel: Field<Channel>,
-    #[prop(into, optional)] thread: Option<Field<Thread>>,
+    #[prop(into)] thread: Option<Field<Thread>>,
 ) -> impl IntoView {
     let hidden = RwSignal::new(false);
     let CurrentServerContext {

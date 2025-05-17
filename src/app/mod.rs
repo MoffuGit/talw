@@ -28,24 +28,26 @@ pub fn App() -> impl IntoView {
     provide_auth_context();
 
     //NOTE:
-    //work on the messages struct and tables
+    //add more Elements to MarkdownElements
+    //add MessageContextMenu
+    //upgrade the MessageInput
+    //upgrade the SendMessage, add atachments, mentions, response...
     //fix the icons
     //fix the ui of the modals and user overview
     //add flallbacks for the transitions
+    //add optimistic update where needed
     //work in the server overview
-    //upgrade the roles, right now they dont send a msg or work for something, i need to upgrade them
-    //upgrade the invitations
     //add notifications
     //add inbox
     //add friends
     //add things to user stuff and search stuff servers stuff
+    //upgrade the roles, right now they dont send a msg or work for something, i need to upgrade them
+    //upgrade the invitations
     //add pinned channels and conversations
     //add the voice channel, stream sound and meaby video
-    //add the optin to change the width of the sidebar
     //keep working in the profile settings
     //add the email and phone number to the user, give the posibility of change the password
-    //add the option to edit the theme of the app, give some default options and more complex
-    //settings
+    //add Oauth or other type of authentication
     //check tauri for creating a desktop app and cellphone app
 
     view! {
@@ -80,7 +82,7 @@ pub fn App() -> impl IntoView {
                             <Route path=StaticSegment("") view=EmptyServer />
                             <ParentRoute path=ParamSegment("channel_id") view=ChannelView>
                                 <Route path=ParamSegment("thread_id") view=ThreadSplit />
-                                <Route path=StaticSegment("") view=|| view! { <div /> } />
+                                <Route path=StaticSegment("") view=|| view!{<div/>} />
                             </ParentRoute>
                             <Route
                                 path=(

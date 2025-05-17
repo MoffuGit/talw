@@ -1,11 +1,6 @@
-use leptos::prelude::*;
-use std::collections::HashMap;
 use std::fmt::Display;
-use uuid::Uuid;
 
-use pulldown_cmark::{Event, Parser, Tag, TagEnd};
-
-use crate::entities::member::Member;
+use pulldown_cmark::{BlockQuoteKind, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum MarkdownElement {
@@ -13,25 +8,36 @@ pub enum MarkdownElement {
     Text(String),
     // Mention,
     // Role,
-    // Heading(u8),
+    Heading(HeadingLevel),
     LineBreak,
     Bold,
     Italic,
-    // Blockquotes,
-    // List { order: bool },
+    Blockquotes(Option<BlockQuoteKind>),
+    List { order: bool },
+    ListItem,
     // CodeBlocks,
     // Links,
     // Email,
 }
 
+impl MarkdownElement {
+    pub fn is_blockquote(&self) -> bool {
+        matches!(self, MarkdownElement::Blockquotes(_))
+    }
+}
+
 impl Display for MarkdownElement {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            MarkdownElement::ListItem => write!(f, "list item"),
+            MarkdownElement::List { .. } => write!(f, "list"),
+            MarkdownElement::Blockquotes(_) => write!(f, "blockquotes"),
             MarkdownElement::Paragraph => write!(f, "p"),
-            MarkdownElement::Text(text) => write!(f, "{text}"),
+            MarkdownElement::Text(text) => write!(f, "'{text}'"),
             MarkdownElement::Bold => write!(f, "strong"),
             MarkdownElement::Italic => write!(f, "em"),
             MarkdownElement::LineBreak => write!(f, "br"),
+            MarkdownElement::Heading(heading_level) => write!(f, "{heading_level}"),
         }
     }
 }
@@ -44,6 +50,12 @@ impl TryFrom<Tag<'_>> for MarkdownElement {
             // Tag::Paragraph => MarkdownElement::Paragraph,
             Tag::Emphasis => MarkdownElement::Italic,
             Tag::Strong => MarkdownElement::Bold,
+            Tag::Heading { level, .. } => MarkdownElement::Heading(level),
+            Tag::BlockQuote(kind) => MarkdownElement::Blockquotes(kind),
+            Tag::List(order) => MarkdownElement::List {
+                order: order.is_some(),
+            },
+            Tag::Item => MarkdownElement::ListItem,
             _ => return Err(String::from("This is not possibe right now")),
         })
     }
@@ -54,9 +66,13 @@ impl TryFrom<TagEnd> for MarkdownElement {
 
     fn try_from(value: TagEnd) -> Result<Self, Self::Error> {
         Ok(match value {
+            TagEnd::Item => MarkdownElement::ListItem,
             TagEnd::Paragraph => MarkdownElement::Paragraph,
             TagEnd::Emphasis => MarkdownElement::Italic,
             TagEnd::Strong => MarkdownElement::Bold,
+            TagEnd::BlockQuote(kind) => MarkdownElement::Blockquotes(kind),
+            TagEnd::Heading(level) => MarkdownElement::Heading(level),
+            TagEnd::List(order) => MarkdownElement::List { order },
             _ => return Err(String::from("This is not possible right now")),
         })
     }
@@ -64,10 +80,10 @@ impl TryFrom<TagEnd> for MarkdownElement {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct MarkdownNode {
-    element: MarkdownElement,
-    start_offset: usize,
-    end_offset: usize,
-    childrens: Vec<MarkdownNode>,
+    pub element: MarkdownElement,
+    pub start_offset: usize,
+    pub end_offset: usize,
+    pub childrens: Vec<MarkdownNode>,
     // node_ref: NodeRef<Span>,
 }
 
@@ -97,22 +113,13 @@ impl MarkdownNode {
             childrens: vec![],
         };
 
+        let mut options = Options::empty();
+        options.insert(Options::ENABLE_GFM);
         let mut offset = offset;
-        for line in input.lines() {
-            if line.is_empty() {
-                root.childrens.push(MarkdownNode {
-                    element: MarkdownElement::LineBreak,
-                    start_offset: offset,
-                    end_offset: offset,
-                    childrens: vec![],
-                });
-            } else {
-                let mut parser = Parser::new(line);
-                root.childrens
-                    .push(MarkdownNode::parse_events(&mut parser, &mut offset));
-                root.end_offset = offset;
-            }
-        }
+        let mut parser = Parser::new_ext(input, options);
+        root.childrens
+            .push(MarkdownNode::parse_events(&mut parser, &mut offset));
+        root.end_offset = offset;
         root
     }
 
@@ -146,6 +153,12 @@ impl MarkdownNode {
     ) -> Option<MarkdownNode> {
         Some(match event {
             Event::Start(tag) => self.parse_tag(tag, parser, offset)?,
+            Event::SoftBreak | Event::HardBreak => MarkdownNode {
+                element: MarkdownElement::LineBreak,
+                start_offset: *offset,
+                end_offset: *offset,
+                childrens: vec![],
+            },
             Event::Text(cow_str) => {
                 let start = *offset;
                 *offset += cow_str.len();
@@ -242,9 +255,9 @@ impl<'a> Iterator for MarkdownNodeIterator<'a> {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-struct MarkdownTree {
-    root: MarkdownNode,
-    offset: usize,
+pub struct MarkdownTree {
+    pub root: MarkdownNode,
+    pub offset: usize,
 }
 
 impl MarkdownTree {
@@ -290,39 +303,6 @@ impl<'a> Iterator for MarkdownTreeIterator<'a> {
         } else {
             None
         }
-    }
-}
-
-#[component]
-pub fn Markdown(#[prop(into)] text: Signal<String>) -> impl IntoView {
-    let markdown = Signal::derive(move || MarkdownTree::new_from_markdown(&text.get()));
-    view! {
-        {
-            move || {
-                view!{
-                    <MarkdownParagraph node=markdown.get().root/>
-                }
-            }
-        }
-    }
-}
-
-#[component]
-pub fn MarkdownParagraph(node: MarkdownNode) -> impl IntoView {
-    let childrens = node
-        .childrens
-        .iter()
-        .map(|node| view! {<MarkdownParagraph node=node.clone()/>})
-        .collect_view();
-
-    match node.element {
-        MarkdownElement::Paragraph => {
-            view! {<span class="text-sm font-light">{childrens}</span>}.into_any()
-        }
-        MarkdownElement::Text(text) => view! {{text}}.into_any(),
-        MarkdownElement::LineBreak => view! {<br/>}.into_any(),
-        MarkdownElement::Bold => view! {<span class="font-medium">{childrens}</span>}.into_any(),
-        MarkdownElement::Italic => view! {<span class="italic">{childrens}</span>}.into_any(),
     }
 }
 
@@ -421,5 +401,34 @@ mod tests {
         let nodes: Vec<_> = tree.iter().collect();
         println!("{}", tree.write_html());
         assert_eq!(nodes.len(), 1);
+    }
+
+    #[test]
+    fn test_parse_heading() {
+        let input = "# one\n## two\n### three\n#### four\n##### five\n###### six";
+        let tree = MarkdownTree::new_from_markdown(input);
+        let nodes: Vec<_> = tree.iter().collect();
+        println!("{}", tree.write_html());
+        assert_eq!(nodes.len(), 19);
+    }
+
+    #[test]
+    fn test_parse_list() {
+        let input = "- one\n- two\n- three";
+        let tree = MarkdownTree::new_from_markdown(input);
+        let nodes: Vec<_> = tree.iter().collect();
+        println!("{}", tree.write_html());
+        assert_eq!(nodes.len(), 13);
+    }
+
+    #[test]
+    fn test_parse_list_same_line() {
+        let input = "- List
+- List
+- List";
+        let tree = MarkdownTree::new_from_markdown(input);
+        let nodes: Vec<_> = tree.iter().collect();
+        println!("{}", tree.write_html());
+        assert_eq!(nodes.len(), 13);
     }
 }

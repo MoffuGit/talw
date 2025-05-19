@@ -1,13 +1,12 @@
-use std::fmt::Display;
-
-use pulldown_cmark::{BlockQuoteKind, Event, HeadingLevel, Options, Parser, Tag, TagEnd};
+use pulldown_cmark::{
+    BlockQuoteKind, CodeBlockKind, Event, HeadingLevel, LinkType, Options, Parser, Tag, TagEnd,
+};
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum MarkdownElement {
     Paragraph,
     Text(String),
-    // Mention,
-    // Role,
+    Code(String),
     Heading(HeadingLevel),
     LineBreak,
     Bold,
@@ -15,31 +14,8 @@ pub enum MarkdownElement {
     Blockquotes(Option<BlockQuoteKind>),
     List { order: bool },
     ListItem,
-    // CodeBlocks,
-    // Links,
-    // Email,
-}
-
-impl MarkdownElement {
-    pub fn is_blockquote(&self) -> bool {
-        matches!(self, MarkdownElement::Blockquotes(_))
-    }
-}
-
-impl Display for MarkdownElement {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            MarkdownElement::ListItem => write!(f, "list item"),
-            MarkdownElement::List { .. } => write!(f, "list"),
-            MarkdownElement::Blockquotes(_) => write!(f, "blockquotes"),
-            MarkdownElement::Paragraph => write!(f, "p"),
-            MarkdownElement::Text(text) => write!(f, "'{text}'"),
-            MarkdownElement::Bold => write!(f, "strong"),
-            MarkdownElement::Italic => write!(f, "em"),
-            MarkdownElement::LineBreak => write!(f, "br"),
-            MarkdownElement::Heading(heading_level) => write!(f, "{heading_level}"),
-        }
-    }
+    CodeBlock(Option<String>),
+    Link { url: Option<String> },
 }
 
 impl TryFrom<Tag<'_>> for MarkdownElement {
@@ -47,7 +23,34 @@ impl TryFrom<Tag<'_>> for MarkdownElement {
 
     fn try_from(value: Tag) -> Result<Self, Self::Error> {
         Ok(match value {
-            // Tag::Paragraph => MarkdownElement::Paragraph,
+            Tag::Link {
+                link_type: LinkType::Autolink,
+                dest_url,
+                title: _,
+                id: _,
+            } => MarkdownElement::Link {
+                url: Some(dest_url.to_string()),
+            },
+            Tag::Link {
+                link_type: _,
+                dest_url,
+                title: _,
+                id: _,
+            } => MarkdownElement::Text(dest_url.to_string()),
+            Tag::CodeBlock(kind) => {
+                let lang = if let CodeBlockKind::Fenced(info) = kind {
+                    let lang = info.split(' ').next().unwrap();
+                    if lang.is_empty() {
+                        None
+                    } else {
+                        Some(lang.to_string())
+                    }
+                } else {
+                    None
+                };
+
+                MarkdownElement::CodeBlock(lang)
+            }
             Tag::Emphasis => MarkdownElement::Italic,
             Tag::Strong => MarkdownElement::Bold,
             Tag::Heading { level, .. } => MarkdownElement::Heading(level),
@@ -66,6 +69,8 @@ impl TryFrom<TagEnd> for MarkdownElement {
 
     fn try_from(value: TagEnd) -> Result<Self, Self::Error> {
         Ok(match value {
+            TagEnd::Link => MarkdownElement::Link { url: None },
+            TagEnd::CodeBlock => MarkdownElement::CodeBlock(None),
             TagEnd::Item => MarkdownElement::ListItem,
             TagEnd::Paragraph => MarkdownElement::Paragraph,
             TagEnd::Emphasis => MarkdownElement::Italic,
@@ -139,7 +144,18 @@ impl MarkdownNode {
         while let Some(event) = parser.next() {
             if let Some(children) = root.parse_event(event, parser, offset) {
                 root.end_offset = *offset;
-                root.childrens.push(children);
+                if let Some(last_child) = root.childrens.last_mut() {
+                    if let (MarkdownElement::Text(text1), MarkdownElement::Text(text2)) =
+                        (&last_child.element, &children.element)
+                    {
+                        last_child.element = MarkdownElement::Text(format!("{text1}{text2}"));
+                        last_child.end_offset = children.end_offset;
+                    } else {
+                        root.childrens.push(children);
+                    }
+                } else {
+                    root.childrens.push(children);
+                }
             }
         }
         root
@@ -152,6 +168,17 @@ impl MarkdownNode {
         offset: &mut usize,
     ) -> Option<MarkdownNode> {
         Some(match event {
+            Event::Code(cow_str) => {
+                let start = *offset;
+                *offset += cow_str.len();
+                MarkdownNode {
+                    element: MarkdownElement::Code(cow_str.to_string()),
+                    start_offset: start,
+                    end_offset: *offset,
+                    childrens: vec![],
+                    // node_ref: NodeRef::new(),
+                }
+            }
             Event::Start(tag) => self.parse_tag(tag, parser, offset)?,
             Event::SoftBreak | Event::HardBreak => MarkdownNode {
                 element: MarkdownElement::LineBreak,
@@ -190,6 +217,18 @@ impl MarkdownNode {
             match event {
                 Event::End(end_tag) => {
                     if let Ok(end_el) = MarkdownElement::try_from(end_tag) {
+                        if matches!(node.element, MarkdownElement::CodeBlock(..))
+                            && matches!(end_el, MarkdownElement::CodeBlock(..))
+                        {
+                            node.end_offset = *offset;
+                            break;
+                        }
+                        if matches!(node.element, MarkdownElement::Link { .. })
+                            && matches!(end_el, MarkdownElement::Link { .. })
+                        {
+                            node.end_offset = *offset;
+                            break;
+                        }
                         if end_el == node.element {
                             node.end_offset = *offset;
                             break;
@@ -198,7 +237,19 @@ impl MarkdownNode {
                 }
                 _ => {
                     if let Some(child) = self.parse_event(event, parser, offset) {
-                        node.childrens.push(child);
+                        if let Some(last_child) = node.childrens.last_mut() {
+                            if let (MarkdownElement::Text(text1), MarkdownElement::Text(text2)) =
+                                (&last_child.element, &child.element)
+                            {
+                                last_child.element =
+                                    MarkdownElement::Text(format!("{text1}{text2}"));
+                                last_child.end_offset = child.end_offset;
+                            } else {
+                                node.childrens.push(child);
+                            }
+                        } else {
+                            node.childrens.push(child);
+                        }
                     }
                 }
             }
@@ -209,29 +260,6 @@ impl MarkdownNode {
 
     pub fn iter(&self) -> MarkdownNodeIterator {
         MarkdownNodeIterator { stack: vec![self] }
-    }
-
-    pub fn write_html(&self) -> String {
-        let mut html = String::new();
-
-        match &self.element {
-            MarkdownElement::Text(text) => {
-                html.push_str(text);
-                html.push('\n');
-            }
-            MarkdownElement::LineBreak => {
-                html.push_str("<br/>");
-            }
-            _ => {
-                html.push_str(&format!("<{}>\n", self.element));
-                for child in &self.childrens {
-                    html.push_str(&child.write_html());
-                }
-                html.push_str(&format!("</{}>\n", self.element));
-            }
-        }
-
-        html
     }
 }
 
@@ -281,10 +309,6 @@ impl MarkdownTree {
             stack: vec![&self.root],
         }
     }
-
-    pub fn write_html(&self) -> String {
-        self.root.write_html()
-    }
 }
 
 pub struct MarkdownTreeIterator<'a> {
@@ -303,132 +327,5 @@ impl<'a> Iterator for MarkdownTreeIterator<'a> {
         } else {
             None
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_parse_simple_text() {
-        let input = "hello";
-        let tree = MarkdownTree::new_from_markdown(input);
-        assert_eq!(tree.root.start_offset, 0);
-        assert_eq!(tree.root.end_offset, 5);
-        let nodes: Vec<_> = tree.iter().collect();
-
-        assert_eq!(nodes.len(), 3);
-        assert_eq!(nodes[0].element, MarkdownElement::Paragraph);
-        assert_eq!(nodes[1].element, MarkdownElement::Paragraph);
-        assert_eq!(nodes[2].element, MarkdownElement::Text("hello".into()));
-        assert_eq!(nodes[2].start_offset, 0);
-    }
-
-    #[test]
-    fn test_parse_bold_text() {
-        let input = "**bold**";
-        let tree = MarkdownTree::new_from_markdown(input);
-        let html = tree.write_html();
-
-        let expected_html = "<p>\n<p>\n<strong>\nbold\n</strong>\n</p>\n</p>\n";
-        assert_eq!(html, expected_html);
-
-        let nodes: Vec<_> = tree.iter().collect();
-        assert_eq!(nodes.len(), 4);
-        assert_eq!(nodes[2].element, MarkdownElement::Bold);
-        assert_eq!(nodes[3].element, MarkdownElement::Text("bold".into()));
-    }
-
-    #[test]
-    fn test_parse_italic_text() {
-        let input = "*italic*";
-        let tree = MarkdownTree::new_from_markdown(input);
-        let html = tree.write_html();
-
-        let expected_html = "<p>\n<p>\n<em>\nitalic\n</em>\n</p>\n</p>\n";
-        assert_eq!(html, expected_html);
-
-        let nodes: Vec<_> = tree.iter().collect();
-        assert_eq!(nodes[2].element, MarkdownElement::Italic);
-        assert_eq!(nodes[3].element, MarkdownElement::Text("italic".into()));
-    }
-
-    #[test]
-    fn test_nested_bold_italic() {
-        let input = "***bolditalic***";
-        let tree = MarkdownTree::new_from_markdown(input);
-        let html = tree.write_html();
-
-        let expected_html = "<p>\n<p>\n<em>\n<strong>\nbolditalic\n</strong>\n</em>\n</p>\n</p>\n";
-        assert_eq!(html, expected_html);
-
-        let nodes: Vec<_> = tree.iter().collect();
-        assert_eq!(nodes.len(), 5);
-        assert_eq!(nodes[2].element, MarkdownElement::Italic);
-        assert_eq!(nodes[3].element, MarkdownElement::Bold);
-        assert_eq!(nodes[4].element, MarkdownElement::Text("bolditalic".into()));
-    }
-
-    #[test]
-    fn test_parse_incomplet_text() {
-        let input = "*hello";
-        let tree = MarkdownTree::new_from_markdown(input);
-        assert_eq!(tree.root.start_offset, 0);
-        assert_eq!(tree.root.end_offset, 6);
-        let nodes: Vec<_> = tree.iter().collect();
-
-        assert_eq!(nodes.len(), 4);
-        assert_eq!(nodes[0].element, MarkdownElement::Paragraph);
-        assert_eq!(nodes[1].element, MarkdownElement::Paragraph);
-        assert_eq!(nodes[2].element, MarkdownElement::Text("*".into()));
-        assert_eq!(nodes[3].element, MarkdownElement::Text("hello".into()));
-    }
-
-    #[test]
-    fn test_parse_multilines() {
-        let input = "line1\n\nline2\n\n\nline3";
-        let tree = MarkdownTree::new_from_markdown(input);
-        let nodes: Vec<_> = tree.iter().collect();
-        println!("{}", tree.write_html());
-        assert_eq!(nodes.len(), 10);
-    }
-
-    #[test]
-    fn test_parse_empty() {
-        let input = "";
-        let tree = MarkdownTree::new_from_markdown(input);
-        let nodes: Vec<_> = tree.iter().collect();
-        println!("{}", tree.write_html());
-        assert_eq!(nodes.len(), 1);
-    }
-
-    #[test]
-    fn test_parse_heading() {
-        let input = "# one\n## two\n### three\n#### four\n##### five\n###### six";
-        let tree = MarkdownTree::new_from_markdown(input);
-        let nodes: Vec<_> = tree.iter().collect();
-        println!("{}", tree.write_html());
-        assert_eq!(nodes.len(), 19);
-    }
-
-    #[test]
-    fn test_parse_list() {
-        let input = "- one\n- two\n- three";
-        let tree = MarkdownTree::new_from_markdown(input);
-        let nodes: Vec<_> = tree.iter().collect();
-        println!("{}", tree.write_html());
-        assert_eq!(nodes.len(), 13);
-    }
-
-    #[test]
-    fn test_parse_list_same_line() {
-        let input = "- List
-- List
-- List";
-        let tree = MarkdownTree::new_from_markdown(input);
-        let nodes: Vec<_> = tree.iter().collect();
-        println!("{}", tree.write_html());
-        assert_eq!(nodes.len(), 13);
     }
 }

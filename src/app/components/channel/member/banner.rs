@@ -104,7 +104,7 @@ pub fn MemberBanner(
                                                             if member.id != user_member.get() {
                                                                 Either::Left(
                                                                     view! {
-                                                                        <div class="flex my-4 border border-base-100 hover:bg-base-content/10 rounded-md w-full h-12 px-4 items-center cursor-pointer">
+                                                                        <div class="flex mt-4 border border-base-100 hover:bg-base-content/10 rounded-md w-full h-12 px-4 items-center cursor-pointer">
                                                                             <div class="text-base">
                                                                                 {format!("Message @{}", name.get_value())}
                                                                             </div>

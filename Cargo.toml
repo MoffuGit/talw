@@ -75,6 +75,7 @@ gloo-timers = "0.3.0"
 dashmap = "6.1.0"
 reactive_stores = "0.2.2"
 pulldown-cmark = "0.13.0"
+syntect = {version =  "5.2.0",default-features = false, features = ["default-fancy"]}
 
 [features]
 hydrate = ["leptos/hydrate", "dep:console_error_panic_hook"]

@@ -15,12 +15,12 @@ pub fn ChatGroup(messages: Vec<ChannelMessage>) -> impl IntoView {
     let first = RwSignal::new(messages.first().cloned().unwrap());
     let member = Signal::derive(move || first.get().sender.clone());
     view! {
-        <div class="relative py-1 w-full flex items-start">
+        <div class="relative py-1 w-full flex items-start isolate">
             {
                 move || {
                     let member = member.get();
                     view!{
-                        <MemberBanner side=MenuSide::Right align=MenuAlign::Start member=member.clone() class="w-auto h-auto absolute left-2 top-2" >
+                        <MemberBanner side=MenuSide::Right align=MenuAlign::Start member=member.clone() class="w-auto h-auto absolute left-2 top-2 z-10" >
                             {if let Some(url) = member.image_url {
                                 Either::Left(
                                     view! {
@@ -63,7 +63,7 @@ pub fn ChatMessage(
     let block_kind: RwSignal<Option<BlockQuoteKind>> = RwSignal::new(None);
     view! {
         //MessageContextMenu
-        <div class="relative w-full pl-14 pr-4 group hover:bg-base-content/5 flex items-start text-wrap whitespace-break-spaces">
+        <div class="relative py-0.5 w-full pl-14 pr-4 group hover:bg-base-content/5 flex items-start text-wrap whitespace-break-spaces">
             {
                 move || {
                     block_kind.get().map(|kind| {
@@ -145,10 +145,10 @@ pub fn MarkdownParagraph(
         MarkdownElement::Italic => view! {<span class="italic">{childrens}</span>}.into_any(),
         MarkdownElement::Heading(level) => match level {
             HeadingLevel::H1 => {
-                view! {<span class="font-medium text-xl ">{childrens}</span><br/>}.into_any()
+                view! {<span class="font-medium text-xl ">{childrens}</span>}.into_any()
             }
             HeadingLevel::H2 => {
-                view! {<span class="font-medium text-lg ">{childrens}</span><br/>}.into_any()
+                view! {<span class="font-medium text-lg ">{childrens}</span>}.into_any()
             }
             _ => view! {{childrens}}.into_any(),
         },
@@ -161,10 +161,21 @@ pub fn MarkdownParagraph(
         MarkdownElement::ListItem => view! {<li>{childrens}</li>}.into_any(),
         MarkdownElement::List { order } => {
             if order {
-                view! {<ol>{childrens}</ol><br/>}.into_any()
+                view! {<ol class="list-decimal pl-4">{childrens}</ol>}.into_any()
             } else {
-                view! {<ul>{childrens}</ul><br/>}.into_any()
+                view! {<ul class="list-disc pl-4">{childrens}</ul>}.into_any()
             }
         }
+        MarkdownElement::Code(code) => {
+            view! {<code class="font-jetbrains text-sm font-light">{code}</code>}.into_any()
+        }
+        MarkdownElement::CodeBlock(_lang) => {
+            view! {<pre><code class="font-jetbrains text-sm font-light">{childrens}</code></pre>}
+                .into_any()
+        }
+        MarkdownElement::Link { url } => view! {
+            <a href=url class="text-note">{url.clone()}</a>
+        }
+        .into_any(),
     }
 }

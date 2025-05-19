@@ -10,6 +10,7 @@
 
 @theme {
     --font-geist: "Geist", "sans-serif";
+    --font-jetbrains: "JetBrains Mono", "sans-serif";
 
     --color-note: #6495ED;
     --color-tip: #BA55D3;

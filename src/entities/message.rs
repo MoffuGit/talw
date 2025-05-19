@@ -20,16 +20,25 @@ pub struct ChannelMessage {
     pub channel_id: Uuid,
     pub thread_id: Option<Uuid>,
     pub sender: Member,
+    //impl
     pub message_reference: Option<Box<ChannelMessage>>,
     pub content: String,
     pub timestamp: DateTime<Utc>,
+    //impl
     pub edited_timestamp: Option<DateTime<Utc>>,
+    //impl
     pub pinned: bool,
+    //impl
     pub mention_everyone: bool,
+    //impl
     pub mentions: Vec<Member>,
+    //impl
     pub mentions_roles: Vec<Role>,
+    //impl
     pub attachments: Vec<Attachment>,
+    //impl
     pub embeds: Vec<Embed>,
+    //impl
     pub reactions: Vec<Reaction>,
 }
 

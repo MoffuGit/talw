@@ -1,3 +1,4 @@
+mod menu;
 mod message;
 
 use std::collections::BTreeMap;
@@ -5,7 +6,6 @@ use std::collections::BTreeMap;
 use chrono::{DateTime, Datelike, Month, Utc};
 use leptos::html::Div;
 use leptos::prelude::*;
-use log::debug;
 use reactive_stores::Field;
 use uuid::Uuid;
 

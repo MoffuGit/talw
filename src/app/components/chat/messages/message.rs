@@ -1,3 +1,4 @@
+use crate::app::components::chat::messages::menu::MessageContextMenu;
 use std::ops::Not;
 
 use leptos::either::Either;
@@ -64,47 +65,48 @@ pub fn ChatMessage(
     let markdown = Signal::derive(move || MarkdownParser::new(&message.get().content).parse_tree());
     let block_kind: RwSignal<Option<BlockQuoteKind>> = RwSignal::new(None);
     view! {
-        //MessageContextMenu
-        <div class="relative py-0.5 w-full pl-14 pr-4 group hover:bg-base-content/5 flex items-start text-wrap whitespace-break-spaces">
-            {
-                move || {
-                    block_kind.get().map(|kind| {
-                        view!{<div class=format!("absolute border-l-2 inset-0 {}", match kind {
-                            BlockQuoteKind::Note => "bg-note/5 border-l-note/60",
-                            BlockQuoteKind::Tip => "bg-tip/5 border-l-tip/60",
-                            BlockQuoteKind::Important => "bg-important/5 border-l-important/60",
-                            BlockQuoteKind::Warning => "bg-warn/5 border-l-warn/60",
-                            BlockQuoteKind::Caution => "bg-caution/5 border-l-caution/60",
+        <MessageContextMenu member_id=Signal::derive(move || member.get().id)>
+            <div class="relative py-0.5 w-full pl-14 pr-4 group hover:bg-base-content/5 flex items-start text-wrap whitespace-break-spaces">
+                {
+                    move || {
+                        block_kind.get().map(|kind| {
+                            view!{<div class=format!("absolute border-l-2 inset-0 {}", match kind {
+                                BlockQuoteKind::Note => "bg-note/5 border-l-note/60",
+                                BlockQuoteKind::Tip => "bg-tip/5 border-l-tip/60",
+                                BlockQuoteKind::Important => "bg-important/5 border-l-important/60",
+                                BlockQuoteKind::Warning => "bg-warn/5 border-l-warn/60",
+                                BlockQuoteKind::Caution => "bg-caution/5 border-l-caution/60",
 
-                        })/>}
+                            })/>}
+                        })
+                    }
+                }
+                {
+                    is_first.not().then(|| view!{
+                        <div class="text-[11px] text-base-content/50 absolute left-4 top-1 opacity-0 group-hover:opacity-100 flex items-center">
+                            {move || message.get().timestamp.format("%H:%M").to_string()}
+                        </div>
                     })
                 }
-            }
-            {
-                is_first.not().then(|| view!{
-                    <div class="text-[11px] text-base-content/50 absolute left-4 top-2 opacity-0 group-hover:opacity-100 flex items-center">
-                        {move || message.get().timestamp.format("%H:%M").to_string()}
-                    </div>
-                })
-            }
-            <div class="flex flex-col items-start">
-                {
-                    is_first.then(||
-                        view!{
-                            <div class="flex items-center mb-1">
-                                <div class="font-medium mr-2">
-                                    {move || member.get().name}
+                <div class="flex flex-col items-start">
+                    {
+                        is_first.then(||
+                            view!{
+                                <div class="flex items-center mb-1">
+                                    <div class="font-medium mr-2">
+                                        {move || member.get().name}
+                                    </div>
+                                    <div class="text-[11px] text-base-content/50 self-end mb-0.5">
+                                        {move || message.get().timestamp.format("%d/%m/%y, %H:%M").to_string()}
+                                    </div>
                                 </div>
-                                <div class="text-[11px] text-base-content/50 self-end mb-0.5">
-                                    {move || message.get().timestamp.format("%d/%m/%y, %H:%M").to_string()}
-                                </div>
-                            </div>
-                        }
-                    )
-                }
-                <Markdown markdown=markdown block_kind=block_kind/>
+                            }
+                        )
+                    }
+                    <Markdown markdown=markdown block_kind=block_kind/>
+                </div>
             </div>
-        </div>
+        </MessageContextMenu>
     }
 }
 
@@ -169,10 +171,10 @@ pub fn MarkdownParagraph(
             }
         }
         MarkdownElement::Code(code) => {
-            view! {<code class="font-jetbrains text-sm font-light">{code}</code>}.into_any()
+            view! {<code class="font-jetbrains text-sm font-light bg-base-100 rounded border-base-100">{code}</code>}.into_any()
         }
         MarkdownElement::CodeBlock(_lang) => {
-            view! {<pre><code class="font-jetbrains text-sm font-light">{childrens}</code></pre>}
+            view! {<pre class="bg-base-100 rounded-lg border-base-100 border p-2"><code class="font-jetbrains text-sm font-light">{childrens}</code></pre>}
                 .into_any()
         }
         MarkdownElement::Link { url } => view! {

@@ -6,6 +6,7 @@ use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::member::{Member, MemberStoreFields};
 use crate::entities::user::BannerStoreFields;
 use leptos::either::Either;
+use leptos::html::Div;
 use leptos::prelude::*;
 use leptos_use::use_document;
 use reactive_stores::Store;
@@ -20,14 +21,25 @@ pub fn MemberBanner(
     member: Member,
 ) -> impl IntoView {
     let is_open = RwSignal::new(false);
-    let limit_y = use_document()
-        .body()
-        .map(|body| body.get_bounding_client_rect().height() - 320.0);
+    let content_ref: NodeRef<Div> = NodeRef::new();
+    let limit_y = Signal::derive(move || {
+        let content_height = {
+            if let Some(node) = content_ref.get() {
+                node.offset_height() as f64
+            } else {
+                320.0
+            }
+        };
+        use_document()
+            .body()
+            .map(|body| (body.get_bounding_client_rect().height() - content_height) - 20.0)
+            .unwrap_or(320.0)
+    });
     let name = StoredValue::new(member.name);
     let image_url = StoredValue::new(member.image_url);
     let user_member = use_current_server_context().member.id();
     view! {
-        <DropdownProvider modal=false open=is_open>
+        <DropdownProvider content_ref=content_ref modal=false open=is_open>
             <DropdownTrigger class=class>{children()}</DropdownTrigger>
             <DropdownContent
                 class="w-72 h-auto z-50"

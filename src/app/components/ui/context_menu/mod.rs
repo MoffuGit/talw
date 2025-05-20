@@ -46,6 +46,7 @@ pub fn ContextMenuContent(
     #[prop(optional)] class: &'static str,
     children: ChildrenFn,
     #[prop(optional)] ignore: Vec<NodeRef<html::Div>>,
+    #[prop(default = Signal::derive(move || 0.0))] limit_y: Signal<f64>,
 ) -> impl IntoView {
     let UseMouseReturn { x, y, .. } = use_mouse();
 
@@ -53,7 +54,11 @@ pub fn ContextMenuContent(
         format!(
             "translate: {}px {}px;",
             x.get_untracked(),
-            y.get_untracked()
+            if limit_y.get() < y.get_untracked() {
+                limit_y.get()
+            } else {
+                y.get_untracked()
+            }
         )
     });
 

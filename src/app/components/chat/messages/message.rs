@@ -177,5 +177,17 @@ pub fn MarkdownParagraph(
             <a href=url class="text-note">{url.clone()}</a>
         }
         .into_any(),
+        MarkdownElement::Role(id) => view! {
+            <span class="text-red-500">{id}</span>
+        }
+        .into_any(),
+        MarkdownElement::Mention(id) => view! {
+            <span class="text-red-500">{id}</span>
+        }
+        .into_any(),
+        MarkdownElement::Everyone => view! {
+            <span class="text-green-500">"Everyone"</span>
+        }
+        .into_any(),
     }
 }

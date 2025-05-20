@@ -1,10 +1,9 @@
-use std::str::FromStr;
+use std::iter::Peekable;
 
 use pulldown_cmark::{
     BlockQuoteKind, CodeBlockKind, Event, HeadingLevel, LinkType, Options, Parser, Tag, TagEnd,
 };
 use regex::Regex;
-use uuid::Uuid;
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum MarkdownElement {
@@ -90,6 +89,201 @@ impl TryFrom<TagEnd> for MarkdownElement {
     }
 }
 
+pub struct MarkdownParser<'a> {
+    parser: Peekable<Parser<'a>>,
+    offset: usize,
+}
+
+impl<'a> MarkdownParser<'a> {
+    pub fn new(input: &'a str) -> Self {
+        MarkdownParser::new_with_offset(input, 0)
+    }
+
+    pub fn new_with_offset(input: &'a str, offset: usize) -> Self {
+        let mut options = Options::empty();
+        options.insert(Options::ENABLE_GFM);
+        let parser = Parser::new_ext(input, options).peekable();
+        MarkdownParser { parser, offset }
+    }
+
+    pub fn parse_tree(&mut self) -> MarkdownTree {
+        let root = self.parse();
+        MarkdownTree::new_with_root(root)
+    }
+
+    fn parse(&mut self) -> MarkdownNode {
+        let mut root = MarkdownNode {
+            element: MarkdownElement::Paragraph,
+            start_offset: self.offset,
+            end_offset: self.offset,
+            // node_ref: NodeRef::new(),
+            childrens: vec![],
+        };
+
+        while let Some(event) = self.parser.next() {
+            if let Some(children) = self.parse_event(event) {
+                root.childrens.push(children);
+            }
+        }
+        root.end_offset = self.offset;
+        root
+    }
+
+    fn parse_text(&mut self, text: String) -> MarkdownNode {
+        let mut nodes = vec![];
+        let mut current_offset = self.offset;
+        let start = self.offset;
+        let mention_regex = Regex::new(r"<@(?:(?P<type>role):)?(?P<id>\d+)>|<@everyone>").unwrap();
+        let mut last_match_end = 0;
+
+        for capture in mention_regex.captures_iter(&text) {
+            let full_match = capture.get(0).unwrap();
+            let start = full_match.start();
+            let end = full_match.end();
+
+            if start > last_match_end {
+                let text_part = &text[last_match_end..start];
+                nodes.push(MarkdownNode {
+                    element: MarkdownElement::Text(text_part.to_string()),
+                    start_offset: current_offset,
+                    end_offset: current_offset + text_part.len(),
+                    childrens: vec![],
+                });
+                current_offset += text_part.len();
+            }
+
+            let element = if full_match.as_str() == "<@everyone>" {
+                MarkdownElement::Everyone
+            } else if let Some(id) = capture.name("id") {
+                let id = id.as_str().to_string();
+                match capture.name("type") {
+                    Some(_) => MarkdownElement::Role(id),
+                    None => MarkdownElement::Mention(id),
+                }
+            } else {
+                continue;
+            };
+
+            nodes.push(MarkdownNode {
+                element,
+                start_offset: current_offset,
+                end_offset: current_offset + end - start,
+                childrens: vec![],
+            });
+            current_offset += end - start;
+            last_match_end = end;
+        }
+
+        if last_match_end < text.len() {
+            let text_part = &text[last_match_end..text.len()];
+            nodes.push(MarkdownNode {
+                element: MarkdownElement::Text(text_part.to_string()),
+                start_offset: current_offset,
+                end_offset: current_offset + text_part.len(),
+                childrens: vec![],
+            });
+        }
+        self.offset += text.len();
+        if nodes.len() == 1 {
+            nodes.remove(0)
+        } else {
+            MarkdownNode {
+                element: MarkdownElement::Paragraph,
+                start_offset: start,
+                end_offset: current_offset,
+                childrens: nodes,
+            }
+        }
+    }
+
+    fn parse_event(&mut self, event: Event) -> Option<MarkdownNode> {
+        Some(match event {
+            Event::Code(cow_str) => {
+                let start = self.offset;
+                self.offset += cow_str.len();
+                MarkdownNode {
+                    element: MarkdownElement::Code(cow_str.to_string()),
+                    start_offset: start,
+                    end_offset: self.offset,
+                    childrens: vec![],
+                    // node_ref: NodeRef::new(),
+                }
+            }
+            Event::Start(tag) => self.parse_tag(tag)?,
+            Event::SoftBreak | Event::HardBreak => MarkdownNode {
+                element: MarkdownElement::LineBreak,
+                start_offset: self.offset,
+                end_offset: self.offset,
+                childrens: vec![],
+            },
+            Event::Text(cow_str) => {
+                let mut text = String::from(cow_str);
+                while let Some(Event::Text(cow_str)) = self.parser.peek() {
+                    text.push_str(cow_str);
+                    self.parser.next();
+                }
+                self.parse_text(text)
+            }
+            _ => return None,
+        })
+    }
+
+    fn parse_tag(&mut self, tag: Tag) -> Option<MarkdownNode> {
+        let element = MarkdownElement::try_from(tag.clone()).ok()?;
+        let start = self.offset;
+
+        let mut node = MarkdownNode {
+            element,
+            start_offset: start,
+            end_offset: start,
+            childrens: vec![],
+            // node_ref: NodeRef::new(),
+        };
+
+        while let Some(event) = self.parser.next() {
+            match event {
+                Event::End(end_tag) => {
+                    if let Ok(end_el) = MarkdownElement::try_from(end_tag) {
+                        if matches!(node.element, MarkdownElement::CodeBlock(..))
+                            && matches!(end_el, MarkdownElement::CodeBlock(..))
+                        {
+                            node.end_offset = self.offset;
+                            break;
+                        }
+                        if matches!(node.element, MarkdownElement::Link { .. })
+                            && matches!(end_el, MarkdownElement::Link { .. })
+                        {
+                            node.end_offset = self.offset;
+                            break;
+                        }
+                        if end_el == node.element {
+                            node.end_offset = self.offset;
+                            break;
+                        }
+                    }
+                }
+                _ => {
+                    if let Some(child) = self.parse_event(event) {
+                        if let (MarkdownElement::Text(new_text), Some(last_child)) =
+                            (&child.element, node.childrens.last_mut())
+                        {
+                            if let MarkdownElement::Text(last_text) = &last_child.element {
+                                last_child.element =
+                                    MarkdownElement::Text(format!("{last_text}{new_text}"));
+                                last_child.end_offset = child.end_offset;
+                                continue;
+                            }
+                        }
+                        node.childrens.push(child);
+                    }
+                }
+            }
+        }
+
+        Some(node)
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
 pub struct MarkdownNode {
     pub element: MarkdownElement,
@@ -114,223 +308,6 @@ impl Default for MarkdownNode {
 impl MarkdownNode {
     pub fn new() -> Self {
         Default::default()
-    }
-
-    pub fn parse_markdown_with_offset(input: &str, offset: usize) -> MarkdownNode {
-        let mut root = MarkdownNode {
-            element: MarkdownElement::Paragraph,
-            start_offset: offset,
-            end_offset: offset,
-            // node_ref: NodeRef::new(),
-            childrens: vec![],
-        };
-
-        let mut options = Options::empty();
-        options.insert(Options::ENABLE_GFM);
-        let mut offset = offset;
-        let mut parser = Parser::new_ext(input, options);
-        root.childrens
-            .push(MarkdownNode::parse_events(&mut parser, &mut offset));
-        root.end_offset = offset;
-        root
-    }
-
-    pub fn parse_markdown(input: &str) -> MarkdownNode {
-        MarkdownNode::parse_markdown_with_offset(input, 0)
-    }
-
-    fn pase_mentions(&mut self) {
-        let mut new_children: Vec<MarkdownNode> = Vec::new();
-        for child in &self.childrens {
-            if let MarkdownElement::Text(text) = &child.element {
-                let mut current_offset = child.start_offset;
-                let mut nodes = vec![];
-                let mention_regex =
-                    Regex::new(r"<@(?:(?P<type>role):)?(?P<id>\d+)|everyone>").unwrap();
-                let mut last_match_end = 0;
-
-                for capture in mention_regex.captures_iter(&text) {
-                    let full_match = capture.get(0).unwrap();
-                    let start = full_match.start();
-                    let end = full_match.end();
-
-                    if start > last_match_end {
-                        let text_part = &text[last_match_end..start];
-                        nodes.push(MarkdownNode {
-                            element: MarkdownElement::Text(text_part.to_string()),
-                            start_offset: current_offset,
-                            end_offset: current_offset + text_part.len(),
-                            childrens: vec![],
-                        });
-                        current_offset += text_part.len();
-                    }
-
-                    let element = if full_match.as_str() == "<@everyone>" {
-                        MarkdownElement::Everyone
-                    } else {
-                        if let Some(id) = capture.name("id") {
-                            let id = id.as_str().to_string();
-                            match capture.name("type") {
-                                Some(_) => MarkdownElement::Role(id),
-                                None => MarkdownElement::Mention(id),
-                            }
-                        } else {
-                            continue;
-                        }
-                    };
-
-                    nodes.push(MarkdownNode {
-                        element,
-                        start_offset: current_offset,
-                        end_offset: current_offset + end - start,
-                        childrens: vec![],
-                    });
-                    current_offset += end - start;
-                    last_match_end = end;
-                }
-
-                if last_match_end < text.len() {
-                    let text_part = &text[last_match_end..text.len()];
-                    nodes.push(MarkdownNode {
-                        element: MarkdownElement::Text(text_part.to_string()),
-                        start_offset: current_offset,
-                        end_offset: current_offset + text_part.len(),
-                        childrens: vec![],
-                    });
-                }
-                new_children.append(&mut nodes);
-            } else {
-                new_children.push(child.clone());
-            }
-        }
-        self.childrens = new_children;
-    }
-
-    fn parse_events(parser: &mut Parser, offset: &mut usize) -> MarkdownNode {
-        let mut root = MarkdownNode {
-            element: MarkdownElement::Paragraph,
-            start_offset: *offset,
-            end_offset: *offset,
-            // node_ref: NodeRef::new(),
-            childrens: vec![],
-        };
-
-        while let Some(event) = parser.next() {
-            if let Some(children) = root.parse_event(event, parser, offset) {
-                root.end_offset = *offset;
-                if let Some(last_child) = root.childrens.last_mut() {
-                    if let (MarkdownElement::Text(text1), MarkdownElement::Text(text2)) =
-                        (&last_child.element, &children.element)
-                    {
-                        last_child.element = MarkdownElement::Text(format!("{text1}{text2}"));
-                        last_child.end_offset = children.end_offset;
-                    } else {
-                        root.childrens.push(children);
-                    }
-                } else {
-                    root.childrens.push(children);
-                }
-            }
-        }
-        root.pase_mentions();
-        root
-    }
-
-    fn parse_event(
-        &self,
-        event: Event,
-        parser: &mut Parser,
-        offset: &mut usize,
-    ) -> Option<MarkdownNode> {
-        Some(match event {
-            Event::Code(cow_str) => {
-                let start = *offset;
-                *offset += cow_str.len();
-                MarkdownNode {
-                    element: MarkdownElement::Code(cow_str.to_string()),
-                    start_offset: start,
-                    end_offset: *offset,
-                    childrens: vec![],
-                    // node_ref: NodeRef::new(),
-                }
-            }
-            Event::Start(tag) => self.parse_tag(tag, parser, offset)?,
-            Event::SoftBreak | Event::HardBreak => MarkdownNode {
-                element: MarkdownElement::LineBreak,
-                start_offset: *offset,
-                end_offset: *offset,
-                childrens: vec![],
-            },
-            Event::Text(cow_str) => {
-                let start = *offset;
-                *offset += cow_str.len();
-                MarkdownNode {
-                    element: MarkdownElement::Text(cow_str.to_string()),
-                    start_offset: start,
-                    end_offset: *offset,
-                    childrens: vec![],
-                    // node_ref: NodeRef::new(),
-                }
-            }
-            _ => return None,
-        })
-    }
-
-    fn parse_tag(&self, tag: Tag, parser: &mut Parser, offset: &mut usize) -> Option<MarkdownNode> {
-        let element = MarkdownElement::try_from(tag.clone()).ok()?;
-        let start = *offset;
-
-        let mut node = MarkdownNode {
-            element,
-            start_offset: start,
-            end_offset: start,
-            childrens: vec![],
-            // node_ref: NodeRef::new(),
-        };
-
-        while let Some(event) = parser.next() {
-            match event {
-                Event::End(end_tag) => {
-                    if let Ok(end_el) = MarkdownElement::try_from(end_tag) {
-                        if matches!(node.element, MarkdownElement::CodeBlock(..))
-                            && matches!(end_el, MarkdownElement::CodeBlock(..))
-                        {
-                            node.end_offset = *offset;
-                            break;
-                        }
-                        if matches!(node.element, MarkdownElement::Link { .. })
-                            && matches!(end_el, MarkdownElement::Link { .. })
-                        {
-                            node.end_offset = *offset;
-                            break;
-                        }
-                        if end_el == node.element {
-                            node.end_offset = *offset;
-                            break;
-                        }
-                    }
-                }
-                _ => {
-                    if let Some(child) = self.parse_event(event, parser, offset) {
-                        if let (MarkdownElement::Text(new_text), Some(last_child)) =
-                            (&child.element, node.childrens.last_mut())
-                        {
-                            if let MarkdownElement::Text(last_text) = &last_child.element {
-                                last_child.element =
-                                    MarkdownElement::Text(format!("{last_text}{new_text}"));
-                                last_child.end_offset = child.end_offset;
-                                continue;
-                            }
-                        }
-                        node.childrens.push(child);
-                    }
-                }
-            }
-        }
-
-        node.pase_mentions();
-
-        Some(node)
     }
 
     pub fn iter(&self) -> MarkdownNodeIterator {
@@ -372,11 +349,6 @@ impl MarkdownTree {
     pub fn new_with_root(root: MarkdownNode) -> Self {
         let offset = root.end_offset;
         MarkdownTree { root, offset }
-    }
-
-    pub fn new_from_markdown(input: &str) -> Self {
-        let root = MarkdownNode::parse_markdown(input);
-        MarkdownTree::new_with_root(root)
     }
 
     pub fn iter(&self) -> MarkdownTreeIterator {

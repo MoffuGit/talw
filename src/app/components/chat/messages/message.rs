@@ -6,7 +6,9 @@ use pulldown_cmark::{BlockQuoteKind, HeadingLevel};
 
 use crate::app::components::channel::member::banner::MemberBanner;
 use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
-use crate::app::components::ui::markdown::{MarkdownElement, MarkdownNode, MarkdownTree};
+use crate::app::components::ui::markdown::{
+    MarkdownElement, MarkdownNode, MarkdownParser, MarkdownTree,
+};
 use crate::entities::member::Member;
 use crate::entities::message::ChannelMessage;
 
@@ -59,7 +61,7 @@ pub fn ChatMessage(
     member: Signal<Member>,
     #[prop(default = false)] is_first: bool,
 ) -> impl IntoView {
-    let markdown = Signal::derive(move || MarkdownTree::new_from_markdown(&message.get().content));
+    let markdown = Signal::derive(move || MarkdownParser::new(&message.get().content).parse_tree());
     let block_kind: RwSignal<Option<BlockQuoteKind>> = RwSignal::new(None);
     view! {
         //MessageContextMenu
@@ -80,7 +82,7 @@ pub fn ChatMessage(
             }
             {
                 is_first.not().then(|| view!{
-                    <div class="text-[11px] text-base-content/50 absolute left-4 inset-y-0 opacity-0 group-hover:opacity-100 flex items-center">
+                    <div class="text-[11px] text-base-content/50 absolute left-4 top-2 opacity-0 group-hover:opacity-100 flex items-center">
                         {move || message.get().timestamp.format("%H:%M").to_string()}
                     </div>
                 })

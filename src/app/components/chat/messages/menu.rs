@@ -1,5 +1,8 @@
+use crate::app::components::chat::messages::pin::Pin;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
+use crate::entities::message::ChannelMessage;
+use crate::entities::server::ServerStoreFields;
 use leptos::html::Div;
 use leptos::prelude::*;
 use leptos_use::use_document;
@@ -8,6 +11,7 @@ use uuid::Uuid;
 #[component]
 pub fn MessageContextMenu(
     #[prop(into)] member_id: Signal<Uuid>,
+    message: RwSignal<ChannelMessage>,
     children: Children,
 ) -> impl IntoView {
     let current_server = use_current_server_context();
@@ -26,8 +30,9 @@ pub fn MessageContextMenu(
             .map(|body| (body.get_bounding_client_rect().height() - content_height) - 4.0)
             .unwrap_or(202.0)
     });
+    let open = RwSignal::new(false);
     view! {
-        <ContextMenuProvider content_ref=content_ref>
+        <ContextMenuProvider content_ref=content_ref open=open>
             <ContextMenuTrigger>
                 {children()}
             </ContextMenuTrigger>
@@ -59,13 +64,7 @@ pub fn MessageContextMenu(
 
                     {
                         current_server.member_can_edit.then(|| {
-                            view!{
-                                <div
-                                class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
-                                >
-                                "Pin Message"
-                                </div>
-                            }
+                            view!{<Pin message=message server_id=current_server.server.id(){..} on:click=move |_| open.set(false)/>}
                         })
                     }
 

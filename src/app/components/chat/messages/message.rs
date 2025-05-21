@@ -1,4 +1,9 @@
 use crate::app::components::chat::messages::menu::MessageContextMenu;
+use crate::app::components::ui::icons::{Icon, IconData};
+use crate::app::routes::servers::server::use_current_server_context;
+use crate::entities::server::ServerStoreFields;
+use crate::messages::Message;
+use crate::ws::client::use_ws;
 use std::ops::Not;
 
 use leptos::either::Either;
@@ -64,8 +69,20 @@ pub fn ChatMessage(
 ) -> impl IntoView {
     let markdown = Signal::derive(move || MarkdownParser::new(&message.get().content).parse_tree());
     let block_kind: RwSignal<Option<BlockQuoteKind>> = RwSignal::new(None);
+    let server = use_current_server_context().server;
+    use_ws().on_server_msg(server.id().get(), move |msg| {
+        if let Message::PinMessage { message_id } = msg {
+            if message.get().id == message_id {
+                message.update(|message| message.pinned = true);
+            }
+        } else if let Message::UnpinMessage { message_id } = msg {
+            if message.get().id == message_id {
+                message.update(|message| message.pinned = false);
+            }
+        }
+    });
     view! {
-        <MessageContextMenu member_id=Signal::derive(move || member.get().id)>
+        <MessageContextMenu message=message member_id=Signal::derive(move || member.get().id)>
             <div class="relative py-0.5 w-full pl-14 pr-4 group hover:bg-base-content/5 flex items-start text-wrap whitespace-break-spaces">
                 {
                     move || {
@@ -78,6 +95,13 @@ pub fn ChatMessage(
                                 BlockQuoteKind::Caution => "bg-caution/5 border-l-caution/60",
 
                             })/>}
+                        })
+                    }
+                }
+                {
+                    move || {
+                        message.get().pinned.then_some(view!{
+                            <Icon class="absolute w-4 h-4 group-hover:opacity-100 opacity-0 fill-[#8B9398] stroke-[#8B9398] right-1 bottom-1" icon=IconData::Pin/>
                         })
                     }
                 }

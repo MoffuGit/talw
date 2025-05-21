@@ -143,6 +143,12 @@ pub enum Message {
         chat_id: Uuid,
         is_typing: bool,
     },
+    UnpinMessage {
+        message_id: Uuid,
+    },
+    PinMessage {
+        message_id: Uuid,
+    },
     CategoryCreated {
         new_category: Category,
     },

@@ -9,8 +9,9 @@ use crate::messages::{Message, ServerMessage};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-use super::auth;
-    use super::msg_sender;
+        use super::{auth_user, user_can_edit};
+        use super::auth;
+        use super::msg_sender;
         use super::pool;
     }
 }
@@ -35,6 +36,28 @@ pub async fn get_thread_messages(
     auth()?;
 
     Ok(ChannelMessage::get_thread_messages(thread_id, member_id, &pool).await?)
+}
+
+#[server(UpdatePinned)]
+pub async fn update_pinned(
+    message_id: Uuid,
+    server_id: Uuid,
+    pinned: bool,
+) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    let user = auth_user()?;
+    if user_can_edit(server_id, user.id, &pool).await? {
+        ChannelMessage::pin(message_id, pinned, &pool).await?;
+        msg_sender()?.send(ServerMessage {
+            server_id,
+            msg: if pinned {
+                Message::PinMessage { message_id }
+            } else {
+                Message::UnpinMessage { message_id }
+            },
+        });
+    }
+    Ok(())
 }
 
 #[server(SendMessage)]

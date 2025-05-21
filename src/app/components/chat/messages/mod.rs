@@ -1,5 +1,6 @@
 mod menu;
 mod message;
+mod pin;
 
 use std::collections::BTreeMap;
 

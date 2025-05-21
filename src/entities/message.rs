@@ -93,6 +93,15 @@ pub struct SqlChannelMessage {
 
 #[cfg(feature = "ssr")]
 impl ChannelMessage {
+    pub async fn pin(message_id: Uuid, pinned: bool, pool: &MySqlPool) -> Result<(), Error> {
+        sqlx::query("UPDATE channel_messages ch SET ch.pinned = ? WHERE ch.id = ?")
+            .bind(pinned)
+            .bind(message_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
     pub async fn get_message_attachments(
         message_id: Uuid,
         pool: &MySqlPool,

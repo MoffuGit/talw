@@ -185,7 +185,7 @@ pub fn DropdownContent(
     #[prop(optional, default = 0.0)] side_of_set: f64,
     #[prop(optional, default = MenuAlign::Center)] align: MenuAlign,
     #[prop(optional, default = 0.0)] align_of_set: f64,
-    #[prop(default = Signal::derive(move || 0.0))] limit_y: Signal<f64>,
+    #[prop(into, default = None)] limit_y: Option<Signal<f64>>,
     #[prop(optional)] ignore: Vec<NodeRef<html::Div>>,
 ) -> impl IntoView {
     let context =
@@ -206,8 +206,8 @@ pub fn DropdownContent(
     );
 
     let y_position = move || {
-        if limit_y.get() < y.get() {
-            limit_y.get()
+        if limit_y.is_some_and(|limit| limit.get() < y.get()) {
+            limit_y.unwrap().get()
         } else {
             y.get()
         }

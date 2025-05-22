@@ -22,13 +22,26 @@ pub fn MessageContextMenu(
             if let Some(node) = content_ref.get() {
                 node.offset_height() as f64
             } else {
-                202.0
+                Default::default()
             }
         };
         use_document()
             .body()
             .map(|body| (body.get_bounding_client_rect().height() - content_height) - 4.0)
-            .unwrap_or(202.0)
+            .unwrap_or_default()
+    });
+    let limit_x = Signal::derive(move || {
+        let content_width = {
+            if let Some(node) = content_ref.get() {
+                node.offset_width() as f64
+            } else {
+                Default::default()
+            }
+        };
+        use_document()
+            .body()
+            .map(|body| (body.get_bounding_client_rect().width() - content_width) - 4.0)
+            .unwrap_or_default()
     });
     let open = RwSignal::new(false);
     view! {
@@ -36,7 +49,7 @@ pub fn MessageContextMenu(
             <ContextMenuTrigger>
                 {children()}
             </ContextMenuTrigger>
-            <ContextMenuContent class="z-40 select-none" limit_y=limit_y>
+            <ContextMenuContent class="z-40 select-none" limit_y=limit_y limit_x=limit_x>
                 <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
                     <div
                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"

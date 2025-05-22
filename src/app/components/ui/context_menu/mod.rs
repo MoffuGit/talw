@@ -47,20 +47,28 @@ pub fn ContextMenuContent(
     children: ChildrenFn,
     #[prop(optional)] ignore: Vec<NodeRef<html::Div>>,
     #[prop(into, default = None)] limit_y: Option<Signal<f64>>,
+    #[prop(into, default = None)] limit_x: Option<Signal<f64>>,
 ) -> impl IntoView {
     let UseMouseReturn { x, y, .. } = use_mouse();
 
-    let position = Signal::derive(move || {
-        format!(
-            "translate: {}px {}px;",
-            x.get_untracked(),
-            if limit_y.is_some_and(|limit| limit.get() < y.get_untracked()) {
-                limit_y.unwrap().get()
-            } else {
-                y.get_untracked()
-            }
-        )
-    });
+    let position_x = move || {
+        if limit_x.is_some_and(|limit| limit.get() < x.get_untracked()) {
+            limit_x.unwrap().get()
+        } else {
+            x.get_untracked()
+        }
+    };
+
+    let position_y = move || {
+        if limit_y.is_some_and(|limit| limit.get() < y.get_untracked()) {
+            limit_y.unwrap().get()
+        } else {
+            y.get_untracked()
+        }
+    };
+
+    let position =
+        Signal::derive(move || format!("translate: {}px {}px;", position_x(), position_y()));
 
     let context = use_context::<MenuProviderContext>().expect("acces to menu context");
 

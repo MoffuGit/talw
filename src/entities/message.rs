@@ -500,4 +500,80 @@ impl ChannelMessage {
             reactions: vec![],
         })
     }
+
+    pub async fn get_pinned(
+        channel_id: Uuid,
+        member_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Vec<ChannelMessage>, Error> {
+        let messages: Vec<SqlChannelMessage> = sqlx::query_as(
+            r#"
+            SELECT
+                id as id,
+                channel_id,
+                thread_id,
+                sender_id,
+                message_reference as message_reference,
+                content,
+                timestamp,
+                edited_timestamp,
+                pinned,
+                mention_everyone
+            FROM
+                channel_messages
+            WHERE
+                channel_id = ?
+            AND
+                pinned 
+            ORDER BY
+                timestamp ASC
+            "#,
+        )
+        .bind(channel_id)
+        .fetch_all(pool)
+        .await?;
+
+        let mut full_messages = vec![];
+
+        for message in messages {
+            let msg_sender: Member =
+                sqlx::query_as("SELECT * FROM members_with_profile_fallback WHERE id = ?")
+                    .bind(message.sender_id)
+                    .fetch_one(pool)
+                    .await?;
+
+            let msg_reference = if let Some(reference) = message.message_reference {
+                Some(Box::new(
+                    ChannelMessage::get_message_reference(reference, pool).await?,
+                ))
+            } else {
+                None
+            };
+
+            let msg_mentions = ChannelMessage::get_message_mentions(message.id, pool).await?;
+            let msg_roles_mentions =
+                ChannelMessage::get_message_role_mentions(message.id, pool).await?;
+            let msg_attachments = ChannelMessage::get_message_attachments(message.id, pool).await?;
+            let msg_embeds = ChannelMessage::get_message_embeds(message.id, pool).await?;
+            full_messages.push(ChannelMessage {
+                id: message.id,
+                channel_id: message.channel_id,
+                thread_id: message.thread_id,
+                sender: msg_sender,
+                message_reference: msg_reference,
+                content: message.content,
+                timestamp: message.timestamp,
+                edited_timestamp: message.edited_timestamp,
+                pinned: message.pinned,
+                mention_everyone: message.mention_everyone,
+                mentions: msg_mentions,
+                mentions_roles: msg_roles_mentions,
+                attachments: msg_attachments,
+                embeds: msg_embeds,
+                reactions: vec![],
+            });
+        }
+
+        Ok(full_messages)
+    }
 }

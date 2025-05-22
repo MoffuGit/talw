@@ -1,3 +1,4 @@
+mod pinned;
 pub mod thread_menu;
 pub mod title;
 
@@ -11,6 +12,7 @@ use crate::entities::thread::Thread;
 use leptos::prelude::*;
 use reactive_stores::Field;
 
+use self::pinned::Pinned;
 use self::thread_menu::ThreadMenu;
 
 #[component]
@@ -51,9 +53,8 @@ pub fn ChannelHeader(
                 <TooltipProvider>
                     <TooltipTrigger
                         close_on_click=true
-                        class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
                     >
-                        <Icon icon=IconData::Pin/>
+                        <Pinned channel_id=channel.id()/>
                     </TooltipTrigger>
                     <TooltipContent
                         tip="Pinned Messages"

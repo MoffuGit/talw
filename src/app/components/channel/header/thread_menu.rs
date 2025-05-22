@@ -25,24 +25,7 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
     view! {
         <DropdownProvider open=open modal=false>
             <DropdownTrigger class="hover:bg-base-100 rounded-md p-1 cursor-pointer select-none p-1">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="lucide lucide-list-tree"
-                >
-                    <path d="M21 12h-8" />
-                    <path d="M21 6H8" />
-                    <path d="M21 18h-8" />
-                    <path d="M3 6v4c0 1.1.9 2 2 2h3" />
-                    <path d="M3 10v6c0 1.1.9 2 2 2h3" />
-                </svg>
+                <Icon icon=IconData::ListTree class="h-5 w-5 stroke-base-content fill-none"/>
             </DropdownTrigger>
             <DropdownContent
                 ignore=vec![context_menu_ref, create_thread_node, delete_thread_modal_ref]

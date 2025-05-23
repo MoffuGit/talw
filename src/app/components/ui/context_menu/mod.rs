@@ -7,8 +7,13 @@ use leptos_use::use_mouse;
 use leptos_use::UseEventListenerOptions;
 use leptos_use::UseMouseReturn;
 
+pub use crate::app::components::ui::dropdown_menu::*;
 use crate::app::components::ui::menu::MenuProviderContext;
 use crate::app::components::ui::menu::{MenuContent, MenuProvider, MenuTrigger, TriggerKey};
+
+pub use self::DropdownContent as SubContextMenuContent;
+pub use self::DropdownProvider as SubContextMenuProvider;
+pub use self::DropdownTrigger as SubContextMenuTrigger;
 
 #[component]
 pub fn ContextMenuProvider(

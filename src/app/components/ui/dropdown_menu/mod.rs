@@ -8,9 +8,9 @@ use crate::app::components::ui::menu::{MenuContent, MenuProvider, MenuTrigger, T
 
 #[derive(Clone)]
 pub struct DropdownProviderContext {
-    trigger_ref: NodeRef<html::Div>,
-    content_ref: NodeRef<html::Div>,
-    open: RwSignal<bool>,
+    pub trigger_ref: NodeRef<html::Div>,
+    pub content_ref: NodeRef<html::Div>,
+    pub open: RwSignal<bool>,
 }
 
 #[component]
@@ -69,23 +69,24 @@ pub enum MenuAlign {
     End,
 }
 
+#[derive(Debug, PartialEq)]
 pub struct MenuPositionReturn<U>
 where
-    U: Fn() + Clone,
+    U: Fn() + Clone + Send + Sync,
 {
-    x: Signal<f64>,
-    y: Signal<f64>,
+    x: Memo<f64>,
+    y: Memo<f64>,
     update_trigger: U,
 }
 
 fn use_menu_position(
     content_ref: NodeRef<html::Div>,
     trigger_ref: NodeRef<html::Div>,
-    side: MenuSide,
-    side_of_set: f64,
-    align: MenuAlign,
-    align_of_set: f64,
-) -> MenuPositionReturn<impl Fn() + Clone> {
+    side: Signal<MenuSide>,
+    side_of_set: Signal<f64>,
+    align: Signal<MenuAlign>,
+    align_of_set: Signal<f64>,
+) -> MenuPositionReturn<impl Fn() + Clone + Send + Sync> {
     let UseElementBoundingReturn {
         width: content_width,
         height: content_heigt,
@@ -99,81 +100,50 @@ fn use_menu_position(
         update: update_trigger,
         ..
     } = use_element_bounding(trigger_ref);
-    match side {
+    let x = Memo::new(move |_| match side.get() {
         MenuSide::Bottom => {
-            let content_position_x = move || {
-                trigger_position_x.get()
-                    + match align {
-                        MenuAlign::Start => align_of_set,
-                        MenuAlign::Center => {
-                            (trigger_width.get() / 2.0) - (content_width.get() / 2.0)
-                        }
-                        MenuAlign::End => -(content_width.get()) + align_of_set,
-                    }
-            };
-            let content_position_y = move || trigger_position_y.get() + trigger_height.get() + side_of_set /* + content_heigt.get() */;
-            MenuPositionReturn {
-                update_trigger,
-                x: Signal::derive(content_position_x),
-                y: Signal::derive(content_position_y),
-            }
+            trigger_position_x.get()
+                + match align.get() {
+                    MenuAlign::Start => align_of_set.get(),
+                    MenuAlign::Center => (trigger_width.get() / 2.0) - (content_width.get() / 2.0),
+                    MenuAlign::End => -(content_width.get()) + align_of_set.get(),
+                }
         }
+        MenuSide::Left => trigger_position_x.get() - content_width.get() - side_of_set.get(),
+        MenuSide::Right => trigger_position_x.get() + trigger_width.get() + side_of_set.get(),
+        MenuSide::Top => {
+            trigger_position_x.get()
+                + match align.get() {
+                    MenuAlign::Start => align_of_set.get(),
+                    MenuAlign::Center => (trigger_width.get() / 2.0) - (content_width.get() / 2.0),
+                    MenuAlign::End => trigger_width.get() + align_of_set.get(),
+                }
+        }
+    });
+    let y = Memo::new(move |_| match side.get() {
+        MenuSide::Bottom => trigger_position_y.get() + trigger_height.get() + side_of_set.get(),
         MenuSide::Left => {
-            let content_position_x =
-                move || trigger_position_x.get() - content_width.get() - side_of_set;
-            let content_position_y = move || {
-                trigger_position_y.get()
-                    + match align {
-                        MenuAlign::Start => align_of_set,
-                        MenuAlign::Center => {
-                            (trigger_height.get() / 2.0) - (content_heigt.get() / 2.0)
-                        }
-                        MenuAlign::End => trigger_height.get(),
-                    }
-            };
-            MenuPositionReturn {
-                update_trigger,
-                x: Signal::derive(content_position_x),
-                y: Signal::derive(content_position_y),
-            }
+            trigger_position_y.get()
+                + match align.get() {
+                    MenuAlign::Start => align_of_set.get(),
+                    MenuAlign::Center => (trigger_height.get() / 2.0) - (content_heigt.get() / 2.0),
+                    MenuAlign::End => trigger_height.get(),
+                }
         }
         MenuSide::Right => {
-            let content_position_x =
-                move || trigger_position_x.get() + trigger_width.get() + side_of_set;
-            let content_position_y = move || {
-                trigger_position_y.get()
-                    + match align {
-                        MenuAlign::Start => align_of_set,
-                        MenuAlign::Center => {
-                            (trigger_height.get() / 2.0) - (content_heigt.get() / 2.0)
-                        }
-                        MenuAlign::End => trigger_height.get(),
-                    }
-            };
-            MenuPositionReturn {
-                update_trigger,
-                x: Signal::derive(content_position_x),
-                y: Signal::derive(content_position_y),
-            }
+            trigger_position_y.get()
+                + match align.get() {
+                    MenuAlign::Start => align_of_set.get(),
+                    MenuAlign::Center => (trigger_height.get() / 2.0) - (content_heigt.get() / 2.0),
+                    MenuAlign::End => trigger_height.get(),
+                }
         }
-        MenuSide::Top => {
-            let content_position_x = move || {
-                trigger_position_x.get()
-                    + match align {
-                        MenuAlign::Start => align_of_set,
-                        MenuAlign::Center => {
-                            (trigger_width.get() / 2.0) - (content_width.get() / 2.0)
-                        }
-                        MenuAlign::End => trigger_width.get() + align_of_set,
-                    }
-            };
-            let content_position_y = move || trigger_position_y.get() - content_heigt.get() + side_of_set /* + content_heigt.get() */;
-            MenuPositionReturn {
-                update_trigger,
-                x: Signal::derive(content_position_x),
-                y: Signal::derive(content_position_y),
-            }
-        }
+        MenuSide::Top => trigger_position_y.get() - content_heigt.get() + side_of_set.get(),
+    });
+    MenuPositionReturn {
+        x,
+        y,
+        update_trigger,
     }
 }
 
@@ -181,10 +151,10 @@ fn use_menu_position(
 pub fn DropdownContent(
     #[prop(optional)] class: &'static str,
     #[prop(optional)] children: Option<ChildrenFn>,
-    #[prop(optional, default = MenuSide::Bottom)] side: MenuSide,
-    #[prop(optional, default = 0.0)] side_of_set: f64,
-    #[prop(optional, default = MenuAlign::Center)] align: MenuAlign,
-    #[prop(optional, default = 0.0)] align_of_set: f64,
+    #[prop(into, optional, default = Signal::derive(|| MenuSide::Bottom))] side: Signal<MenuSide>,
+    #[prop(into,optional, default = Signal::derive(|| 0.0))] side_of_set: Signal<f64>,
+    #[prop(into,optional, default = Signal::derive(|| MenuAlign::Center))] align: Signal<MenuAlign>,
+    #[prop(into,optional, default = Signal::derive(|| 0.0))] align_of_set: Signal<f64>,
     #[prop(into, default = None)] limit_y: Option<Signal<f64>>,
     #[prop(optional)] ignore: Vec<NodeRef<html::Div>>,
 ) -> impl IntoView {

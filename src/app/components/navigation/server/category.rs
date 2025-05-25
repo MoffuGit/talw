@@ -6,6 +6,8 @@ use crate::app::components::navigation::server::sidebar::ChannelStore;
 use crate::app::components::navigation::server::sidebar::ChannelStoreStoreFields;
 use crate::app::components::ui::collapsible::*;
 use crate::app::components::ui::context_menu::*;
+use crate::app::components::ui::icons::Icon;
+use crate::app::components::ui::icons::IconData;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
 use crate::entities::category::CategoryStoreFields;
@@ -57,30 +59,21 @@ pub fn Category(
                 <ContextMenuTrigger class="relative group mt-0.5 px-2 w-full select-none min-w-[240px]">
                     <div class="relative box-border flex flex-col cursor-pointer">
                         <CollapsibleTrigger class="relative flex group items-center py-1.5 px-2 rounded-md hover:bg-base-100 h-8">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class=move || {
-                                    format!(
-                                        "h-4 w-4 text-base-content/75 group-hover:text-base-content mr-1.5 transition-transform {}",
-                                        {
-                                            match collapsible_open.get() {
-                                                true => "rotate-90",
-                                                false => "",
-                                            }
-                                        },
-                                    )
-                                }
-                            >
-                                <path d="m9 18 6-6-6-6" />
-                            </svg>
+                            <Icon icon=IconData::ChevronRight
+                                class=Signal::derive(
+                                    move || {
+                                        format!(
+                                            "h-4 w-4 text-base-content/75 group-hover:text-base-content mr-1.5 transition-transform {}",
+                                            {
+                                                match collapsible_open.get() {
+                                                    true => "rotate-90",
+                                                    false => "",
+                                                }
+                                            },
+                                        )
+                                    }
+                                )
+                            />
                             <div class="box-border ml-0.5 text-ellipsis text-sm whitespace-nowrap overflow-hidden leading-4 tracking-wide mr-auto">
                                 {move || name.get()}
                             </div>

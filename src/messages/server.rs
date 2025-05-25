@@ -1,62 +1,19 @@
-use serde::{Deserialize, Serialize};
-use uuid::Uuid;
-
 use crate::entities::category::Category;
 use crate::entities::channel::Channel;
 use crate::entities::member::Member;
-use crate::entities::message::ChannelMessage;
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+
+use super::{AppMessage, ClientMessage};
+use crate::entities::message::{ChannelMessage, Reaction};
 use crate::entities::role::Role;
-use crate::entities::server::Server;
 use crate::entities::thread::Thread;
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub enum AppMessage {
-    ClientMessage(ClientMessage),
-    ClosedConnection {
-        user_id: Uuid,
-    },
-    Subscribe {
-        user_id: Uuid,
-        server_id: Uuid,
-        member_id: Uuid,
-    },
-    Unsubscribe {
-        user_id: Uuid,
-        server_id: Uuid,
-        member_id: Uuid,
-    },
-    Batch(Vec<AppMessage>),
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
-pub enum ClientMessage {
-    ServerMessage(ServerMessage),
-    ServerDeleted {
-        server_id: Uuid,
-    },
-    JoinedToServer {
-        server: Server,
-        user_id: Uuid,
-        member: Member,
-    },
-    LeavedServer {
-        server_id: Uuid,
-        user_id: Uuid,
-    },
-}
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub struct ServerMessage {
     pub server_id: Uuid,
     pub msg: Message,
 }
-
-impl From<ClientMessage> for AppMessage {
-    fn from(val: ClientMessage) -> Self {
-        AppMessage::ClientMessage(val)
-    }
-}
-
 impl From<ServerMessage> for AppMessage {
     fn from(val: ServerMessage) -> Self {
         AppMessage::ClientMessage(ClientMessage::ServerMessage(val))
@@ -158,5 +115,23 @@ pub enum Message {
     },
     CategoryDeleted {
         category_id: Uuid,
+    },
+    ReactionCreated {
+        reaction: Reaction,
+        message_id: Uuid,
+    },
+    ReactionDeleted {
+        reaction_id: Uuid,
+        message_id: Uuid,
+    },
+    MemberReact {
+        react_id: Uuid,
+        message_id: Uuid,
+        member_id: Uuid,
+    },
+    MemberUnreact {
+        react_id: Uuid,
+        message_id: Uuid,
+        member_id: Uuid,
     },
 }

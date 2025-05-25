@@ -1,4 +1,5 @@
 use crate::app::components::chat::messages::pin::Pin;
+use crate::app::components::chat::messages::reaction::Reaction;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::message::ChannelMessage;
@@ -44,18 +45,15 @@ pub fn MessageContextMenu(
             .unwrap_or_default()
     });
     let open = RwSignal::new(false);
+    let reaction_ref = NodeRef::new();
     view! {
         <ContextMenuProvider content_ref=content_ref open=open>
             <ContextMenuTrigger>
                 {children()}
             </ContextMenuTrigger>
-            <ContextMenuContent class="z-40 select-none" limit_y=limit_y limit_x=limit_x>
+            <ContextMenuContent ignore=vec![reaction_ref] class="z-40 select-none" limit_y=limit_y limit_x=limit_x>
                 <div class="w-56 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100 origin-left starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
-                    <div
-                        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
-                    >
-                        "Add Reaction"
-                    </div>
+                    <Reaction parent_ref=content_ref message=message content_ref=reaction_ref member=current_member/>
                     <div
                         class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
                     >

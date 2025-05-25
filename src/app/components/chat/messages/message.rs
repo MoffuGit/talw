@@ -15,7 +15,7 @@ use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
 use crate::app::components::ui::markdown::{
     MarkdownElement, MarkdownNode, MarkdownParser, MarkdownTree,
 };
-use crate::entities::member::Member;
+use crate::entities::member::{Member, MemberStoreFields};
 use crate::entities::message::ChannelMessage;
 
 #[component]
@@ -70,29 +70,98 @@ pub fn ChatMessage(
     let markdown = Signal::derive(move || MarkdownParser::new(&message.get().content).parse_tree());
     let block_kind: RwSignal<Option<BlockQuoteKind>> = RwSignal::new(None);
     let server = use_current_server_context().server;
-    use_ws().on_server_msg(server.id().get(), move |msg| {
-        if let Message::PinMessage { message_id } = msg {
-            if message.get().id == message_id {
-                message.update(|message| message.pinned = true);
-            }
-        } else if let Message::UnpinMessage { message_id } = msg {
-            if message.get().id == message_id {
-                message.update(|message| message.pinned = false);
+    let current_member = use_current_server_context().member;
+    let ws = use_ws();
+    view! {
+        {
+            move || {
+                ws.on_server_msg(server.id().get_untracked(), move |msg| match msg {
+                    Message::PinMessage { message_id } => {
+                        if message.get().id == message_id {
+                            message.update(|message| message.pinned = true);
+                        }
+                    }
+                    Message::UnpinMessage { message_id } => {
+                        if message.get().id == message_id {
+                            message.update(|message| message.pinned = false);
+                        }
+                    }
+                    Message::ReactionCreated {
+                        reaction,
+                        message_id,
+                    } => {
+                        if message.get().id == message_id {
+                            message.update(|message| message.reactions.push(reaction));
+                        }
+                    }
+                    Message::ReactionDeleted {
+                        reaction_id,
+                        message_id,
+                    } => {
+                        if message.get().id == message_id {
+                            message.update(|message| {
+                                message
+                                    .reactions
+                                    .retain(|reaction| reaction.id != reaction_id)
+                            });
+                        }
+                    }
+                    Message::MemberReact {
+                        react_id,
+                        message_id,
+                        member_id,
+                    } => {
+                        if message.get().id == message_id {
+                            message.update(|message| {
+                                if let Some(reaction) = message
+                                    .reactions
+                                    .iter_mut()
+                                    .find(|reaction| reaction.id == react_id)
+                                {
+                                    reaction.counter += 1;
+                                    if member_id == current_member.id().get() {
+                                        reaction.me = true
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    Message::MemberUnreact {
+                        react_id,
+                        message_id,
+                        member_id,
+                    } => {
+                        if message.get().id == message_id {
+                            message.update(|message| {
+                                if let Some(reaction) = message
+                                    .reactions
+                                    .iter_mut()
+                                    .find(|reaction| reaction.id == react_id)
+                                {
+                                    reaction.counter -= 1;
+                                    if member_id == current_member.id().get() {
+                                        reaction.me = false
+                                    }
+                                }
+                            });
+                        }
+                    }
+                    _ => {}
+                });
+
             }
         }
-    });
-    view! {
         <MessageContextMenu message=message member_id=Signal::derive(move || member.get().id)>
-            <div class="relative py-0.5 w-full pl-14 pr-4 group hover:bg-base-content/5 flex items-start text-wrap whitespace-break-spaces">
+            <div class="relative py-0.5 w-full pl-14 pr-4 group hover:bg-neutral/10 flex items-start text-wrap whitespace-break-spaces">
                 {
                     move || {
                         block_kind.get().map(|kind| {
                             view!{<div class=format!("absolute border-l-2 inset-0 {}", match kind {
-                                BlockQuoteKind::Note => "bg-note/5 border-l-note/60",
-                                BlockQuoteKind::Tip => "bg-tip/5 border-l-tip/60",
-                                BlockQuoteKind::Important => "bg-important/5 border-l-important/60",
-                                BlockQuoteKind::Warning => "bg-warn/5 border-l-warn/60",
-                                BlockQuoteKind::Caution => "bg-caution/5 border-l-caution/60",
+                                BlockQuoteKind::Note => "bg-blue-400/5 border-l-blue-400/60",
+                                BlockQuoteKind::Tip => "bg-emerald-400/5 border-l-emerald-400/60",
+                                BlockQuoteKind::Important => "bg-orange-400/5 border-l-orange-400/60",
+                                BlockQuoteKind::Warning => "bg-yellow-400/5 border-l-yellow-400/60",
+                                BlockQuoteKind::Caution => "bg-red-400/5 border-l-red-400/60",
 
                             })/>}
                         })
@@ -101,13 +170,15 @@ pub fn ChatMessage(
                 {
                     move || {
                         message.get().pinned.then_some(view!{
-                            <Icon class="absolute w-4 h-4 group-hover:opacity-100 opacity-0 fill-[#8B9398] stroke-[#8B9398] right-1 bottom-1" icon=IconData::Pin/>
+                            <div class="absolute text-sm select-none right-1 bottom-1 group-hover:opacity-100 opacity-0">
+                                "📍"
+                            </div>
                         })
                     }
                 }
                 {
                     is_first.not().then(|| view!{
-                        <div class="text-[11px] text-base-content/50 absolute left-4 top-1 opacity-0 group-hover:opacity-100 flex items-center">
+                        <div class="text-[10px] text-base-content/50 absolute left-4 top-1 opacity-0 group-hover:opacity-100 flex items-center">
                             {move || message.get().timestamp.format("%H:%M").to_string()}
                         </div>
                     })
@@ -117,10 +188,10 @@ pub fn ChatMessage(
                         is_first.then(||
                             view!{
                                 <div class="flex items-center mb-1">
-                                    <div class="font-medium mr-2">
+                                    <div class="font-base mr-2">
                                         {move || member.get().name}
                                     </div>
-                                    <div class="text-[11px] text-base-content/50 self-end mb-0.5">
+                                    <div class="text-xs text-base-content/50 self-end mb-0.5">
                                         {move || message.get().timestamp.format("%d/%m/%y, %H:%M").to_string()}
                                     </div>
                                 </div>
@@ -128,6 +199,27 @@ pub fn ChatMessage(
                         )
                     }
                     <Markdown markdown=markdown block_kind=block_kind/>
+                    <Show when=move || {
+                        !message.get().reactions.is_empty()
+                    }>
+                        <div class="relative flex justify-start space-x-1 mt-1">
+                            {
+                                move || {
+                                    message.get().reactions.iter().map(|reaction| view!{
+                                        <div class="flex items-center cursor-pointer pl-1 pr-1.5 h-6 w-auto text-center select-none rounded bg-neutral/10 hover:bg-neutral/20">
+                                            <span class="text-sm">
+                                                {reaction.name.clone()}
+                                            </span>
+                                            <span class="text-sm">
+                                                {format!(" {}", reaction.counter)}
+                                            </span>
+                                        </div>
+                                    }).collect_view()
+                                }
+                            }
+                            <Icon icon=IconData::Plus class="select-none cursor-pointer h-6 w-6 p-1 rounded bg-neutral/10 hover:bg-neutral/20" />
+                        </div>
+                    </Show>
                 </div>
             </div>
         </MessageContextMenu>
@@ -195,14 +287,14 @@ pub fn MarkdownParagraph(
             }
         }
         MarkdownElement::Code(code) => {
-            view! {<code class="font-jetbrains text-sm font-light bg-base-100 rounded border-base-100">{code}</code>}.into_any()
+            view! {<code class="font-jetbrains text-base-content text-sm font-light bg-baes-100 rounded px-1">{code}</code>}.into_any()
         }
         MarkdownElement::CodeBlock(_lang) => {
-            view! {<pre class="bg-base-100 rounded-lg border-base-100 border p-2"><code class="font-jetbrains text-sm font-light">{childrens}</code></pre>}
+            view! {<pre class="bg-base-100 text-base-content rounded-lg p-2"><code class="font-jetbrains text-sm font-light">{childrens}</code></pre>}
                 .into_any()
         }
         MarkdownElement::Link { url } => view! {
-            <a href=url class="text-note">{url.clone()}</a>
+            <a href=url class="text-blue-500">{url.clone()}</a>
         }
         .into_any(),
         MarkdownElement::Role(id) => view! {

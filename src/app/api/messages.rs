@@ -1,10 +1,11 @@
 use cfg_if::cfg_if;
+use emojis::Emoji;
 use leptos::prelude::*;
 use log::debug;
 use server_fn::ServerFnError;
 use uuid::Uuid;
 
-use crate::entities::message::ChannelMessage;
+use crate::entities::message::{ChannelMessage, Reaction};
 use crate::messages::{Message, ServerMessage};
 
 cfg_if! {
@@ -28,14 +29,11 @@ pub async fn get_messages(
 }
 
 #[server(GetPinnedMessages)]
-pub async fn get_pinned_messages(
-    channel_id: Uuid,
-    member_id: Uuid,
-) -> Result<Vec<ChannelMessage>, ServerFnError> {
+pub async fn get_pinned_messages(channel_id: Uuid) -> Result<Vec<ChannelMessage>, ServerFnError> {
     let pool = pool()?;
     auth()?;
 
-    Ok(ChannelMessage::get_pinned(channel_id, member_id, &pool).await?)
+    Ok(ChannelMessage::get_pinned(channel_id, &pool).await?)
 }
 
 #[server(GetThreadMessages)]
@@ -90,6 +88,56 @@ pub async fn send_message(
             },
         }),
         Err(err) => debug!("{err:?}"),
+    }
+
+    Ok(())
+}
+
+#[server(React)]
+pub async fn react(
+    name: String,
+    message_id: Uuid,
+    member_id: Uuid,
+    server_id: Uuid,
+) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    auth()?;
+    if let Ok(reaction) = ChannelMessage::select_reaction(message_id, member_id, &name, &pool).await
+    {
+        debug!("{reaction:?}");
+        if !reaction.me {
+            ChannelMessage::inc_reaction_counter(reaction.id, &pool).await?;
+            ChannelMessage::add_member_to_reaction(reaction.id, member_id, &pool).await?;
+            msg_sender()?.send(ServerMessage {
+                server_id,
+                msg: Message::MemberReact {
+                    react_id: reaction.id,
+                    message_id,
+                    member_id,
+                },
+            });
+        }
+    } else {
+        let mut reaction = ChannelMessage::create_reaction(message_id, &name, &pool).await?;
+        ChannelMessage::inc_reaction_counter(reaction.id, &pool).await?;
+        ChannelMessage::add_member_to_reaction(reaction.id, member_id, &pool).await?;
+        reaction.me = true;
+        let reaction_id = reaction.id;
+        msg_sender()?.send(ServerMessage {
+            server_id,
+            msg: Message::ReactionCreated {
+                reaction,
+                message_id,
+            },
+        });
+        msg_sender()?.send(ServerMessage {
+            server_id,
+            msg: Message::MemberReact {
+                react_id: reaction_id,
+                message_id,
+                member_id,
+            },
+        });
     }
 
     Ok(())

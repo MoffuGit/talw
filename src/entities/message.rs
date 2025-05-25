@@ -1,5 +1,7 @@
 use cfg_if::cfg_if;
 use chrono::{DateTime, Utc};
+use emojis::Emoji;
+use log::debug;
 use reactive_stores::Store;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -60,11 +62,11 @@ pub struct Embed {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Store)]
 pub struct Reaction {
-    id: Uuid,
-    message_id: Uuid,
-    name: String,
-    counter: u32,
-    me: bool,
+    pub id: Uuid,
+    pub message_id: Uuid,
+    pub name: String,
+    pub counter: u32,
+    pub me: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq)]
@@ -72,7 +74,7 @@ pub struct Reaction {
 pub struct SqlReaction {
     id: Uuid,
     message_id: Uuid,
-    name: String,
+    name: Vec<u8>,
     counter: u32,
 }
 
@@ -400,36 +402,25 @@ impl ChannelMessage {
         member_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<Vec<Reaction>, Error> {
-        let reactions: Vec<SqlReaction> = sqlx::query_as(
+        let mut reactions = sqlx::query_as::<_, SqlReaction>(
             "
             SELECT re.* from reactions re where re.message_id = ?
         ",
         )
         .bind(message_id)
         .fetch_all(pool)
-        .await?;
+        .await;
 
+        debug!("{reactions:?}");
         let mut full_reaction = vec![];
-        for reaction in reactions {
-            let me = sqlx::query_as::<_, (bool,)>(
-                "
-                SELECT EXISTS (
-                  SELECT 1
-                  FROM reaction_members
-                  WHERE reaction_id = ? AND member_id = ?
-                )
-            ",
-            )
-            .bind(reaction.id)
-            .bind(member_id)
-            .fetch_one(pool)
-            .await?;
+        for reaction in reactions? {
+            let me = ChannelMessage::check_member_in_reaction(member_id, reaction.id, pool).await?;
             full_reaction.push(Reaction {
                 id: reaction.id,
                 message_id: reaction.message_id,
-                name: reaction.name,
+                name: String::from_utf8(reaction.name)?,
                 counter: reaction.counter,
-                me: me.0,
+                me,
             });
         }
         Ok(full_reaction)
@@ -503,7 +494,6 @@ impl ChannelMessage {
 
     pub async fn get_pinned(
         channel_id: Uuid,
-        member_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<Vec<ChannelMessage>, Error> {
         let messages: Vec<SqlChannelMessage> = sqlx::query_as(
@@ -575,5 +565,100 @@ impl ChannelMessage {
         }
 
         Ok(full_messages)
+    }
+
+    pub async fn inc_reaction_counter(reaction_id: Uuid, pool: &MySqlPool) -> Result<(), Error> {
+        sqlx::query("UPDATE reactions SET counter = counter + 1 WHERE id = ?")
+            .bind(reaction_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn add_member_to_reaction(
+        reaction_id: Uuid,
+        member_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        sqlx::query("INSERT INTO reaction_members (reaction_id, member_id) VALUES (?, ?)")
+            .bind(reaction_id)
+            .bind(member_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn check_member_in_reaction(
+        member_id: Uuid,
+        reaction_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<bool, Error> {
+        Ok(sqlx::query_as::<_, (bool,)>(
+            "
+            SELECT EXISTS (
+              SELECT 1
+              FROM reaction_members
+              WHERE reaction_id = ? AND member_id = ?
+            )
+        ",
+        )
+        .bind(reaction_id)
+        .bind(member_id)
+        .fetch_one(pool)
+        .await?
+        .0)
+    }
+
+    pub async fn create_reaction(
+        message_id: Uuid,
+        name: &str,
+        pool: &MySqlPool,
+    ) -> Result<Reaction, Error> {
+        let reaction_id = Uuid::new_v4();
+        let res = sqlx::query(
+            "INSERT INTO reactions (id, message_id, name, counter) VALUES (?, ?, ?, ?)",
+        )
+        .bind(reaction_id)
+        .bind(message_id)
+        .bind(name)
+        .bind(0)
+        .execute(pool)
+        .await;
+        debug!("{res:?}");
+        res?;
+        Ok(Reaction {
+            id: reaction_id,
+            message_id,
+            name: name.into(),
+            counter: 0,
+            me: false,
+        })
+    }
+
+    pub async fn select_reaction(
+        message_id: Uuid,
+        member_id: Uuid,
+        name: &str,
+        pool: &MySqlPool,
+    ) -> Result<Reaction, Error> {
+        let reaction = sqlx::query_as::<_, SqlReaction>(
+            "
+                    SELECT re.* from reactions re where re.message_id = ? AND name = ?
+                ",
+        )
+        .bind(message_id)
+        .bind(name)
+        .fetch_one(pool)
+        .await?;
+
+        let me = ChannelMessage::check_member_in_reaction(member_id, reaction.id, &pool).await?;
+
+        Ok(Reaction {
+            id: reaction.id,
+            message_id,
+            name: String::from_utf8(reaction.name)?,
+            counter: reaction.counter,
+            me,
+        })
     }
 }

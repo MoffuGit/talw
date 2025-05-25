@@ -12,12 +12,6 @@
     --font-geist: "Geist", "sans-serif";
     --font-jetbrains: "JetBrains Mono", "sans-serif";
 
-    --color-note: #6495ED;
-    --color-tip: #BA55D3;
-    --color-important: #48D1CC;
-    --color-warn: #FFBF00;
-    --color-caution: #FF6347;
-
     --animate-tooltip-open: "tooltip-open 0.1s linear 1",
     @keyframes tooltip-open {
         from: {
@@ -53,8 +47,8 @@
     /* --color-primary: "#B5BFE7", */
     /*     --color-secondary: "#1f1f1f", */
     /*     --color-accent: "#a4b0f0", */
-    /*     --color-neutral: "#222a2a", */
+    --color-neutral:  oklch(96.74% 0.0013258934914463828 286.3748040160143);
     --color-base-100: oklch(0.27 0.01 286);
-    --color-base-200: oklch(0.21 0.01 286);
+    --color-base-200: oklch(20.99% 0.0039017397060462948 286.05875695409196);
     --color-base-300: oklch(0.14 0.00 286);
 }

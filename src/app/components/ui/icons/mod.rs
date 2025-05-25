@@ -3,7 +3,12 @@ use leptos::prelude::*;
 #[derive(Debug, Clone)]
 pub enum IconData {
     Sticker,
+    ChevronDown,
+    ChevronLeft,
+    ChevronRight,
+    ChevronTop,
     CirclePlus,
+    Plus,
     Search,
     MessageCircle,
     Inbox,
@@ -16,6 +21,17 @@ pub enum IconData {
 impl IconData {
     fn view(&self) -> impl IntoView {
         match self {
+            IconData::Plus => view!{
+                <path d="M5 12h14"/><path d="M12 5v14"/>
+            }.into_any(),
+            IconData::ChevronRight => view!{<path d="m9 18 6-6-6-6"/>}.into_any(),
+            IconData::ChevronTop => view!{<path d="m18 15-6-6-6 6"/>}.into_any(),
+            IconData::ChevronLeft => view!{
+                <path d="m15 18-6-6 6-6"/>
+            }.into_any(),
+            IconData::ChevronDown => view!{
+                <path d="m6 9 6 6 6-6"/>
+            }.into_any(),
             IconData::Sticker => view! {
                 <path d="M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><path d="M14 3v4a2 2 0 0 0 2 2h4"/><path d="M8 13h.01"/><path d="M16 13h.01"/><path d="M10 16s.8 1 2 1c1.3 0 2-1 2-1"/>
             }
@@ -57,7 +73,7 @@ impl IconData {
 #[component]
 pub fn Icon(
     #[prop(into)] icon: Signal<IconData>,
-    #[prop(into, optional)] class: Signal<&'static str>,
+    #[prop(into, optional)] class: Signal<String>,
 ) -> impl IntoView {
     view! {
         <svg

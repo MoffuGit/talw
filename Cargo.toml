@@ -76,6 +76,7 @@ dashmap = "6.1.0"
 reactive_stores = "0.2.2"
 pulldown-cmark = "0.13.0"
 regex = "1.11.1"
+emojis = {version=  "0.6.4", features=["serde"]}
 
 [features]
 hydrate = ["leptos/hydrate", "dep:console_error_panic_hook"]

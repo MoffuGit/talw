@@ -1,6 +1,7 @@
 mod menu;
 mod message;
 mod pin;
+mod reaction;
 
 use std::collections::BTreeMap;
 
@@ -125,7 +126,7 @@ pub fn ChatMessages(
                                                 class="isolate relative w-full flex items-center justify-center my-1"
                                             >
                                                 <div class="z-0 absolute right-0 left-0 border-t border-base-content/10"/>
-                                                <div class="z-1 text-xs text-base-content/50 bg-base-200 mx-1"> {format!("{:#?} {}, {}", Month::try_from(date.month as u8).unwrap(), date.day, date.year)}</div>
+                                                <div class="z-1 text-xs font-semibold text-base-content/50 bg-base-200 mx-2"> {format!("{:#?} {}, {}", Month::try_from(date.month as u8).unwrap(), date.day, date.year)}</div>
                                             </div>
                                         }
                                     }).collect_view()

@@ -19,7 +19,7 @@ pub fn Chat(
 ) -> impl IntoView {
     let id = use_current_server_context().member.id();
     view! {
-        <div class="relative flex flex-col h-full w-full">
+        <div class="relative flex flex-col h-full w-full bg-base-200">
             <ChatMessages channel_id=channel_id member_id=id  thread_id=thread_id/>
             <Sender channel_id=channel_id thread_id=thread_id name=name/>
         </div>

@@ -11,8 +11,6 @@ use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::components::ui::markdown::{
     MarkdownElement, MarkdownNode, MarkdownParser, MarkdownTree,
 };
-use crate::app::routes::servers::server::use_current_server_context;
-use crate::entities::member::MemberStoreFields;
 use crate::entities::message::{ChannelMessage, ChannelMessageStoreFields};
 
 #[derive(Debug, Store)]
@@ -23,10 +21,9 @@ struct MessageStore {
 
 #[component]
 pub fn Pinned(#[prop(into)] channel_id: Field<Uuid>) -> impl IntoView {
-    let current_member = use_current_server_context().member;
     let pinned = Resource::new(
-        move || (channel_id.get(), current_member.id().get()),
-        move |(channel_id, member_id)| get_pinned_messages(channel_id, member_id),
+        move || (channel_id.get()),
+        move |channel_id| get_pinned_messages(channel_id),
     );
     let open = RwSignal::new(false);
     view! {

@@ -575,12 +575,47 @@ impl ChannelMessage {
         Ok(())
     }
 
+    pub async fn dec_reaction_counter(reaction_id: Uuid, pool: &MySqlPool) -> Result<u32, Error> {
+        sqlx::query("UPDATE reactions SET counter = counter - 1 WHERE id = ?")
+            .bind(reaction_id)
+            .execute(pool)
+            .await?;
+        Ok(
+            sqlx::query_as::<_, (u32,)>("SELECT counter FROM reactions WHERE id = ?")
+                .bind(reaction_id)
+                .fetch_one(pool)
+                .await?
+                .0,
+        )
+    }
+
+    pub async fn delete_reaction(reaction_id: Uuid, pool: &MySqlPool) -> Result<(), Error> {
+        sqlx::query("DELETE FROM reactions WHERE id = ?")
+            .bind(reaction_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
     pub async fn add_member_to_reaction(
         reaction_id: Uuid,
         member_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<(), Error> {
         sqlx::query("INSERT INTO reaction_members (reaction_id, member_id) VALUES (?, ?)")
+            .bind(reaction_id)
+            .bind(member_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn remove_member_to_reaction(
+        reaction_id: Uuid,
+        member_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        sqlx::query("DELETE FROM reaction_members WHERE reaction_id = ? AND member_id = ?")
             .bind(reaction_id)
             .bind(member_id)
             .execute(pool)
@@ -651,7 +686,7 @@ impl ChannelMessage {
         .fetch_one(pool)
         .await?;
 
-        let me = ChannelMessage::check_member_in_reaction(member_id, reaction.id, &pool).await?;
+        let me = ChannelMessage::check_member_in_reaction(member_id, reaction.id, pool).await?;
 
         Ok(Reaction {
             id: reaction.id,

@@ -142,3 +142,40 @@ pub async fn react(
 
     Ok(())
 }
+
+#[server(Unreact)]
+pub async fn unreact(
+    name: String,
+    message_id: Uuid,
+    member_id: Uuid,
+    server_id: Uuid,
+) -> Result<(), ServerFnError> {
+    let pool = pool()?;
+    auth()?;
+
+    if let Ok(reaction) = ChannelMessage::select_reaction(message_id, member_id, &name, &pool).await
+    {
+        if reaction.me {
+            ChannelMessage::remove_member_to_reaction(reaction.id, member_id, &pool).await?;
+            msg_sender()?.send(ServerMessage {
+                server_id,
+                msg: Message::MemberUnreact {
+                    react_id: reaction.id,
+                    message_id: reaction.message_id,
+                    member_id: member_id,
+                },
+            });
+            if ChannelMessage::dec_reaction_counter(reaction.id, &pool).await? == 0 {
+                ChannelMessage::delete_reaction(reaction.id, &pool).await?;
+                msg_sender()?.send(ServerMessage {
+                    server_id,
+                    msg: Message::ReactionDeleted {
+                        reaction_id: reaction.id,
+                        message_id,
+                    },
+                });
+            }
+        }
+    }
+    Ok(())
+}

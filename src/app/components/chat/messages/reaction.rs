@@ -44,7 +44,6 @@ pub fn Reaction(
             })
             .unwrap_or(MenuSide::Right)
     });
-    let base_emojis = ["🧋", "📹", "🎇", "🌊", "🪴", "☕", "🕹️"];
     let react = Action::new(move |name: &String| {
         debug!("{name}");
         react(
@@ -60,27 +59,25 @@ pub fn Reaction(
                 class="flex justify-between cursor-pointer hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
             >
                 "Add Reaction"
-                <Icon icon=IconData::ChevronRight class="absolute right-4 h-4 w-4"/>
+                <Icon icon=IconData::ChevronRight class="absolute right-2 h-5 w-5"/>
             </SubContextMenuTrigger>
             <SubContextMenuContent side=menu_side align=MenuAlign::Center
-                class="z-100 w-64 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100">
+                class="z-100 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100">
                 <div class="starting:opacity-0 starting:-translate-x-2 starting:scale-95 transition-all">
                     <div
-                        class="flex justify-between items-center w-full text-base py-1 px-1.5"
+                        class="grid grid-cols-8 gap-1 text-base overflow-x-hidden overflow-y-scroll max-h-28"
                     >
-                        {base_emojis
-                            .iter()
-                            .map(|some| some.to_string())
-                            .map(|fruit| {
-                                let fruit = StoredValue::new(fruit);
+                        {emojis::iter()
+                            .map(|emoji| {
+                                let emoji = StoredValue::new(emoji.to_string());
                                 view!{
                                     <button on:click=move |_| {
-                                        react.dispatch(fruit.get_value());
+                                        react.dispatch(emoji.get_value());
                                     }
                                     disabled=move ||{
                                         react.pending()
                                     }
-                                    class="p-0.5 rounded select-none cursor-pointer hover:bg-base-100">{move || fruit.get_value()}</button>
+                                    class="p-0.5 rounded select-none cursor-pointer hover:bg-base-100">{move || emoji.get_value()}</button>
                                 }
                             }).collect_view()}
                     </div>

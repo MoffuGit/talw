@@ -1,3 +1,4 @@
+use crate::app::api::messages::{React, Unreact};
 use crate::app::components::chat::messages::menu::MessageContextMenu;
 use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::routes::servers::server::use_current_server_context;
@@ -69,13 +70,13 @@ pub fn ChatMessage(
 ) -> impl IntoView {
     let markdown = Signal::derive(move || MarkdownParser::new(&message.get().content).parse_tree());
     let block_kind: RwSignal<Option<BlockQuoteKind>> = RwSignal::new(None);
-    let server = use_current_server_context().server;
+    let current_server = use_current_server_context().server;
     let current_member = use_current_server_context().member;
     let ws = use_ws();
     view! {
         {
             move || {
-                ws.on_server_msg(server.id().get_untracked(), move |msg| match msg {
+                ws.on_server_msg(current_server.id().get_untracked(), move |msg| match msg {
                     Message::PinMessage { message_id } => {
                         if message.get().id == message_id {
                             message.update(|message| message.pinned = true);
@@ -205,15 +206,30 @@ pub fn ChatMessage(
                         <div class="relative flex justify-start space-x-1 mt-1">
                             {
                                 move || {
-                                    message.get().reactions.iter().map(|reaction| view!{
-                                        <div class="flex items-center cursor-pointer pl-1 pr-1.5 h-6 w-auto text-center select-none rounded bg-neutral/10 hover:bg-neutral/20">
+                                    let react = ServerAction::<React>::new();
+                                    let unreact = ServerAction::<Unreact>::new();
+                                    message.get().reactions.into_iter().map(|reaction| view!{
+                                        <button
+                                            disabled=move || react.pending().get() || unreact.pending().get()
+                                            on:click=move |_| {
+                                                if reaction.me {
+                                                    unreact.dispatch(Unreact { name: reaction.name.clone(), message_id: reaction.message_id, member_id: current_member.id().get(), server_id: current_server.id().get() });
+                                                } else {
+                                                    react.dispatch(React { name: reaction.name.clone(), message_id: reaction.message_id, member_id: current_member.id().get(), server_id: current_server.id().get() });
+                                                }
+                                            }
+                                            class=format!("flex items-center cursor-pointer pl-1 pr-1.5 h-6 w-auto text-center select-none rounded bg-neutral/10 hover:bg-neutral/20 {}", if reaction.me {
+                                                "border border-indigo-400/30"
+                                            } else {
+                                                ""
+                                            })>
                                             <span class="text-sm">
                                                 {reaction.name.clone()}
                                             </span>
                                             <span class="text-sm">
                                                 {format!(" {}", reaction.counter)}
                                             </span>
-                                        </div>
+                                        </button>
                                     }).collect_view()
                                 }
                             }

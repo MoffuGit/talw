@@ -28,8 +28,8 @@ pub fn Pinned(#[prop(into)] channel_id: Field<Uuid>) -> impl IntoView {
     let open = RwSignal::new(false);
     view! {
         <DropdownProvider open=open modal=false>
-            <DropdownTrigger class="hover:bg-base-100 rounded-md p-1 cursor-pointer select-none p-1">
-                <Icon icon=IconData::Pin class="h-5 w-5 stroke-base-content fill-base-content"/>
+            <DropdownTrigger class="hover:bg-base-100 rounded-md flex items-center justify-center w-7 h-7 cursor-pointer select-none">
+                <Icon icon=IconData::Pin class="h-4 w-4"/>
             </DropdownTrigger>
             <DropdownContent
                 side=MenuSide::Bottom

@@ -24,8 +24,8 @@ pub fn ThreadMenu(channel_id: Uuid, server_id: Uuid) -> impl IntoView {
     let delete_thread_modal_ref = NodeRef::<html::Div>::new();
     view! {
         <DropdownProvider open=open modal=false>
-            <DropdownTrigger class="hover:bg-base-100 rounded-md p-1 cursor-pointer select-none p-1">
-                <Icon icon=IconData::ListTree class="h-5 w-5 stroke-base-content fill-none"/>
+            <DropdownTrigger class="hover:bg-base-100 rounded-md h-7 w-7 cursor-pointer select-none flex items-center justify-center">
+                <Icon icon=IconData::ListTree class="h-4 w-4"/>
             </DropdownTrigger>
             <DropdownContent
                 ignore=vec![context_menu_ref, create_thread_node, delete_thread_modal_ref]

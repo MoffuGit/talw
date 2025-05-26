@@ -15,7 +15,7 @@ pub fn Pin(
     view! {
         <button
         on:click=move |_| {pin.dispatch(!message.get().pinned);}
-        class="flex justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
+        class="flex cursor-pointer justify-between hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
         disabled=move || pin.pending().get()
         >
         {

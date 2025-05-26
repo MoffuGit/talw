@@ -59,7 +59,7 @@ pub fn Reaction(
                 class="flex justify-between cursor-pointer hover:bg-base-100 items-center w-full text-sm py-1.5 px-2 group rounded-md"
             >
                 "Add Reaction"
-                <Icon icon=IconData::ChevronRight class="absolute right-2 h-5 w-5"/>
+                <Icon icon=IconData::ChevronRight class="absolute right-2 h-4 w-4"/>
             </SubContextMenuTrigger>
             <SubContextMenuContent side=menu_side align=MenuAlign::Center
                 class="z-100 flex flex-col h-auto p-1 bg-base-300 rounded-lg border border-base-100">

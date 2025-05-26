@@ -28,7 +28,6 @@ pub struct ChannelMessage {
     pub timestamp: DateTime<Utc>,
     //impl
     pub edited_timestamp: Option<DateTime<Utc>>,
-    //impl
     pub pinned: bool,
     //impl
     pub mention_everyone: bool,
@@ -40,7 +39,6 @@ pub struct ChannelMessage {
     pub attachments: Vec<Attachment>,
     //impl
     pub embeds: Vec<Embed>,
-    //impl
     pub reactions: Vec<Reaction>,
 }
 

@@ -176,9 +176,9 @@ pub fn Sender(
     view! {
         <div class="shrink-0 relative flex px-4">
             <div class="mb-4 relative w-full bg-base-300/60 rounded-lg flex px-4">
-                <Icon icon=IconData::CirclePlus class="w-7 h-7 stroke-base-300/60 fill-base-content/40 grow-0 mb-3.5 mt-auto"/>
+                <Icon icon=IconData::CirclePlus class="w-5 h-5 stroke-base-300 fill-base-content/40 grow-0 mb-3.5 mt-auto"/>
                     <div class="relative self-center h-fit w-full" style=move || format!("height: {}px", height.get())>
-                        <div class="h-14 text-base font-normal relative">
+                        <div class="h-14 text-sm font-normal relative">
                             <div>
                                 <Show when=move || message.get().is_empty()>
                                     <div class="mx-4 py-4 absolute left-0 select-none text-base-content/40">
@@ -201,7 +201,7 @@ pub fn Sender(
                         let channel_id = channel_id.get();
                         send_msg.dispatch(SendMessage { server_id: server.id().get(), channel_id, message: message.get(), member_id: member.id().get() });
                     }
-                    class="w-7 h-7 stroke-base-300/60 fill-base-content/40 mb-3.5 mt-auto"/>
+                    class="w-5 h-5 stroke-base-300 fill-base-content/40 mb-3.5 mt-auto"/>
             </div>
         </div>
     }

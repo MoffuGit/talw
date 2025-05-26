@@ -219,7 +219,7 @@ pub fn ChatMessage(
                                                 }
                                             }
                                             class=format!("flex items-center cursor-pointer pl-1 pr-1.5 h-6 w-auto text-center select-none rounded bg-neutral/10 hover:bg-neutral/20 {}", if reaction.me {
-                                                "border border-indigo-400/30"
+                                                "border border-indigo-400/40"
                                             } else {
                                                 ""
                                             })>
@@ -310,7 +310,7 @@ pub fn MarkdownParagraph(
                 .into_any()
         }
         MarkdownElement::Link { url } => view! {
-            <a href=url class="text-blue-500">{url.clone()}</a>
+            <a href=url class="text-blue-400 hover:underline">{url.clone()}</a>
         }
         .into_any(),
         MarkdownElement::Role(id) => view! {

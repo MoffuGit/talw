@@ -7,10 +7,10 @@ use std::time::Duration;
 pub fn Inbox() -> impl IntoView {
     view! {
         <TooltipProvider delay_duration=Duration::new(0, 0)>
-            <TooltipTrigger class="relative my-1">
+            <TooltipTrigger class="relative">
                 <div class="flex relative items-center">
                     <div class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer">
-                        <Icon icon=IconData::Inbox class="w-5 h-5"/>
+                        <Icon icon=IconData::Inbox class="w-4 h-4"/>
                     </div>
                 </div>
             </TooltipTrigger>

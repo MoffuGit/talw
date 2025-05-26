@@ -28,7 +28,7 @@ pub fn HeaderTitle(
     let delete_channel_node = NodeRef::<html::Div>::new();
     view! {
         <ContextMenuProvider modal=false hidden=hidden>
-            <ContextMenuTrigger class="relative flex items-center p-1.5 text-base select-none">
+            <ContextMenuTrigger class="relative flex items-center p-1.5 text-sm select-none">
                 // <Icon icon=Icon::from(channel.channel_type) />
                 <div>{move || name.get()}</div>
                 <ChannelTopic topic=channel.topic() />

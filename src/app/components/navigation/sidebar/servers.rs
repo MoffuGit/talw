@@ -30,10 +30,10 @@ pub fn Servers() -> impl IntoView {
         <ContextMenuProvider open=open hidden=hidden>
             <ContextMenuTrigger>
                 <TooltipProvider delay_duration=Duration::new(0, 0)>
-                    <TooltipTrigger class="relative my-1">
+                    <TooltipTrigger class="relative">
                         <A href="" {..} class=" flex relative items-center">
                             <div class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer">
-                                <Icon icon=IconData::Command class="h-5 w-5 stroke-base-content" />
+                                <Icon icon=IconData::Command class="h-4 w-4 stroke-base-content" />
                             </div>
                         </A>
                     </TooltipTrigger>
@@ -103,7 +103,7 @@ pub fn ServerNavigation(#[prop(into)] server: Field<Server>) -> impl IntoView {
     let name = server.name();
     let id = server.id();
     view! {
-        <div class="group flex relative items-center justify-center w-full my-0.5">
+        <div class="group flex relative items-center justify-center w-full">
             <div class=move || {
                 format!(
                     "absolute left-0 bg-white rounded-r-full transition-all duration-100 ease-linear w-0.5 {}",

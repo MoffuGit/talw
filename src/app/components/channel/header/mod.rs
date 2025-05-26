@@ -23,14 +23,14 @@ pub fn ChannelHeader(
     view! {
         <div class="relative bg-base-300 shadow shadow-base-300/80 h-11 w-full flex justify-between align-middle">
             <div class="relative flex-auto flex items-center overflow-hidden py-2">
-                <ServerSideBarTrigger class="relative flex items-center ml-3 mr-1 hover:bg-base-100 rounded-md p-1 cursor-pointer">
-                    <Icon icon=IconData::PanelLeft/>
+                <ServerSideBarTrigger class="relative flex items-center justify-center ml-1 mr-1 h-7 w-7 hover:bg-base-100 rounded-md cursor-pointer">
+                    <Icon icon=IconData::PanelLeft class="w-4 h-4"/>
                 </ServerSideBarTrigger>
-                <div class="divider divider-horizontal h-auto m-0" />
+                <div class="w-0.5 h-5 mx-0.5 bg-base-content"/>
                 <HeaderTitle channel=channel thread=thread />
 
             </div>
-            <div class="h-auto relative flex items-center px-4 space-x-2.5">
+            <div class="h-auto relative flex items-center px-2 space-x-1">
                 {thread
                     .is_none()
                     .then(|| {
@@ -65,21 +65,10 @@ pub fn ChannelHeader(
                     />
                 </TooltipProvider>
                 <MemberSideBarTrigger />
-                <TooltipProvider>
-                    <TooltipTrigger
-                        close_on_click=true
-                        class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
-                    >
-                        <Icon icon=IconData::Search class="w-5 h-5" />
-                    </TooltipTrigger>
-                    <TooltipContent
-                        tooltip_of_side=10.0
-                        tip="Search"
-                        arrow=true
-                        class="rounded-md w-auto h-auto py-1.5 px-2.5 text-sm text-base-100 bg-base-content border-base-content"
-                        tooltip_side=ToolTipSide::Bottom
-                    />
-                </TooltipProvider>
+                <div class="relative flex rounded-md p-1 text-center cursor-pointer h-7 border border-base-100 bg-base-200 w-42">
+                    <span class="text-sm">"Search"</span>
+                    <Icon icon=IconData::Search class="w-4 h-4 absolute right-1" />
+                </div>
             </div>
         </div>
     }

@@ -27,7 +27,7 @@ pub fn ContextServerMenu(
 
     view! {
         <ContextMenuProvider open=open modal=false hidden=hidden>
-            <ContextMenuTrigger class="flex overflow-hidden w-8 h-8 transition-all items-center justify-center bg-base-100 text-base-content rounded-full group-hover:bg-primary group-hover:rounded-lg">
+            <ContextMenuTrigger class="flex overflow-hidden w-8 h-8 transition-all items-center justify-center bg-base-100 text-base-content rounded-full group-hover:bg-primary">
                 {children.map(|children| children())}
             </ContextMenuTrigger>
             <ContextMenuContent

@@ -60,7 +60,7 @@ pub fn MemberSideBarTrigger() -> impl IntoView {
                 on_click=Signal::derive(move || open.update(|open| *open = !*open))
             >
                 <div/>
-                <Icon icon=IconData::Users class="h-5 w-5 fill-base-content"/>
+                <Icon icon=IconData::Users class="h-4 w-4"/>
             </TooltipTrigger>
             <TooltipContent
                 arrow=true

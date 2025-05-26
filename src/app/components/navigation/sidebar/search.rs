@@ -7,11 +7,9 @@ use std::time::Duration;
 pub fn Search() -> impl IntoView {
     view! {
         <TooltipProvider delay_duration=Duration::new(0, 0)>
-            <TooltipTrigger class="relative my-1">
-                <div class="flex relative items-center">
-                    <div class="flex items-center justify-center text-base-content w-7 h-7 fill-base-content stroke-base-content relative hover:bg-base-100 rounded-md cursor-pointer">
-                        <Icon icon=IconData::Search class="w-5 h-5"/>
-                    </div>
+            <TooltipTrigger class="relative mt-1.5">
+                <div class="flex items-center justify-center text-base-content w-7 h-7 fill-base-content stroke-base-content relative hover:bg-base-100 rounded-md cursor-pointer">
+                    <Icon icon=IconData::Search class="w-4 h-4"/>
                 </div>
             </TooltipTrigger>
             <TooltipContent

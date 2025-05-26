@@ -10,7 +10,7 @@ pub fn Inbox() -> impl IntoView {
             <TooltipTrigger class="relative my-1">
                 <div class="flex relative items-center">
                     <div class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer">
-                        <Icon icon=IconData::Inbox />
+                        <Icon icon=IconData::Inbox class="w-5 h-5"/>
                     </div>
                 </div>
             </TooltipTrigger>

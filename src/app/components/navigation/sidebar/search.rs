@@ -9,8 +9,8 @@ pub fn Search() -> impl IntoView {
         <TooltipProvider delay_duration=Duration::new(0, 0)>
             <TooltipTrigger class="relative my-1">
                 <div class="flex relative items-center">
-                    <div class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer">
-                        <Icon icon=IconData::Search/>
+                    <div class="flex items-center justify-center text-base-content w-7 h-7 fill-base-content stroke-base-content relative hover:bg-base-100 rounded-md cursor-pointer">
+                        <Icon icon=IconData::Search class="w-5 h-5"/>
                     </div>
                 </div>
             </TooltipTrigger>

@@ -10,6 +10,7 @@ pub enum IconData {
     CirclePlus,
     Plus,
     Search,
+    Command,
     MessageCircle,
     Inbox,
     PanelLeft,
@@ -21,6 +22,9 @@ pub enum IconData {
 impl IconData {
     fn view(&self) -> impl IntoView {
         match self {
+            IconData::Command => view!{
+                <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/>
+            }.into_any(),
             IconData::Plus => view!{
                 <path d="M5 12h14"/><path d="M12 5v14"/>
             }.into_any(),

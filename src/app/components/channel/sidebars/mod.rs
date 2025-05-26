@@ -56,11 +56,11 @@ pub fn MemberSideBarTrigger() -> impl IntoView {
     view! {
         <TooltipProvider delay_duration=Duration::new(0, 0)>
             <TooltipTrigger
-                class="hover:bg-base-100 rounded-md p-1 cursor-pointer"
+                class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer"
                 on_click=Signal::derive(move || open.update(|open| *open = !*open))
             >
                 <div/>
-                <Icon icon=IconData::Users />
+                <Icon icon=IconData::Users class="h-5 w-5 fill-base-content"/>
             </TooltipTrigger>
             <TooltipContent
                 arrow=true

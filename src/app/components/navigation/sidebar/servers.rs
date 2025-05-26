@@ -1,4 +1,6 @@
 use crate::app::components::navigation::context_server_menu::ContextServerMenu;
+use crate::app::components::ui::icons::Icon;
+use crate::app::components::ui::icons::IconData;
 use crate::app::routes::servers::ServersStore;
 use crate::app::routes::servers::ServersStoreStoreFields;
 use crate::entities::server::Server;
@@ -9,9 +11,7 @@ use std::time::Duration;
 use crate::app::components::modal::create_server::CreateServerModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::components::ui::tool_tip::*;
-//use icondata;
 use leptos::prelude::*;
-//use leptos_icons::*;
 use leptos_router::components::A;
 use leptos_router::hooks::use_params_map;
 use reactive_stores::Field;
@@ -33,8 +33,7 @@ pub fn Servers() -> impl IntoView {
                     <TooltipTrigger class="relative my-1">
                         <A href="" {..} class=" flex relative items-center">
                             <div class="flex items-center justify-center text-base-content w-7 h-7 relative hover:bg-base-100 rounded-md cursor-pointer">
-                                // <Icon icon=icondata::LuCommand />
-                            // class="h-5 w-5 stroke-base-content"
+                                <Icon icon=IconData::Command class="h-5 w-5 stroke-base-content" />
                             </div>
                         </A>
                     </TooltipTrigger>

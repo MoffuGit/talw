@@ -2,6 +2,7 @@ use leptos::prelude::*;
 
 #[derive(Debug, Clone)]
 pub enum IconData {
+    X,
     Sticker,
     ChevronDown,
     ChevronLeft,
@@ -22,6 +23,9 @@ pub enum IconData {
 impl IconData {
     fn view(&self) -> impl IntoView {
         match self {
+            IconData::X => view!{
+                <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+            }.into_any(),
             IconData::Command => view!{
                 <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/>
             }.into_any(),

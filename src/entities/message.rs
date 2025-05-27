@@ -213,10 +213,11 @@ impl ChannelMessage {
         .fetch_one(pool)
         .await?;
 
-        let sender: Member = sqlx::query_as("SELECT * FROM members WHERE id = ?")
-            .bind(sql_message.sender_id)
-            .fetch_one(pool)
-            .await?;
+        let sender: Member =
+            sqlx::query_as("SELECT * FROM members_with_profile_fallback WHERE id = ?")
+                .bind(sql_message.sender_id)
+                .fetch_one(pool)
+                .await?;
 
         let mentions = ChannelMessage::get_message_mentions(sql_message.id, pool).await?;
         let mentions_roles =
@@ -359,9 +360,9 @@ impl ChannelMessage {
                     .await?;
 
             let msg_reference = if let Some(reference) = message.message_reference {
-                Some(Box::new(
-                    ChannelMessage::get_message_reference(reference, pool).await?,
-                ))
+                let reference = ChannelMessage::get_message_reference(reference, pool).await;
+                debug!("{reference:?}");
+                Some(Box::new(reference?))
             } else {
                 None
             };
@@ -409,7 +410,6 @@ impl ChannelMessage {
         .fetch_all(pool)
         .await;
 
-        debug!("{reactions:?}");
         let mut full_reaction = vec![];
         for reaction in reactions? {
             let me = ChannelMessage::check_member_in_reaction(member_id, reaction.id, pool).await?;
@@ -428,22 +428,40 @@ impl ChannelMessage {
         channel_id: Uuid,
         member_id: Uuid,
         message: String,
+        msg_reference: Option<Uuid>,
         pool: &MySqlPool,
     ) -> Result<ChannelMessage, Error> {
         let id = Uuid::new_v4();
-        sqlx::query(
-            "
-            INSERT INTO channel_messages
-            (id, channel_id, sender_id, content)
-            VALUES (?, ?, ?, ?)
-        ",
-        )
-        .bind(id)
-        .bind(channel_id)
-        .bind(member_id)
-        .bind(message)
-        .execute(pool)
-        .await?;
+        if let Some(reference) = msg_reference {
+            sqlx::query(
+                "
+                INSERT INTO channel_messages
+                (id, channel_id, sender_id, content, message_reference)
+                VALUES (?, ?, ?, ?, ?)
+            ",
+            )
+            .bind(id)
+            .bind(channel_id)
+            .bind(member_id)
+            .bind(message)
+            .bind(reference)
+            .execute(pool)
+            .await?;
+        } else {
+            sqlx::query(
+                "
+                INSERT INTO channel_messages
+                (id, channel_id, sender_id, content)
+                VALUES (?, ?, ?, ?)
+            ",
+            )
+            .bind(id)
+            .bind(channel_id)
+            .bind(member_id)
+            .bind(message)
+            .execute(pool)
+            .await?;
+        }
         let sql_message: SqlChannelMessage = sqlx::query_as(
             r#"
             SELECT
@@ -657,7 +675,6 @@ impl ChannelMessage {
         .bind(0)
         .execute(pool)
         .await;
-        debug!("{res:?}");
         res?;
         Ok(Reaction {
             id: reaction_id,

@@ -8,7 +8,7 @@ use crate::entities::user::BannerStoreFields;
 use leptos::either::Either;
 use leptos::html::Div;
 use leptos::prelude::*;
-use leptos_use::use_document;
+use leptos_use::{use_document, use_element_bounding, UseElementBoundingReturn};
 use reactive_stores::Store;
 use uuid::Uuid;
 
@@ -22,18 +22,16 @@ pub fn MemberBanner(
 ) -> impl IntoView {
     let is_open = RwSignal::new(false);
     let content_ref: NodeRef<Div> = NodeRef::new();
+    let UseElementBoundingReturn {
+        height: content_height,
+        ..
+    } = use_element_bounding(content_ref);
     let limit_y = Signal::derive(move || {
-        let content_height = {
-            if let Some(node) = content_ref.get() {
-                node.offset_height() as f64
-            } else {
-                320.0
-            }
-        };
-        use_document()
+        let body_height = use_document()
             .body()
-            .map(|body| (body.get_bounding_client_rect().height() - content_height) - 20.0)
-            .unwrap_or(320.0)
+            .map(|body| body.get_bounding_client_rect().height())
+            .unwrap_or_default();
+        (body_height - content_height.get()) - 20.0
     });
     let name = Signal::derive(move || member.get().name);
     let image_url = Signal::derive(move || member.get().image_url);

@@ -13,6 +13,7 @@ use uuid::Uuid;
 
 use crate::app::api::messages::{get_messages, get_thread_messages};
 use crate::app::routes::servers::server::use_current_server_context;
+use crate::entities::member::Member;
 use crate::entities::message::ChannelMessage;
 use crate::entities::server::ServerStoreFields;
 use crate::messages::Message;
@@ -39,7 +40,13 @@ impl From<DateTime<Utc>> for Date {
 
 #[derive(Debug, PartialEq, Clone, Default)]
 struct MessageGroup {
-    groups: BTreeMap<Date, Vec<Vec<ChannelMessage>>>,
+    groups: BTreeMap<Date, Vec<Group>>,
+}
+
+#[derive(Debug, PartialEq, Clone)]
+struct Group {
+    sender: Member,
+    messages: Vec<ChannelMessage>,
 }
 
 impl From<Vec<ChannelMessage>> for MessageGroup {
@@ -65,15 +72,25 @@ impl MessageGroup {
         let date = Date::from(message.timestamp);
         let entry = self.groups.entry(date).or_default();
 
+        if message.message_reference.is_some() {
+            entry.push(Group {
+                sender: message.sender.clone(),
+                messages: vec![message],
+            });
+            return;
+        }
+
         if let Some(last_group) = entry.last_mut() {
-            if let Some(last_message) = last_group.last() {
-                if last_message.sender == message.sender {
-                    last_group.push(message);
-                    return;
-                }
+            if last_group.sender == message.sender {
+                last_group.messages.push(message);
+                return;
             }
         }
-        entry.push(vec![message]);
+
+        entry.push(Group {
+            sender: message.sender.clone(),
+            messages: vec![message],
+        });
     }
 }
 
@@ -95,11 +112,11 @@ pub fn ChatMessages(
     let server = use_current_server_context().server;
     let node: NodeRef<Div> = NodeRef::new();
     view! {
-        <div class="relative scrollbar-none flex flex-col-reverse overflow-y-scroll overflow-x-hidden flex-auto py-1" node_ref=node >
+        <div class="relative min-h-0 h-full scrollbar-none flex flex-col-reverse overflow-y-scroll min-w-0 overflow-x-hidden py-1" node_ref=node >
             <Transition>
                 {move || Suspend::new(async move {
                     messages.await.map(|messages| {
-                        let messages = RwSignal::new(MessageGroup::from(messages));
+                        let groups = RwSignal::new(MessageGroup::from(messages));
 
                         use_ws().on_server_msg(server.id().get(), move |msg| {
                             if let Message::ChannelMessage {
@@ -108,18 +125,18 @@ pub fn ChatMessages(
                             } = msg
                             {
                                 if id == channel_id.get() {
-                                    messages.write().add(*content);
+                                    groups.write().add(*content);
                                 }
                             }
                         });
                         view!{
                             {
                                 move || {
-                                    messages.get().groups.into_iter().rev().map(|(date, group)| {
+                                    groups.get().groups.into_iter().rev().map(|(date, groups)| {
                                         view!{
                                             {
-                                                group.into_iter().rev().map(|messages| {
-                                                    view!{<ChatGroup messages=messages.clone()/>}
+                                                groups.into_iter().rev().map(|group| {
+                                                    view!{<ChatGroup group=group/>}
                                                 }).collect_view()
                                             }
                                             <div

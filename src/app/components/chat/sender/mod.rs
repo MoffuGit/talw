@@ -1,5 +1,8 @@
+mod input;
+mod reference;
+
 use crate::app::api::messages::{send_message, SendMessage};
-use crate::app::components::ui::icons::{Icon, IconData};
+use crate::app::components::chat::ChatContext;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::member::MemberStoreFields;
 use crate::entities::server::ServerStoreFields;
@@ -8,6 +11,9 @@ use leptos::prelude::*;
 use reactive_stores::Field;
 use uuid::Uuid;
 use web_sys::{window, HtmlDivElement, Node, Range};
+
+use self::input::Input;
+use self::reference::Reference;
 
 // fn get_caret_position(editable: &HtmlDivElement) -> usize {
 //     if let Some(selection) = window().and_then(|w| w.get_selection().ok()).flatten() {
@@ -159,49 +165,32 @@ pub fn Sender(
     #[prop(into)] name: Field<String>,
 ) -> impl IntoView {
     let message = RwSignal::new(String::default());
-    let content_ref: NodeRef<Div> = NodeRef::new();
     let height = RwSignal::new(56);
 
-    let on_input = move |_| {
-        if let Some(div) = content_ref.get() {
-            message.set(div.inner_text());
-            height.set(div.offset_height());
-        }
-    };
     let server = use_current_server_context().server;
     let member = use_current_server_context().member;
 
     let send_msg = ServerAction::<SendMessage>::new();
 
+    let ChatContext { msg_reference } =
+        use_context::<ChatContext>().expect("should acces to the chat context");
+
+    let on_click = Signal::derive(move || {
+        let channel_id = channel_id.get();
+        send_msg.dispatch(SendMessage {
+            server_id: server.id().get(),
+            channel_id,
+            message: message.get(),
+            member_id: member.id().get(),
+            msg_reference: msg_reference.get().map(|reference| reference.id),
+        });
+    });
+
     view! {
-        <div class="shrink-0 relative flex px-4">
-            <div class="mb-4 relative w-full bg-base-300/60 rounded-lg flex px-4">
-                <Icon icon=IconData::CirclePlus class="w-5 h-5 stroke-base-300 fill-base-content/40 grow-0 mb-3.5 mt-auto"/>
-                    <div class="relative self-center h-fit w-full" style=move || format!("height: {}px", height.get())>
-                        <div class="h-14 text-sm font-normal relative">
-                            <div>
-                                <Show when=move || message.get().is_empty()>
-                                    <div class="mx-4 py-4 absolute left-0 select-none text-base-content/40">
-                                        {move || format!("Message #{}", name.get())}
-                                    </div>
-                                </Show>
-                            </div>
-                            <div
-                                on:input=on_input
-                                node_ref=content_ref
-                                class="relative mx-4 py-4 outline-0 wrap-break-word text-left whitespace-break-spaces"
-                                contenteditable="true"
-                                aria-multiline="true"
-                                spellcheck="true"
-                                aria-invalid="false">
-                            </div>
-                        </div>
-                    </div>
-                <Icon icon=IconData::Sticker on:click=move |_| {
-                        let channel_id = channel_id.get();
-                        send_msg.dispatch(SendMessage { server_id: server.id().get(), channel_id, message: message.get(), member_id: member.id().get() });
-                    }
-                    class="w-5 h-5 stroke-base-300 fill-base-content/40 mb-3.5 mt-auto"/>
+        <div class="shrink-0 relative mb-4 px-4 w-full h-auto">
+            <div class="relative w-full flex flex-col px-4">
+                <Reference/>
+                <Input name=name message=message height=height on_click=on_click/>
             </div>
         </div>
     }

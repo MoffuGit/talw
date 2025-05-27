@@ -57,7 +57,7 @@ pub fn App() -> impl IntoView {
 
         <Theme />
         <Router>
-            <main id="app" class="w-full h-full overflow-hidden">
+            <main id="app" class="w-full h-full overflow-hidden font-light">
                 <Routes fallback=|| "Not Found">
                     <Route path=StaticSegment("") view=Home />
                     <ProtectedParentRoute

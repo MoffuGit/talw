@@ -1,6 +1,12 @@
+mod markdown;
+mod reactions;
+mod reference;
+mod sender;
+
 use crate::app::api::messages::{React, Unreact};
 use crate::app::components::chat::messages::menu::MessageContextMenu;
 use crate::app::components::ui::icons::{Icon, IconData};
+use crate::app::components::ui::markdown::MarkdownParser;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::server::ServerStoreFields;
 use crate::messages::Message;
@@ -9,54 +15,37 @@ use std::ops::Not;
 
 use leptos::either::Either;
 use leptos::prelude::*;
-use pulldown_cmark::{BlockQuoteKind, HeadingLevel};
+use pulldown_cmark::BlockQuoteKind;
 
 use crate::app::components::channel::member::banner::MemberBanner;
 use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
-use crate::app::components::ui::markdown::{
-    MarkdownElement, MarkdownNode, MarkdownParser, MarkdownTree,
-};
 use crate::entities::member::{Member, MemberStoreFields};
 use crate::entities::message::ChannelMessage;
 
+use self::markdown::Markdown;
+use self::reference::Reference;
+
+use super::Group;
+
 #[component]
-pub fn ChatGroup(messages: Vec<ChannelMessage>) -> impl IntoView {
-    let first = RwSignal::new(messages.first().cloned().unwrap());
-    let member = Signal::derive(move || first.get().sender.clone());
+pub fn ChatGroup(group: Group) -> impl IntoView {
+    let sender = RwSignal::new(group.sender);
+    let fist_message = RwSignal::new(group.messages.first().cloned().unwrap());
+    let messages = RwSignal::new(group.messages);
     view! {
-        <div class="relative py-1 w-full flex items-start isolate">
-            {
-                move || {
-                    let member = member.get();
-                    view!{
-                        <MemberBanner side=MenuSide::Right align=MenuAlign::Start member=member.clone() class="w-auto h-auto absolute left-2 top-2 z-10" >
-                            {if let Some(url) = member.image_url {
-                                Either::Left(
-                                    view! {
-                                        <img
-                                            class="rounded-full object-cover w-10 h-10"
-                                            src=url
-                                        />
-                                    },
-                                )
-                            } else {
-                                Either::Right(
-                                    view! {
-                                        <div class="rounded-full bg-base-content/10 w-10 h-10" />
-                                    },
-                                )
-                            }}
-                        </MemberBanner>
-                    }
-                }
-            }
-            <div class="relative w-full flex flex-col text-wrap whitespace-break-spaces">
-                <ChatMessage message=first member=member is_first=true/>
-                {
-                    messages.into_iter().skip(1).map(|message| {
-                        view!{<ChatMessage message=RwSignal::new(message) member=member/>}
-                    }).collect_view()
-                }
+        <div class="relative py-1 w-full flex flex-col items-start isolate">
+            <Show when=move || fist_message.get().message_reference.is_some()>
+                <Reference message=Signal::derive(move || *fist_message.get().message_reference.unwrap())/>
+            </Show>
+            <div class="relative w-full flex flex-col">
+                <ChatMessage message=fist_message sender=sender is_first=true/>
+                <For
+                    each=move || messages.get().into_iter().skip(1)
+                    key=|message| message.id
+                    let:message
+                >
+                    <ChatMessage message=RwSignal::new(message) sender=sender/>
+                </For>
             </div>
         </div>
     }
@@ -65,7 +54,7 @@ pub fn ChatGroup(messages: Vec<ChannelMessage>) -> impl IntoView {
 #[component]
 pub fn ChatMessage(
     message: RwSignal<ChannelMessage>,
-    member: Signal<Member>,
+    sender: RwSignal<Member>,
     #[prop(default = false)] is_first: bool,
 ) -> impl IntoView {
     let markdown = Signal::derive(move || MarkdownParser::new(&message.get().content).parse_tree());
@@ -152,8 +141,38 @@ pub fn ChatMessage(
 
             }
         }
-        <MessageContextMenu message=message member_id=Signal::derive(move || member.get().id)>
-            <div class="relative py-0.5 w-full pl-14 pr-4 group hover:bg-neutral/10 flex items-start text-wrap whitespace-break-spaces">
+        <MessageContextMenu message=message member_id=Signal::derive(move || sender.get().id)>
+            <div class="relative py-0.5 w-full pl-14 pr-4 group hover:bg-neutral/10 flex flex-col items-start text-wrap whitespace-break-spaces">
+                {
+                    is_first.then(|| view! {
+                        <MemberBanner side=MenuSide::Right align=MenuAlign::Start member=sender class="w-auto h-auto absolute left-2 top-1 z-10" >
+                            {move || if let Some(url) = sender.get().image_url {
+                                Either::Left(
+                                    view! {
+                                        <img
+                                            class="rounded-full object-cover w-10 h-10"
+                                            src=url
+                                        />
+                                    },
+                                )
+                            } else {
+                                Either::Right(
+                                    view! {
+                                        <div class="rounded-full bg-base-content/10 w-10 h-10" />
+                                    },
+                                )
+                            }}
+                        </MemberBanner>
+                        <div class="flex items-center mb-1">
+                            <div class="font-semibold text-base mr-2">
+                                {move || sender.get().name}
+                            </div>
+                            <div class="text-xs text-base-content/50 self-end mb-0.5">
+                                {move || message.get().timestamp.format("%d/%m/%y, %H:%M").to_string()}
+                            </div>
+                        </div>
+                    })
+                }
                 {
                     move || {
                         block_kind.get().map(|kind| {
@@ -185,20 +204,6 @@ pub fn ChatMessage(
                     })
                 }
                 <div class="flex flex-col items-start">
-                    {
-                        is_first.then(||
-                            view!{
-                                <div class="flex items-center mb-1">
-                                    <div class="font-base mr-2">
-                                        {move || member.get().name}
-                                    </div>
-                                    <div class="text-xs text-base-content/50 self-end mb-0.5">
-                                        {move || message.get().timestamp.format("%d/%m/%y, %H:%M").to_string()}
-                                    </div>
-                                </div>
-                            }
-                        )
-                    }
                     <Markdown markdown=markdown block_kind=block_kind/>
                     <Show when=move || {
                         !message.get().reactions.is_empty()
@@ -239,91 +244,5 @@ pub fn ChatMessage(
                 </div>
             </div>
         </MessageContextMenu>
-    }
-}
-
-#[component]
-fn Markdown(
-    markdown: Signal<MarkdownTree>,
-    block_kind: RwSignal<Option<BlockQuoteKind>>,
-) -> impl IntoView {
-    view! {
-        {
-            move || {
-                view!{
-                    <MarkdownParagraph node=markdown.get().root block_kind=block_kind/>
-                }
-            }
-        }
-    }
-}
-
-#[component]
-pub fn MarkdownParagraph(
-    node: MarkdownNode,
-    block_kind: RwSignal<Option<BlockQuoteKind>>,
-) -> impl IntoView {
-    let childrens = node
-        .childrens
-        .iter()
-        .map(|node| {
-            view! {<MarkdownParagraph node=node.clone() block_kind=block_kind/>}
-        })
-        .collect_view();
-
-    match node.element {
-        MarkdownElement::Paragraph => {
-            view! {<span class="text-sm font-light">{childrens}</span>}.into_any()
-        }
-        MarkdownElement::Text(text) => view! {{text}}.into_any(),
-        MarkdownElement::LineBreak => view! {<br/>}.into_any(),
-        MarkdownElement::Bold => view! {<span class="font-medium">{childrens}</span>}.into_any(),
-        MarkdownElement::Italic => view! {<span class="italic">{childrens}</span>}.into_any(),
-        MarkdownElement::Heading(level) => match level {
-            HeadingLevel::H1 => {
-                view! {<span class="font-medium text-xl ">{childrens}</span>}.into_any()
-            }
-            HeadingLevel::H2 => {
-                view! {<span class="font-medium text-lg ">{childrens}</span>}.into_any()
-            }
-            _ => view! {{childrens}}.into_any(),
-        },
-        MarkdownElement::Blockquotes(kind) => {
-            if kind.is_some() {
-                block_kind.set(kind);
-            }
-            view! {{childrens}}.into_any()
-        }
-        MarkdownElement::ListItem => view! {<li>{childrens}</li>}.into_any(),
-        MarkdownElement::List { order } => {
-            if order {
-                view! {<ol class="list-decimal pl-4">{childrens}</ol>}.into_any()
-            } else {
-                view! {<ul class="list-disc pl-4">{childrens}</ul>}.into_any()
-            }
-        }
-        MarkdownElement::Code(code) => {
-            view! {<code class="font-jetbrains text-base-content text-sm font-light bg-baes-100 rounded px-1">{code}</code>}.into_any()
-        }
-        MarkdownElement::CodeBlock(_lang) => {
-            view! {<pre class="bg-base-100 text-base-content rounded-lg p-2"><code class="font-jetbrains text-sm font-light">{childrens}</code></pre>}
-                .into_any()
-        }
-        MarkdownElement::Link { url } => view! {
-            <a href=url class="text-blue-400 hover:underline">{url.clone()}</a>
-        }
-        .into_any(),
-        MarkdownElement::Role(id) => view! {
-            <span class="text-red-500">{id}</span>
-        }
-        .into_any(),
-        MarkdownElement::Mention(id) => view! {
-            <span class="text-red-500">{id}</span>
-        }
-        .into_any(),
-        MarkdownElement::Everyone => view! {
-            <span class="text-green-500">"Everyone"</span>
-        }
-        .into_any(),
     }
 }

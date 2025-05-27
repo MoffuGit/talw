@@ -73,7 +73,7 @@ pub fn ChannelView() -> impl IntoView {
                             });
                             view! {
                                 <ChannelHeader channel=channel />
-                                <div class="relative overflow-auto flex shrink grow bg-base-200">
+                                <div class="relative flex w-full h-full min-w-0 min-h-0 overflow-hidden bg-base-200">
                                     <Chat channel_id=channel.id() name=channel.name()/>
                                     <MemberSideBar members=server_context.members />
                                 </div>

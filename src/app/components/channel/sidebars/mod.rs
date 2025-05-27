@@ -29,7 +29,7 @@ pub fn MemberSideBar(members: Store<MemberStore>) -> impl IntoView {
     let roles = server_context.roles;
     view! {
         <div
-            class="h-full overflow-x-hidden shrink-0 bg-base-300 flex flex-col items-stretch justify-between ease-linear duration-200 transition-[width]"
+            class="h-full shrink-0 overflow-x-hidden bg-base-300 flex flex-col items-stretch justify-between ease-linear duration-200 transition-[width]"
             style=move || if open.get() { "width: 240px" } else { "width: 0px" }
         >
             <div class="flex flex-col overflow-y-scroll overflow-x-hidden items-stretch">

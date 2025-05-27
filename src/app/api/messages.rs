@@ -75,11 +75,18 @@ pub async fn send_message(
     channel_id: Uuid,
     message: String,
     member_id: Uuid,
+    msg_reference: Option<Uuid>,
 ) -> Result<(), ServerFnError> {
     let pool = pool()?;
     auth()?;
 
-    match ChannelMessage::add_channel_message(channel_id, member_id, message, &pool).await {
+    if message.is_empty() {
+        return Ok(());
+    }
+
+    match ChannelMessage::add_channel_message(channel_id, member_id, message, msg_reference, &pool)
+        .await
+    {
         Ok(content) => msg_sender()?.send(ServerMessage {
             server_id,
             msg: Message::ChannelMessage {

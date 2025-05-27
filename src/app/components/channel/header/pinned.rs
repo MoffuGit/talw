@@ -11,6 +11,7 @@ use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::components::ui::markdown::{
     MarkdownElement, MarkdownNode, MarkdownParser, MarkdownTree,
 };
+use crate::entities::member::MemberStoreFields;
 use crate::entities::message::{ChannelMessage, ChannelMessageStoreFields};
 
 #[derive(Debug, Store)]
@@ -60,31 +61,24 @@ pub fn Pinned(#[prop(into)] channel_id: Field<Uuid>) -> impl IntoView {
                                             let:message
                                         >
                                             <div class="relative py-1 w-full flex items-start isolate rounded-lg border-base-content">
-                                                {
-                                                    move || {
-                                                        let member = message.sender().get();
-                                                        view!{
-                                                            <MemberBanner side=MenuSide::Right align=MenuAlign::Start member=member.clone() class="w-auto h-auto absolute left-2 top-2 z-10" >
-                                                                {if let Some(url) = member.image_url {
-                                                                    Either::Left(
-                                                                        view! {
-                                                                            <img
-                                                                                class="rounded-full object-cover w-10 h-10"
-                                                                                src=url
-                                                                            />
-                                                                        },
-                                                                    )
-                                                                } else {
-                                                                    Either::Right(
-                                                                        view! {
-                                                                            <div class="rounded-full bg-base-content/10 w-10 h-10" />
-                                                                        },
-                                                                    )
-                                                                }}
-                                                            </MemberBanner>
-                                                        }
-                                                    }
-                                                }
+                                                <MemberBanner side=MenuSide::Right align=MenuAlign::Start member=message.sender() class="w-auto h-auto absolute left-2 top-2 z-10" >
+                                                    {if let Some(url) = message.sender().image_url().get() {
+                                                        Either::Left(
+                                                            view! {
+                                                                <img
+                                                                    class="rounded-full object-cover w-10 h-10"
+                                                                    src=url
+                                                                />
+                                                            },
+                                                        )
+                                                    } else {
+                                                        Either::Right(
+                                                            view! {
+                                                                <div class="rounded-full bg-base-content/10 w-10 h-10" />
+                                                            },
+                                                        )
+                                                    }}
+                                                </MemberBanner>
                                                 <div class="relative w-full flex flex-col text-wrap whitespace-break-spaces">
                                                     <ChatMessage message=message />
                                                 </div>

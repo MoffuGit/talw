@@ -18,7 +18,7 @@ pub fn MemberBanner(
     align: MenuAlign,
     class: &'static str,
     children: Children,
-    member: Member,
+    #[prop(into)] member: Signal<Member>,
 ) -> impl IntoView {
     let is_open = RwSignal::new(false);
     let content_ref: NodeRef<Div> = NodeRef::new();
@@ -35,9 +35,9 @@ pub fn MemberBanner(
             .map(|body| (body.get_bounding_client_rect().height() - content_height) - 20.0)
             .unwrap_or(320.0)
     });
-    let name = StoredValue::new(member.name);
-    let image_url = StoredValue::new(member.image_url);
-    let user_member = use_current_server_context().member.id();
+    let name = Signal::derive(move || member.get().name);
+    let image_url = Signal::derive(move || member.get().image_url);
+    let current_member = use_current_server_context().member.id();
     view! {
         <DropdownProvider content_ref=content_ref modal=false open=is_open>
             <DropdownTrigger class=class>{children()}</DropdownTrigger>
@@ -52,7 +52,7 @@ pub fn MemberBanner(
                     is_open.get()
                 }>
                     {move || {
-                        let banner = Resource::new(move || (member.user_id), get_user_banner);
+                        let banner = Resource::new(move || (member.get().user_id), get_user_banner);
                         view! {
                             <Transition>
                                 {
@@ -86,7 +86,7 @@ pub fn MemberBanner(
                                                             )
                                                         }
                                                     }}
-                                                    {if let Some(url) = image_url.get_value() {
+                                                    {move || if let Some(url) = image_url.get() {
                                                         Either::Left(
                                                             view! {
                                                                 <img
@@ -102,9 +102,16 @@ pub fn MemberBanner(
                                                             },
                                                         )
                                                     }} <div class="relative w-auto mt-14 m-4">
-                                                        <div class="text-xl font-semibold">{name.get_value()}</div>
-                                                        <MutualServers user_id=member.user_id/>
-                                                        <MemberRoles member_id=member.id/>
+                                                        <div class="text-xl font-semibold">{move || name.get()}</div>
+                                                        {
+                                                            move || {
+                                                                view!{
+                                                                    <MutualServers user_id=member.get().user_id/>
+                                                                    <MemberRoles member_id=member.get().id/>
+
+                                                                }
+                                                            }
+                                                        }
                                                         {move || {
                                                             about
                                                                 .get()
@@ -113,12 +120,12 @@ pub fn MemberBanner(
                                                                 })
                                                         }}
                                                         {move || {
-                                                            if member.id != user_member.get() {
+                                                            if member.get().id != current_member.get() {
                                                                 Either::Left(
                                                                     view! {
                                                                         <div class="flex mt-4 border border-base-100 hover:bg-base-content/10 rounded-md w-full h-12 px-4 items-center cursor-pointer">
                                                                             <div class="text-base">
-                                                                                {format!("Message @{}", name.get_value())}
+                                                                                {move || format!("Message @{}", name.get())}
                                                                             </div>
                                                                         </div>
                                                                     },

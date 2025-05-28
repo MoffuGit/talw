@@ -16,7 +16,7 @@ cfg_if! {
         use multer::bytes::Bytes as MulterBytes;
         use futures::TryStreamExt;
         use crate::uploadthing::UploadThing;
-        use crate::uploadthing::upload_file::FileData;
+        use crate::uploadthing::FileData;
         use crate::entities::{category::Category, channel::Channel};
         use leptos_axum::redirect;
         use http::uri::Scheme;

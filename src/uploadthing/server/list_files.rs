@@ -1,4 +1,4 @@
-use super::file_status::FileStatus;
+use crate::uploadthing::server::upload_file::FileStatus;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize)]

@@ -27,6 +27,39 @@ pub fn Chat(
     provide_context(ChatContext::default());
     view! {
         <div class="relative flex flex-col h-full w-full min-w-0 overflow-hidden bg-base-200">
+            <div
+                on:dragenter=move |evt: DragEvent| {
+                    evt.prevent_default();
+                    evt.stop_propagation();
+                    debug!("Enter the drag zone");
+                }
+                on:dragover= move |evt: DragEvent |{
+                    evt.prevent_default();
+                    evt.stop_propagation();
+                    debug!("Over the drag zone");
+                }
+                on:dragleave= move |evt: DragEvent |{
+                    evt.prevent_default();
+                    evt.stop_propagation();
+                    debug!("Leave the drag zone");
+                }
+                on:drop= move |evt: DragEvent |{
+                    evt.prevent_default();
+                    evt.stop_propagation();
+                    if let Some(data) = evt.data_transfer() {
+                        if let Some(files) = data.files() {
+                            for idx in 0..files.length() {
+                                if let Some(file) =     files.get(idx) {
+                                    selected_files.update(|list| list.push[file]);
+                                }
+                            }
+                            debug!("files len: {}", files.length());
+                        }
+                    }
+                    debug!("Drop in the drag zone");
+                }
+                class="absolute inset-0 bg-red-500 z-100"
+            />
             <ChatMessages channel_id=channel_id member_id=id  thread_id=thread_id/>
             <Sender channel_id=channel_id thread_id=thread_id name=name/>
         </div>

@@ -8,7 +8,7 @@ use web_sys::FormData;
 cfg_if! {
     if #[cfg(feature = "ssr")] {
         use futures::TryStreamExt;
-        use crate::uploadthing::upload_file::FileData;
+        use crate::uploadthing::FileData;
         use crate::uploadthing::UploadThing;
         use multer::bytes::Bytes as MulterBytes;
         use crate::entities::server::Server;

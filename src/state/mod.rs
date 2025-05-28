@@ -1,5 +1,5 @@
 use crate::msg_sender::MsgSender;
-use crate::uploadthing::UploadThing;
+use crate::uploadthing::server::UploadThing;
 use crate::ws::server::WsChannels;
 use leptos::config::LeptosOptions;
 use leptos_axum::AxumRouteListing;

@@ -1,7 +1,15 @@
 use std::collections::HashMap;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use strum::Display;
+
+#[derive(Deserialize, Serialize, Clone)]
+pub enum FileStatus {
+    Failed,
+    Uploaded,
+    Uploading,
+    DeletionPending,
+}
 
 #[derive(Serialize, Clone)]
 pub struct UploadFileOpts {
@@ -49,14 +57,6 @@ pub struct Etag {
     pub tag: String,
     #[serde(rename = "partNumber")]
     pub part_number: usize,
-}
-
-#[derive(Serialize, Clone)]
-pub struct FileData {
-    pub name: String,
-    #[serde(rename = "type")]
-    pub file_type: String,
-    pub size: usize,
 }
 
 #[derive(Debug, serde::Deserialize, Clone)]

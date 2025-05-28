@@ -7,3 +7,4 @@ pub mod overview;
 pub mod theme;
 pub mod thread;
 pub mod ui;
+pub mod uploadthings;

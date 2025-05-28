@@ -1,17 +1,17 @@
+mod attachments;
 mod input;
 mod reference;
 
-use crate::app::api::messages::{send_message, SendMessage};
+use crate::app::api::messages::SendMessage;
 use crate::app::components::chat::ChatContext;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::member::MemberStoreFields;
 use crate::entities::server::ServerStoreFields;
-use leptos::html::Div;
 use leptos::prelude::*;
 use reactive_stores::Field;
 use uuid::Uuid;
-use web_sys::{window, HtmlDivElement, Node, Range};
 
+use self::attachments::Attachments;
 use self::input::Input;
 use self::reference::Reference;
 
@@ -172,7 +172,7 @@ pub fn Sender(
 
     let send_msg = ServerAction::<SendMessage>::new();
 
-    let ChatContext { msg_reference } =
+    let ChatContext { msg_reference, .. } =
         use_context::<ChatContext>().expect("should acces to the chat context");
 
     let on_click = Signal::derive(move || {
@@ -190,6 +190,7 @@ pub fn Sender(
         <div class="shrink-0 relative mb-4 px-4 w-full h-auto">
             <div class="relative w-full flex flex-col px-4">
                 <Reference/>
+                <Attachments/>
                 <Input name=name message=message height=height on_click=on_click/>
             </div>
         </div>

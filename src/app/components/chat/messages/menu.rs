@@ -47,7 +47,7 @@ pub fn MessageContextMenu(
     });
     let open = RwSignal::new(false);
     let reaction_ref = NodeRef::new();
-    let ChatContext { msg_reference } =
+    let ChatContext { msg_reference, .. } =
         use_context::<ChatContext>().expect("should acces to the chat context");
     view! {
         <ContextMenuProvider content_ref=content_ref open=open>

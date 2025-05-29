@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use super::{AppMessage, ClientMessage};
-use crate::entities::message::{ChannelMessage, Reaction};
+use crate::entities::message::{Attachment, ChannelMessage, Reaction};
 use crate::entities::role::Role;
 use crate::entities::thread::Thread;
 
@@ -53,7 +53,12 @@ pub enum Message {
     },
     ChannelMessage {
         channel_id: Uuid,
+        attachments: bool,
         content: Box<ChannelMessage>,
+    },
+    MessageAttachments {
+        message_id: Uuid,
+        content: Vec<Attachment>,
     },
     ThreadMessage {
         thread_id: Uuid,

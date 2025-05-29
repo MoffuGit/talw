@@ -1,6 +1,5 @@
 use cfg_if::cfg_if;
 use chrono::{DateTime, Utc};
-use emojis::Emoji;
 use log::debug;
 use reactive_stores::Store;
 use serde::{Deserialize, Serialize};
@@ -35,7 +34,6 @@ pub struct ChannelMessage {
     pub mentions: Vec<Member>,
     //impl
     pub mentions_roles: Vec<Role>,
-    //impl
     pub attachments: Vec<Attachment>,
     //impl
     pub embeds: Vec<Embed>,
@@ -45,9 +43,9 @@ pub struct ChannelMessage {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Store)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Attachment {
-    id: Uuid,
-    filename: String,
-    url: String,
+    pub id: Uuid,
+    pub filename: String,
+    pub url: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Store)]
@@ -122,6 +120,39 @@ impl ChannelMessage {
         .bind(message_id)
         .fetch_all(pool)
         .await?)
+    }
+
+    pub async fn add_attachment(
+        message_id: Uuid,
+        filename: &str,
+        url: &str,
+        pool: &MySqlPool,
+    ) -> Result<Attachment, Error> {
+        let id = Uuid::new_v4();
+        sqlx::query(
+            "
+            INSERT INTO attachments
+            (id, filename, url)
+            VALUES (?, ?, ?)
+        ",
+        )
+        .bind(id)
+        .bind(filename)
+        .bind(url)
+        .execute(pool)
+        .await?;
+        sqlx::query(
+            "INSERT INTO channel_messages_attachments (message_id, attachment_id) VALUES (?, ?)",
+        )
+        .bind(message_id)
+        .bind(id)
+        .execute(pool)
+        .await?;
+        Ok(Attachment {
+            id,
+            filename: filename.to_string(),
+            url: url.to_string(),
+        })
     }
 
     pub async fn get_message_embeds(
@@ -401,7 +432,7 @@ impl ChannelMessage {
         member_id: Uuid,
         pool: &MySqlPool,
     ) -> Result<Vec<Reaction>, Error> {
-        let mut reactions = sqlx::query_as::<_, SqlReaction>(
+        let reactions = sqlx::query_as::<_, SqlReaction>(
             "
             SELECT re.* from reactions re where re.message_id = ?
         ",
@@ -427,7 +458,7 @@ impl ChannelMessage {
     pub async fn add_channel_message(
         channel_id: Uuid,
         member_id: Uuid,
-        message: String,
+        message: &str,
         msg_reference: Option<Uuid>,
         pool: &MySqlPool,
     ) -> Result<ChannelMessage, Error> {
@@ -489,12 +520,19 @@ impl ChannelMessage {
                 .bind(sql_message.sender_id)
                 .fetch_one(pool)
                 .await?;
+        let message_reference = if let Some(id) = msg_reference {
+            Some(Box::new(
+                ChannelMessage::get_message_reference(id, pool).await?,
+            ))
+        } else {
+            None
+        };
         Ok(ChannelMessage {
             id: sql_message.id,
             channel_id: sql_message.channel_id,
             thread_id: sql_message.thread_id,
             sender,
-            message_reference: None,
+            message_reference,
             content: sql_message.content,
             timestamp: sql_message.timestamp,
             edited_timestamp: sql_message.edited_timestamp,

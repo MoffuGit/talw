@@ -8,6 +8,8 @@ pub enum IconData {
     ChevronLeft,
     ChevronRight,
     ChevronTop,
+    PaperClip,
+    Trash,
     CirclePlus,
     Plus,
     Search,
@@ -23,6 +25,12 @@ pub enum IconData {
 impl IconData {
     fn view(&self) -> impl IntoView {
         match self {
+            IconData::PaperClip => view!{
+                <path d="M13.234 20.252 21 12.3"/><path d="m16 6-8.414 8.586a2 2 0 0 0 0 2.828 2 2 0 0 0 2.828 0l8.414-8.586a4 4 0 0 0 0-5.656 4 4 0 0 0-5.656 0l-8.415 8.585a6 6 0 1 0 8.486 8.486"/>
+            }.into_any(),
+            IconData::Trash => view!{
+                <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>
+            }.into_any(),
             IconData::X => view!{
                 <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
             }.into_any(),

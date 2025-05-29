@@ -2,14 +2,17 @@ mod attachments;
 mod input;
 mod reference;
 
-use crate::app::api::messages::SendMessage;
+use crate::app::api::messages::{send_message, send_message_attachments, SendMessage};
 use crate::app::components::chat::ChatContext;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::member::MemberStoreFields;
 use crate::entities::server::ServerStoreFields;
+use gloo_file::Blob;
 use leptos::prelude::*;
+use log::debug;
 use reactive_stores::Field;
 use uuid::Uuid;
+use web_sys::FormData;
 
 use self::attachments::Attachments;
 use self::input::Input;
@@ -172,8 +175,10 @@ pub fn Sender(
 
     let send_msg = ServerAction::<SendMessage>::new();
 
-    let ChatContext { msg_reference, .. } =
-        use_context::<ChatContext>().expect("should acces to the chat context");
+    let ChatContext {
+        msg_reference,
+        attachments,
+    } = use_context::<ChatContext>().expect("should acces to the chat context");
 
     let on_click = Signal::derive(move || {
         let channel_id = channel_id.get();
@@ -182,13 +187,53 @@ pub fn Sender(
             channel_id,
             message: message.get(),
             member_id: member.id().get(),
+            attachments: !attachments.get().is_empty(),
             msg_reference: msg_reference.get().map(|reference| reference.id),
         });
     });
 
+    let send_attachments = Action::new_local(|data: &FormData| {
+        let data = data.clone();
+        send_message_attachments(data.into())
+    });
+
+    Effect::watch(
+        move || send_msg.value().get(),
+        move |message_id, _, _| {
+            if let Some(Ok(message_id)) = message_id {
+                if !attachments.get().is_empty() {
+                    let multipart = FormData::new().expect("should create the form data");
+                    multipart
+                        .append_with_str("message_id", &message_id.to_string())
+                        .expect("Something");
+                    multipart
+                        .append_with_str("server_id", &server.id().get().to_string())
+                        .expect("Something");
+                    for attachment in attachments.get() {
+                        let file_name = attachment.data.name;
+                        multipart
+                            .append_with_blob_and_filename(
+                                &file_name,
+                                &Blob::new_with_options(
+                                    &*attachment.chunks,
+                                    Some(&attachment.data.file_type),
+                                )
+                                .into(),
+                                &file_name,
+                            )
+                            .expect("should add the file to the form data")
+                    }
+                    attachments.set(vec![]);
+                    send_attachments.dispatch_local(multipart);
+                }
+            }
+        },
+        false,
+    );
+
     view! {
         <div class="shrink-0 relative mb-4 px-4 w-full h-auto">
-            <div class="relative w-full flex flex-col px-4">
+            <div class="relative w-full flex flex-col">
                 <Reference/>
                 <Attachments/>
                 <Input name=name message=message height=height on_click=on_click/>

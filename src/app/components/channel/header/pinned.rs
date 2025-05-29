@@ -22,10 +22,7 @@ struct MessageStore {
 
 #[component]
 pub fn Pinned(#[prop(into)] channel_id: Field<Uuid>) -> impl IntoView {
-    let pinned = Resource::new(
-        move || (channel_id.get()),
-        move |channel_id| get_pinned_messages(channel_id),
-    );
+    let pinned = Resource::new(move || (channel_id.get()), get_pinned_messages);
     let open = RwSignal::new(false);
     view! {
         <DropdownProvider open=open modal=false>

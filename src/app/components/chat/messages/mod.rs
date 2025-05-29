@@ -122,6 +122,8 @@ pub fn ChatMessages(
                             if let Message::ChannelMessage {
                                 channel_id: id,
                                 content,
+                                //NOTE: I probably want ot do something with that
+                                attachments
                             } = msg
                             {
                                 if id == channel_id.get() {

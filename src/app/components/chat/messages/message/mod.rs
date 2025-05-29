@@ -1,7 +1,7 @@
+mod attachments;
 mod markdown;
 mod reactions;
 mod reference;
-mod sender;
 
 use crate::app::api::messages::{React, Unreact};
 use crate::app::components::chat::messages::menu::MessageContextMenu;
@@ -22,6 +22,7 @@ use crate::app::components::ui::dropdown_menu::{MenuAlign, MenuSide};
 use crate::entities::member::{Member, MemberStoreFields};
 use crate::entities::message::ChannelMessage;
 
+use self::attachments::Attachments;
 use self::markdown::Markdown;
 use self::reference::Reference;
 
@@ -84,6 +85,11 @@ pub fn ChatMessage(
                             message.update(|message| message.reactions.push(reaction));
                         }
                     }
+                    Message::MessageAttachments {content , message_id} => {
+                        if message.get().id == message_id {
+                            message.update(|message| message.attachments = content);
+                        }
+                    },
                     Message::ReactionDeleted {
                         reaction_id,
                         message_id,
@@ -205,6 +211,7 @@ pub fn ChatMessage(
                 }
                 <div class="flex flex-col items-start">
                     <Markdown markdown=markdown block_kind=block_kind/>
+                    <Attachments message=message/>
                     <Show when=move || {
                         !message.get().reactions.is_empty()
                     }>

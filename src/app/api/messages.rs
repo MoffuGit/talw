@@ -1,15 +1,21 @@
+use std::str::FromStr;
+
 use cfg_if::cfg_if;
-use emojis::Emoji;
 use leptos::prelude::*;
 use log::debug;
+use server_fn::codec::{MultipartData, MultipartFormData};
 use server_fn::ServerFnError;
 use uuid::Uuid;
 
-use crate::entities::message::{ChannelMessage, Reaction};
+use crate::app::components::uploadthings::{FileType, UploadthingFile};
+use crate::entities::message::ChannelMessage;
 use crate::messages::{Message, ServerMessage};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use crate::uploadthing::{FileData, UploadThing};
+        use multer::bytes::Bytes as MulterBytes;
+        use futures::TryStreamExt;
         use super::{auth_user, user_can_edit};
         use super::auth;
         use super::msg_sender;
@@ -69,6 +75,85 @@ pub async fn update_pinned(
     Ok(())
 }
 
+#[server(name = SendMessageAttachments, prefix = "/api", input = MultipartFormData)]
+pub async fn send_message_attachments(data: MultipartData) -> Result<(), ServerFnError> {
+    auth()?;
+    let mut data = data.into_inner().unwrap();
+    let mut message_id: Option<Uuid> = None;
+    let mut server_id: Option<Uuid> = None;
+    let mut files: Vec<UploadthingFile> = vec![];
+    while let Ok(Some(mut field)) = data.next_field().await {
+        match field.name().unwrap_or_default() {
+            "message_id" => {
+                if let Ok(Some(chunk)) = field.chunk().await {
+                    if let Ok(id) = String::from_utf8(chunk.to_vec()) {
+                        message_id = Uuid::from_str(&id).ok();
+                    }
+                }
+            }
+            "server_id" => {
+                if let Ok(Some(chunk)) = field.chunk().await {
+                    if let Ok(id) = String::from_utf8(chunk.to_vec()) {
+                        server_id = Uuid::from_str(&id).ok();
+                    }
+                }
+            }
+            _ => {
+                let content_type = field.content_type().expect("mime type").as_ref();
+                let file_type = if let Ok(file_type) = FileType::from_str(content_type) {
+                    file_type
+                } else {
+                    continue;
+                };
+
+                let file_name = field.file_name().expect("file name").to_string();
+                if file_type != FileType::Unknown {
+                    let chunks = field
+                        .try_collect::<Vec<MulterBytes>>()
+                        .await
+                        .or(Err(ServerFnError::new("Something go wrong in our servers")))?
+                        .concat();
+                    files.push(UploadthingFile {
+                        data: FileData {
+                            name: file_name,
+                            file_type: file_type.to_string(),
+                            size: chunks.len(),
+                        },
+                        chunks,
+                    });
+                }
+            }
+        }
+    }
+    let message_id =
+        message_id.ok_or_else(|| ServerFnError::new("Something go wrong in our servers"))?;
+    let server_id =
+        server_id.ok_or_else(|| ServerFnError::new("Something go wrong in our servers"))?;
+    let pool = pool()?;
+
+    let uploadthing = use_context::<UploadThing>().expect("acces to upload thing");
+    let mut attachments = vec![];
+
+    for file in files {
+        if file.data.size != 0 {
+            if let Ok(res) = uploadthing.upload_file(file.chunks, file.data, true).await {
+                attachments.push(
+                    ChannelMessage::add_attachment(message_id, &res.name, &res.url, &pool).await?,
+                );
+            }
+        }
+    }
+    msg_sender()?.send(ServerMessage {
+        server_id,
+        msg: Message::MessageAttachments {
+            message_id,
+            content: attachments,
+        },
+    });
+
+    Ok(())
+}
+
 #[server(SendMessage)]
 pub async fn send_message(
     server_id: Uuid,
@@ -76,28 +161,29 @@ pub async fn send_message(
     message: String,
     member_id: Uuid,
     msg_reference: Option<Uuid>,
-) -> Result<(), ServerFnError> {
+    attachments: bool,
+) -> Result<Uuid, ServerFnError> {
     let pool = pool()?;
     auth()?;
 
     if message.is_empty() {
-        return Ok(());
+        return Err(ServerFnError::new("The message is empty"));
     }
 
-    match ChannelMessage::add_channel_message(channel_id, member_id, message, msg_reference, &pool)
-        .await
-    {
-        Ok(content) => msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::ChannelMessage {
-                channel_id,
-                content: Box::new(content),
-            },
-        }),
-        Err(err) => debug!("{err:?}"),
-    }
+    let message =
+        ChannelMessage::add_channel_message(channel_id, member_id, &message, msg_reference, &pool)
+            .await?;
+    let id = message.id;
+    msg_sender()?.send(ServerMessage {
+        server_id,
+        msg: Message::ChannelMessage {
+            attachments,
+            channel_id,
+            content: Box::new(message),
+        },
+    });
 
-    Ok(())
+    Ok(id)
 }
 
 #[server(React)]
@@ -169,7 +255,7 @@ pub async fn unreact(
                 msg: Message::MemberUnreact {
                     react_id: reaction.id,
                     message_id: reaction.message_id,
-                    member_id: member_id,
+                    member_id,
                 },
             });
             if ChannelMessage::dec_reaction_counter(reaction.id, &pool).await? == 0 {

@@ -12,7 +12,7 @@ pub mod input;
 #[derive(Serialize, Deserialize, Clone)]
 pub struct UploadthingFile {
     pub data: FileData,
-    chunks: Vec<u8>,
+    pub chunks: Vec<u8>,
 }
 
 #[derive(Debug, Display, EnumString, PartialEq, Default)]

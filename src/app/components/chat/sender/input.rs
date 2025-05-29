@@ -2,7 +2,9 @@ use leptos::html::Div;
 use leptos::prelude::*;
 use reactive_stores::Field;
 
+use crate::app::components::chat::ChatContext;
 use crate::app::components::ui::icons::{Icon, IconData};
+use crate::app::components::uploadthings::input::FileInput;
 
 #[component]
 pub fn Input(
@@ -20,9 +22,14 @@ pub fn Input(
         }
     };
 
+    let ChatContext { attachments, .. } =
+        use_context::<ChatContext>().expect("should acces to the chat context");
+
     view! {
-        <div class="relative w-full h-auto bg-base-300 rounded-b-lg px-2 only:rounded-lg border border-base-100 flex items-center">
-            <Icon icon=IconData::CirclePlus class="w-5 h-5 stroke-base-300 fill-base-content/40 grow-0 "/>
+        <div class="relative w-full h-auto bg-base-300 rounded-b-lg px-4 only:rounded-lg border border-base-100 flex items-center">
+            <FileInput files=attachments class="w-a h-auto">
+                <Icon icon=IconData::PaperClip class="w-4 h-4 stroke-base-content/40 hover:stroke-base-content cursor-pointer"/>
+            </FileInput>
                 <div class="relative self-center h-fit w-full" /* style=move || format!("height: {}px", height.get()) */>
                     <div class="text-sm font-normal relative mx-4 py-4">
                         <div>
@@ -46,7 +53,7 @@ pub fn Input(
             <Icon icon=IconData::Sticker on:click=move |_| {
                     on_click.get();
                 }
-                class="w-5 h-5 stroke-base-300 fill-base-content/40 "/>
+                class="w-4 h-4 stroke-base-content/40 hover:stroke-base-content cursor-pointer"/>
         </div>
     }
 }

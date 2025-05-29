@@ -4,6 +4,7 @@ use pulldown_cmark::HeadingLevel;
 
 use crate::app::components::channel::member::banner::MemberBanner;
 use crate::app::components::ui::context_menu::{MenuAlign, MenuSide};
+use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::components::ui::markdown::{MarkdownElement, MarkdownNode, MarkdownParser, MarkdownTree};
 use crate::entities::message::ChannelMessage;
 
@@ -12,7 +13,7 @@ pub fn Reference(message: Signal<ChannelMessage>) -> impl IntoView {
     let markdown = Signal::derive(move || MarkdownParser::new(&message.get().content).parse_tree());
     view! {
         <div class="w-full h-7 pl-14 pr-8 overflow-hidden flex items-center justify-start">
-            <div class="absolute h-4 w-6 bg-transparent border-l-2 border-l-neutral/30 border-t-2 border-t-neutral/30 rounded-tl-md left-6.5 top-4"/>
+            <div class="absolute h-4 w-7 bg-transparent border-l-2 border-l-neutral/30 border-t-2 border-t-neutral/30 rounded-tl-md left-6.5 top-4"/>
             <MemberBanner
                 side=MenuSide::Right
                 align=MenuAlign::Start
@@ -43,9 +44,12 @@ pub fn Reference(message: Signal<ChannelMessage>) -> impl IntoView {
                     }
                 </div>
             </MemberBanner>
-            <div class="w-full h-full flex items-center min-w-0">
+            <div class="w-auto h-full flex items-center min-w-0 mr-1">
                 <Markdown markdown=markdown/>
             </div>
+            <Show when=move || !message.get().attachments.is_empty()>
+                <Icon icon=IconData::PaperClip class="w-4 h-4"/>
+            </Show>
         </div>
     }
 }

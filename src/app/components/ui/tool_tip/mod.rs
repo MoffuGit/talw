@@ -268,7 +268,7 @@ pub fn TooltipContent(
                 <div
                     node_ref=content_ref
                     style=move || format!("translate: {}px {}px;", position().0, position().1)
-                    class=format!("absolute z-50 left-0 top-0")
+                    class=format!("absolute z-50 left-0 top-0 font-normal")
                 >
                     <div class=format!(
                         "{} {} {}",

@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
+use crate::open_graph::OpenGraph;
+
 use super::member::Member;
 use super::role::Role;
 
@@ -22,21 +24,16 @@ pub struct ChannelMessage {
     pub channel_id: Uuid,
     pub thread_id: Option<Uuid>,
     pub sender: Member,
-    //impl
     pub message_reference: Option<Box<ChannelMessage>>,
     pub content: String,
     pub timestamp: DateTime<Utc>,
     //impl
     pub edited_timestamp: Option<DateTime<Utc>>,
     pub pinned: bool,
-    //impl
     pub mention_everyone: bool,
-    //impl
     pub mentions: Vec<Member>,
-    //impl
     pub mentions_roles: Vec<Role>,
     pub attachments: Vec<Attachment>,
-    //impl
     pub embeds: Vec<Embed>,
     pub reactions: Vec<Reaction>,
 }
@@ -52,9 +49,9 @@ pub struct Attachment {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Store)]
 #[cfg_attr(feature = "ssr", derive(FromRow))]
 pub struct Embed {
-    id: Uuid,
-    url: String,
-    data: JsonValue,
+    pub id: Uuid,
+    pub url: String,
+    pub data: JsonValue,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Store)]
@@ -92,10 +89,67 @@ pub struct SqlChannelMessage {
 
 #[cfg(feature = "ssr")]
 impl ChannelMessage {
+    pub async fn mention_everyone(message_id: Uuid, pool: &MySqlPool) -> Result<(), Error> {
+        sqlx::query("UPDATE channel_messages ch SET ch.mention_everyone = TRUE WHERE ch.id = ?")
+            .bind(message_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn add_embed(
+        message_id: Uuid,
+        op: OpenGraph,
+        url: String,
+        pool: &MySqlPool,
+    ) -> Result<Embed, Error> {
+        let id = Uuid::new_v4();
+        let data = serde_json::to_value(op).unwrap();
+        sqlx::query("INSERT INTO embeds (id, url, data) VALUES (?, ?, ?)")
+            .bind(id)
+            .bind(&url)
+            .bind(&data)
+            .execute(pool)
+            .await?;
+
+        sqlx::query("INSERT INTO channel_messages_embeds (message_id, embeds_id) VALUES (?, ?)")
+            .bind(message_id)
+            .bind(id)
+            .execute(pool)
+            .await?;
+
+        Ok(Embed { id, url, data })
+    }
     pub async fn pin(message_id: Uuid, pinned: bool, pool: &MySqlPool) -> Result<(), Error> {
         sqlx::query("UPDATE channel_messages ch SET ch.pinned = ? WHERE ch.id = ?")
             .bind(pinned)
             .bind(message_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn add_mention(
+        message_id: Uuid,
+        member_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        sqlx::query("INSERT INTO messages_mentions (message_id, member_id) VALUES (?, ?)")
+            .bind(message_id)
+            .bind(member_id)
+            .execute(pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn add_role_mention(
+        message_id: Uuid,
+        role_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<(), Error> {
+        sqlx::query("INSERT INTO messages_role_mentions (message_id, role_id) VALUES (?, ?)")
+            .bind(message_id)
+            .bind(role_id)
             .execute(pool)
             .await?;
         Ok(())

@@ -1,20 +1,27 @@
+use leptos::either::Either;
 use leptos::prelude::*;
 use pulldown_cmark::{BlockQuoteKind, HeadingLevel};
 
+use crate::app::components::channel::member::banner::MemberBanner;
+use crate::app::components::ui::context_menu::{MenuAlign, MenuSide};
 use crate::app::components::ui::markdown::{
     MarkdownElement, MarkdownNode, MarkdownTree,
 };
+use crate::entities::member::Member;
+use crate::entities::role::Role;
 
 #[component]
 pub fn Markdown(
     markdown: Signal<MarkdownTree>,
+    mentions: Signal<Vec<Member>>,
+    role_mentions: Signal<Vec<Role>>,
     block_kind: RwSignal<Option<BlockQuoteKind>>,
 ) -> impl IntoView {
     view! {
         {
             move || {
                 view!{
-                    <MarkdownParagraph node=markdown.get().root block_kind=block_kind/>
+                    <MarkdownParagraph node=markdown.get().root block_kind=block_kind mentions=mentions role_mentions=role_mentions/>
                 }
             }
         }
@@ -25,12 +32,14 @@ pub fn Markdown(
 pub fn MarkdownParagraph(
     node: MarkdownNode,
     block_kind: RwSignal<Option<BlockQuoteKind>>,
+    mentions: Signal<Vec<Member>>,
+    role_mentions: Signal<Vec<Role>>,
 ) -> impl IntoView {
     let childrens = node
         .childrens
         .iter()
         .map(|node| {
-            view! {<MarkdownParagraph node=node.clone() block_kind=block_kind />}
+            view! {<MarkdownParagraph node=node.clone() block_kind=block_kind mentions=mentions role_mentions=role_mentions/>}
         })
         .collect_view();
 
@@ -83,15 +92,44 @@ pub fn MarkdownParagraph(
         }
         .into_any(),
         MarkdownElement::Role(id) => view! {
-            <span class="text-red-500">{id}</span>
+            {
+                move || {
+                    if let Some(mention) = role_mentions.get().iter().find(|mention| mention.id == id).cloned() {
+                        Either::Left(view!{
+                            <span class="cursor-pointer select-none bg-indigo-500/20 color-indigo-100 font-base hover:color-base-content hover:bg-indigo-500/80 hover:underline rounded-sm px-0.5">@{mention.name}</span>
+                        })
+                    } else {
+                        Either::Right(view!{
+                            <span class="cursor-pointer select-none bg-indigo-500/20 color-indigo-100 font-base hover:color-base-content hover:bg-indigo-500/80 hover:underline rounded-sm px-0.5">"Unknown"</span>
+                        })
+                    }
+                }
+            }
         }
         .into_any(),
         MarkdownElement::Mention(id) => view! {
-            <span class="text-red-500">{id}</span>
+            {
+                move || {
+                    if let Some(mention) = mentions.get().iter().find(|mention| mention.id == id).cloned() {
+                        let name = mention.name.clone();
+                        Either::Left(
+                            view!{
+                                <MemberBanner side=MenuSide::Right align=MenuAlign::Start member=mention class="cursor-pointer inline select-none bg-indigo-500/20 color-indigo-100 font-base hover:color-base-content hover:bg-indigo-500/80 hover:underline rounded-sm px-0.5" >
+                                    {format!("@{}", name)}
+                                </MemberBanner >
+                            }
+                        )
+                    } else {
+                        Either::Right(view!{
+                            <span class="cursor-pointer select-none bg-indigo-500/20 color-indigo-100 font-base hover:color-base-content hover:bg-indigo-500/80 hover:underline rounded-sm px-0.5">@"Unknown"</span>
+                        })
+                    }
+                }
+            }
         }
         .into_any(),
         MarkdownElement::Everyone => view! {
-            <span class="text-green-500">"Everyone"</span>
+            <span class="cursor-pointer select-none bg-indigo-500/20 color-indigo-100 font-base hover:color-base-content hover:bg-indigo-500/80 hover:underline rounded-sm px-0.5">@"Everyone"</span>
         }
         .into_any(),
     }

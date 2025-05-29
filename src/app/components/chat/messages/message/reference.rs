@@ -6,7 +6,9 @@ use crate::app::components::channel::member::banner::MemberBanner;
 use crate::app::components::ui::context_menu::{MenuAlign, MenuSide};
 use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::components::ui::markdown::{MarkdownElement, MarkdownNode, MarkdownParser, MarkdownTree};
+use crate::entities::member::Member;
 use crate::entities::message::ChannelMessage;
+use crate::entities::role::Role;
 
 #[component]
 pub fn Reference(message: Signal<ChannelMessage>) -> impl IntoView {
@@ -45,7 +47,7 @@ pub fn Reference(message: Signal<ChannelMessage>) -> impl IntoView {
                 </div>
             </MemberBanner>
             <div class="w-auto h-full flex items-center min-w-0 mr-1">
-                <Markdown markdown=markdown/>
+                <Markdown role_mentions=Signal::derive(move || message.get().mentions_roles) mentions=Signal::derive(move || message.get().mentions) markdown=markdown/>
             </div>
             <Show when=move || !message.get().attachments.is_empty()>
                 <Icon icon=IconData::PaperClip class="w-4 h-4"/>
@@ -57,12 +59,14 @@ pub fn Reference(message: Signal<ChannelMessage>) -> impl IntoView {
 #[component]
 fn Markdown(
     markdown: Signal<MarkdownTree>,
+    mentions: Signal<Vec<Member>>,
+    role_mentions: Signal<Vec<Role>>,
 ) -> impl IntoView {
     view! {
         {
             move || {
                 view!{
-                    <MarkdownParagraph node=markdown.get().root/>
+                    <MarkdownParagraph node=markdown.get().root mentions=mentions role_mentions=role_mentions/>
                 }
             }
         }
@@ -72,12 +76,14 @@ fn Markdown(
 #[component]
 fn MarkdownParagraph(
     node: MarkdownNode,
+    mentions: Signal<Vec<Member>>,
+    role_mentions: Signal<Vec<Role>>,
 ) -> impl IntoView {
     let childrens = node
         .childrens
         .iter()
         .map(|node| {
-            view! {<MarkdownParagraph node=node.clone() />}
+            view! { <MarkdownParagraph node=node.clone() mentions=mentions role_mentions=role_mentions/>}
         })
         .collect_view();
 
@@ -127,11 +133,23 @@ fn MarkdownParagraph(
         }
         .into_any(),
         MarkdownElement::Role(id) => view! {
-            <div class="text-red-500">{id}</div>
+            <div class="text-red-500">{id.to_string()}</div>
         }
         .into_any(),
         MarkdownElement::Mention(id) => view! {
-            <div class="text-red-500">{id}</div>
+            {
+                move || {
+                    if let Some(mention) = mentions.get().iter().find(|mention| mention.id == id).cloned() {
+                        Either::Left(view!{
+                            <span class="cursor-pointer select-none bg-indigo-500/20 color-indigo-100 font-base hover:color-base-content hover:bg-indigo-500/80 hover:underline rounded-sm px-0.5">{mention.name}</span>
+                        })
+                    } else {
+                        Either::Right(view!{
+                            <span class="cursor-pointer select-none bg-indigo-500/20 color-indigo-100 font-base hover:color-base-content hover:bg-indigo-500/80 hover:underline rounded-sm px-0.5">"Unknown"</span>
+                        })
+                    }
+                }
+            }
         }
         .into_any(),
         MarkdownElement::Everyone => view! {

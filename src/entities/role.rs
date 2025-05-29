@@ -42,6 +42,23 @@ impl Role {
         .fetch_all(pool)
         .await?)
     }
+    pub async fn check_role_on_server(
+        role_id: Uuid,
+        server_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Role, Error> {
+        Ok(sqlx::query_as::<_, Role>(
+            r#"
+                    SELECT roles.id, roles.name,roles.server_id, roles.can_edit, roles.priority
+                    FROM roles
+                    WHERE roles.server_id = ? AND roles.id = ?
+                "#,
+        )
+        .bind(server_id)
+        .bind(role_id)
+        .fetch_one(pool)
+        .await?)
+    }
     pub async fn get_member_roles(member: Uuid, pool: &MySqlPool) -> Result<Vec<Role>, Error> {
         Ok(sqlx::query_as::<_, Role>("SELECT roles.id, roles.name,roles.server_id, roles.can_edit, roles.priority FROM roles LEFT JOIN member_roles ON roles.id = member_roles.role_id LEFT JOIN members ON member_roles.member_id = members.id WHERE members.id = ?  ORDER BY priority DESC").bind(member).fetch_all(pool).await?)
     }

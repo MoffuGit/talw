@@ -1,11 +1,12 @@
 mod attachments;
-mod markdown;
+mod embeds;
 mod reactions;
 mod reference;
 
 use crate::app::api::messages::{React, Unreact};
 use crate::app::components::chat::messages::menu::MessageContextMenu;
 use crate::app::components::ui::icons::{Icon, IconData};
+use crate::app::components::ui::markdown::styled::Markdown;
 use crate::app::components::ui::markdown::MarkdownParser;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::server::ServerStoreFields;
@@ -23,7 +24,7 @@ use crate::entities::member::{Member, MemberStoreFields};
 use crate::entities::message::ChannelMessage;
 
 use self::attachments::Attachments;
-use self::markdown::Markdown;
+use self::embeds::Embeds;
 use self::reference::Reference;
 
 use super::Group;
@@ -90,6 +91,11 @@ pub fn ChatMessage(
                             message.update(|message| message.attachments = content);
                         }
                     },
+                    Message::MessageEmbeds { message_id, embeds } => {
+                        if message.get().id == message_id {
+                            message.update(|message| message.embeds = embeds);
+                        }
+                    }
                     Message::ReactionDeleted {
                         reaction_id,
                         message_id,
@@ -210,7 +216,8 @@ pub fn ChatMessage(
                     })
                 }
                 <div class="flex flex-col items-start">
-                    <Markdown markdown=markdown block_kind=block_kind/>
+                    <Markdown role_mentions=Signal::derive(move || message.get().mentions_roles) mentions=Signal::derive(move || message.get().mentions) markdown=markdown block_kind=block_kind/>
+                    <Embeds message=message />
                     <Attachments message=message/>
                     <Show when=move || {
                         !message.get().reactions.is_empty()

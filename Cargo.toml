@@ -78,11 +78,13 @@ pulldown-cmark = "0.13.0"
 regex = "1.11.1"
 emojis = {version=  "0.6.4", features=["serde"]}
 gloo-file = {version =  "0.3.0", features=["futures"]}
+scraper = {version =  "0.23.1", optional = true}
 
 [features]
 hydrate = ["leptos/hydrate", "dep:console_error_panic_hook"]
 ssr = [
   "dep:urlencoding",
+  "dep:scraper",
   "dep:multer",
   "dep:dotenvy",
   "dep:reqwest",

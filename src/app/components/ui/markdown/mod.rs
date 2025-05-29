@@ -1,9 +1,12 @@
+pub mod styled;
 use std::iter::Peekable;
+use std::str::FromStr;
 
 use pulldown_cmark::{
     BlockQuoteKind, CodeBlockKind, Event, HeadingLevel, LinkType, Options, Parser, Tag, TagEnd,
 };
 use regex::Regex;
+use uuid::Uuid;
 
 #[derive(PartialEq, Debug, Clone)]
 pub enum MarkdownElement {
@@ -12,8 +15,8 @@ pub enum MarkdownElement {
     Code(String),
     Heading(HeadingLevel),
     LineBreak,
-    Role(String),
-    Mention(String),
+    Role(Uuid),
+    Mention(Uuid),
     Bold,
     Everyone,
     Italic,
@@ -133,7 +136,8 @@ impl<'a> MarkdownParser<'a> {
         let mut nodes = vec![];
         let mut current_offset = self.offset;
         let start = self.offset;
-        let mention_regex = Regex::new(r"<@(?:(?P<type>role):)?(?P<id>\d+)>|<@everyone>").unwrap();
+        let mention_regex =
+            Regex::new(r"<@(?:(?P<type>role):)?(?P<id>[0-9a-f]{32})>|<@everyone>").unwrap();
         let mut last_match_end = 0;
 
         for capture in mention_regex.captures_iter(&text) {
@@ -155,10 +159,13 @@ impl<'a> MarkdownParser<'a> {
             let element = if full_match.as_str() == "<@everyone>" {
                 MarkdownElement::Everyone
             } else if let Some(id) = capture.name("id") {
-                let id = id.as_str().to_string();
-                match capture.name("type") {
-                    Some(_) => MarkdownElement::Role(id),
-                    None => MarkdownElement::Mention(id),
+                if let Ok(id) = Uuid::from_str(id.as_str()) {
+                    match capture.name("type") {
+                        Some(_) => MarkdownElement::Role(id),
+                        None => MarkdownElement::Mention(id),
+                    }
+                } else {
+                    continue;
                 }
             } else {
                 continue;

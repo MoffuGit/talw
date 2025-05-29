@@ -1,19 +1,25 @@
 use std::str::FromStr;
 
 use cfg_if::cfg_if;
+use leptos::html::em;
 use leptos::prelude::*;
 use log::debug;
+use regex::Regex;
 use server_fn::codec::{MultipartData, MultipartFormData};
 use server_fn::ServerFnError;
 use uuid::Uuid;
 
 use crate::app::components::uploadthings::{FileType, UploadthingFile};
-use crate::entities::message::ChannelMessage;
+use crate::entities::member::Member;
+use crate::entities::message::{ChannelMessage, Embed};
+use crate::entities::role::Role;
 use crate::messages::{Message, ServerMessage};
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use reqwest::Url;
         use crate::uploadthing::{FileData, UploadThing};
+        use crate::open_graph::fetch_op_data;
         use multer::bytes::Bytes as MulterBytes;
         use futures::TryStreamExt;
         use super::{auth_user, user_can_edit};
@@ -154,6 +160,66 @@ pub async fn send_message_attachments(data: MultipartData) -> Result<(), ServerF
     Ok(())
 }
 
+#[cfg(feature = "ssr")]
+#[derive(Debug, PartialEq)]
+enum MessageElement {
+    Member(Uuid),
+    Role(Uuid),
+    Everyone,
+    Url(Url),
+}
+
+#[cfg(feature = "ssr")]
+fn extract_message_elements(message: &str) -> Vec<MessageElement> {
+    let mention_regex =
+        Regex::new(r"<@(?:(?P<type>role):)?(?P<id>[0-9a-f]{32})>|<@everyone>").unwrap();
+
+    let mut data = vec![];
+    let mut current_index = 0;
+
+    for capture in mention_regex.captures_iter(message) {
+        if let Some(match_range) = capture.get(0) {
+            if match_range.start() > current_index {
+                let text = &message[current_index..match_range.start()];
+                process_urls(text, &mut data);
+            }
+
+            if capture.get(0).is_some_and(|m| m.as_str() == "<@everyone>") {
+                data.push(MessageElement::Everyone);
+            } else if let Some(id_match) = capture.name("id") {
+                if let Ok(id) = Uuid::from_str(id_match.as_str()) {
+                    if capture.name("type").is_some() {
+                        data.push(MessageElement::Role(id));
+                    } else {
+                        data.push(MessageElement::Member(id));
+                    }
+                }
+            }
+
+            current_index = match_range.end();
+        }
+    }
+
+    if current_index < message.len() {
+        let text = &message[current_index..];
+        process_urls(text, &mut data);
+    }
+
+    data
+}
+
+#[cfg(feature = "ssr")]
+fn process_urls(text: &str, data: &mut Vec<MessageElement>) {
+    for word in text.split_whitespace() {
+        if word.starts_with("<") && word.ends_with(">") && word.len() > 2 {
+            let url_string = &word[1..word.len() - 1];
+            if let Ok(url) = Url::parse(url_string) {
+                data.push(MessageElement::Url(url));
+            }
+        }
+    }
+}
+
 #[server(SendMessage)]
 pub async fn send_message(
     server_id: Uuid,
@@ -170,16 +236,60 @@ pub async fn send_message(
         return Err(ServerFnError::new("The message is empty"));
     }
 
-    let message =
+    let mut message =
         ChannelMessage::add_channel_message(channel_id, member_id, &message, msg_reference, &pool)
             .await?;
+
+    let elements = extract_message_elements(&message.content);
+    let mut urls = vec![];
+
+    for element in elements {
+        match element {
+            MessageElement::Member(id) => {
+                if let Ok(member) = Member::check_member_on_server(id, server_id, &pool).await {
+                    ChannelMessage::add_mention(message.id, member.id, &pool).await?;
+                    message.mentions.push(member);
+                }
+            }
+            MessageElement::Role(id) => {
+                if let Ok(role) = Role::check_role_on_server(id, server_id, &pool).await {
+                    ChannelMessage::add_role_mention(message.id, role.id, &pool).await?;
+                    message.mentions_roles.push(role);
+                }
+            }
+            MessageElement::Everyone => {
+                ChannelMessage::mention_everyone(message.id, &pool).await?;
+                message.mention_everyone = true;
+            }
+            MessageElement::Url(url) => {
+                urls.push(url);
+            }
+        }
+    }
+
     let id = message.id;
     msg_sender()?.send(ServerMessage {
         server_id,
         msg: Message::ChannelMessage {
-            attachments,
             channel_id,
             content: Box::new(message),
+        },
+    });
+
+    let mut embeds = vec![];
+
+    for url in urls {
+        if let Ok(op) = fetch_op_data(url.clone()).await {
+            if let Ok(embed) = ChannelMessage::add_embed(id, op, url.to_string(), &pool).await {
+                embeds.push(embed);
+            }
+        }
+    }
+    msg_sender()?.send(ServerMessage {
+        server_id,
+        msg: Message::MessageEmbeds {
+            message_id: id,
+            embeds,
         },
     });
 

@@ -101,6 +101,25 @@ impl Member {
         .fetch_one(pool)
         .await?)
     }
+
+    pub async fn check_member_on_server(
+        member_id: Uuid,
+        server_id: Uuid,
+        pool: &MySqlPool,
+    ) -> Result<Member, Error> {
+        Ok(sqlx::query_as::<_, Member>(
+            r#"
+                SELECT mv.* 
+                FROM members_with_profile_fallback mv 
+                WHERE mv.id = ? 
+                AND mv.server_id = ?
+            "#,
+        )
+        .bind(member_id)
+        .bind(server_id)
+        .fetch_one(pool)
+        .await?)
+    }
     pub async fn get_from_user_on_server(
         user_id: Uuid,
         server_id: Uuid,

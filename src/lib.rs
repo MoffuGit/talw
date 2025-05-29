@@ -3,6 +3,7 @@ pub mod entities;
 pub mod messages;
 #[cfg(feature = "ssr")]
 pub mod msg_sender;
+pub mod open_graph;
 #[cfg(feature = "ssr")]
 pub mod state;
 #[cfg(feature = "ssr")]

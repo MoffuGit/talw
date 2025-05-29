@@ -2,14 +2,13 @@ mod attachments;
 mod input;
 mod reference;
 
-use crate::app::api::messages::{send_message, send_message_attachments, SendMessage};
+use crate::app::api::messages::{send_message_attachments, SendMessage};
 use crate::app::components::chat::ChatContext;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::member::MemberStoreFields;
 use crate::entities::server::ServerStoreFields;
 use gloo_file::Blob;
 use leptos::prelude::*;
-use log::debug;
 use reactive_stores::Field;
 use uuid::Uuid;
 use web_sys::FormData;

@@ -1,8 +1,6 @@
-use emojis::Emoji;
 use leptos::html::Div;
 use leptos::prelude::*;
 use leptos_use::use_document;
-use log::debug;
 use reactive_stores::Store;
 
 use crate::app::api::messages::react;
@@ -45,7 +43,6 @@ pub fn Reaction(
             .unwrap_or(MenuSide::Right)
     });
     let react = Action::new(move |name: &String| {
-        debug!("{name}");
         react(
             name.to_string(),
             message.get().id,

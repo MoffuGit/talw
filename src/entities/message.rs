@@ -3,6 +3,7 @@ use chrono::{DateTime, Utc};
 use log::debug;
 use reactive_stores::Store;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
 use uuid::Uuid;
 
 use super::member::Member;
@@ -53,7 +54,7 @@ pub struct Attachment {
 pub struct Embed {
     id: Uuid,
     url: String,
-    data: String,
+    data: JsonValue,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Store)]

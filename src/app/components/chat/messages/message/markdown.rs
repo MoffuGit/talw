@@ -2,7 +2,7 @@ use leptos::prelude::*;
 use pulldown_cmark::{BlockQuoteKind, HeadingLevel};
 
 use crate::app::components::ui::markdown::{
-    MarkdownElement, MarkdownNode, MarkdownParser, MarkdownTree,
+    MarkdownElement, MarkdownNode, MarkdownTree,
 };
 
 #[component]

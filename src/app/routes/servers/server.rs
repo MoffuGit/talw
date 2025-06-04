@@ -9,15 +9,17 @@ use crate::app::components::navigation::server::sidebar::ServerSideBar;
 use crate::app::components::navigation::server::sidebar::ServerSideBarContext;
 use crate::app::routes::servers::MemberStore;
 use crate::app::routes::servers::MemberStoreStoreFields;
+use crate::app::stores::ServersStoreSync;
+use crate::app::sync::use_sync;
 use crate::entities::member::Member;
 use crate::entities::member::MemberStoreFields;
 use crate::entities::member::Status;
 use crate::entities::role::Role;
 use crate::entities::server::Server as ServerEntitie;
 use crate::entities::server::ServerStoreFields;
-use crate::messages::ClientMessage;
+// use crate::messages::ClientMessage;
 use crate::messages::Message;
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 use futures::try_join;
 use leptos::prelude::*;
 use leptos_router::components::Outlet;
@@ -79,91 +81,92 @@ pub fn Server() -> impl IntoView {
                 let member = Store::new(member);
                 let members = Store::new(MemberStore { members });
                 let roles = Store::new(RoleStore { roles });
-                let ws = use_ws();
                 let navigate = use_navigate();
-                ws.on_app_msg(move |msg| match msg {
-                    ClientMessage::LeavedServer { server_id, .. }
-                    | ClientMessage::ServerDeleted { server_id } => {
-                        if server_id == server.id().get() {
-                            navigate("/home", Default::default())
-                        }
-                    }
-                    _ => {}
-                });
-                ws.on_server_msg(server.id().get(), move |msg| match msg {
-                    Message::MemberUpdated {
-                        member_id,
-                        name,
-                        image_url,
-                    } => {
-                        if member.id().get() == member_id {
-                            if let Some(name) = name.clone() {
-                                *member.name().write() = name
-                            }
-                            if let Some(image_url) = image_url.clone() {
-                                *member.image_url().write() = Some(image_url);
-                            }
-                        }
-                        members.members().update(|members| {
-                            if let Some(position) =
-                                members.iter().position(|member| member.id == member_id)
-                            {
-                                if let Some(member) = members.get_mut(position) {
-                                    if let Some(name) = name {
-                                        member.name = name
-                                    }
-                                    if let Some(image_url) = image_url {
-                                        member.image_url = Some(image_url);
-                                    }
-                                }
-                            }
-                        });
-                    }
-                    Message::ServerUpdated { name, image } => {
-                        if let Some(name) = name {
-                            *server.name().write() = name;
-                        }
-                        if let Some(image) = image {
-                            *server.image_url().write() = Some(image);
-                        }
-                    }
-                    Message::MemberConnected { member_id } => {
-                        members.members().update(|members| {
-                            if let Some(position) =
-                                members.iter().position(|member| member.id == member_id)
-                            {
-                                if let Some(member) = members.get_mut(position) {
-                                    member.status = Status::ONLINE;
-                                }
-                            }
-                        });
-                    }
-                    Message::MemberDisconnected { member_id } => {
-                        members.members().update(|members| {
-                            if let Some(position) =
-                                members.iter().position(|member| member.id == member_id)
-                            {
-                                if let Some(member) = members.get_mut(position) {
-                                    member.status = Status::OFFLINE;
-                                }
-                            }
-                        });
-                    }
-                    Message::MemberJoinedServer { member } => {
-                        members.members().write().push(member);
-                    }
-                    Message::MemberLeftServer { member_id } => {
-                        if let Some(position) = members
-                            .members()
-                            .read()
-                            .iter()
-                            .position(|member| member.id == member_id)
-                        {
-                            members.members().write().swap_remove(position);
-                        }
-                    }
-                    _ => {}
-                });
+                let sync = use_sync();
+                if let Some(sync) = sync {
+                    sync.message_router.on_module_msg(
+                        "ServersStore",
+                        move |sync: ServersStoreSync| match sync {
+                            ServersStoreSync::Updated { id } => {}
+                            ServersStoreSync::Leave { id } => todo!(),
+                            _ => {}
+                        },
+                    );
+                }
+                // ws.on_server_msg(server.id().get(), move |msg| match msg {
+                //     Message::MemberUpdated {
+                //         member_id,
+                //         name,
+                //         image_url,
+                //     } => {
+                //         if member.id().get() == member_id {
+                //             if let Some(name) = name.clone() {
+                //                 *member.name().write() = name
+                //             }
+                //             if let Some(image_url) = image_url.clone() {
+                //                 *member.image_url().write() = Some(image_url);
+                //             }
+                //         }
+                //         members.members().update(|members| {
+                //             if let Some(position) =
+                //                 members.iter().position(|member| member.id == member_id)
+                //             {
+                //                 if let Some(member) = members.get_mut(position) {
+                //                     if let Some(name) = name {
+                //                         member.name = name
+                //                     }
+                //                     if let Some(image_url) = image_url {
+                //                         member.image_url = Some(image_url);
+                //                     }
+                //                 }
+                //             }
+                //         });
+                //     }
+                //     Message::ServerUpdated { name, image } => {
+                //         if let Some(name) = name {
+                //             *server.name().write() = name;
+                //         }
+                //         if let Some(image) = image {
+                //             *server.image_url().write() = Some(image);
+                //         }
+                //     }
+                //     Message::MemberConnected { member_id } => {
+                //         members.members().update(|members| {
+                //             if let Some(position) =
+                //                 members.iter().position(|member| member.id == member_id)
+                //             {
+                //                 if let Some(member) = members.get_mut(position) {
+                //                     member.status = Status::ONLINE;
+                //                 }
+                //             }
+                //         });
+                //     }
+                //     Message::MemberDisconnected { member_id } => {
+                //         members.members().update(|members| {
+                //             if let Some(position) =
+                //                 members.iter().position(|member| member.id == member_id)
+                //             {
+                //                 if let Some(member) = members.get_mut(position) {
+                //                     member.status = Status::OFFLINE;
+                //                 }
+                //             }
+                //         });
+                //     }
+                //     Message::MemberJoinedServer { member } => {
+                //         members.members().write().push(member);
+                //     }
+                //     Message::MemberLeftServer { member_id } => {
+                //         if let Some(position) = members
+                //             .members()
+                //             .read()
+                //             .iter()
+                //             .position(|member| member.id == member_id)
+                //         {
+                //             members.members().write().swap_remove(position);
+                //         }
+                //     }
+                //     _ => {}
+                // });
 
                 outer_owner.with(|| {
                     provide_context(ServerSideBarContext { open });

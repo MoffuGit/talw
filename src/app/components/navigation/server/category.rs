@@ -14,7 +14,7 @@ use crate::entities::category::CategoryStoreFields;
 use crate::entities::channel::ChannelStoreFields;
 use crate::entities::server::ServerStoreFields;
 use crate::messages::Message;
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 use leptos::html;
 use leptos::prelude::*;
 use reactive_stores::Field;
@@ -39,19 +39,19 @@ pub fn Category(
     let edit_category_node = NodeRef::<html::Div>::new();
     let delete_category_node = NodeRef::<html::Div>::new();
     let menu_open = RwSignal::new(false);
-    let ws = use_ws();
-
-    ws.on_server_msg(server.id().get(), move |msg| {
-        if let Message::CategoryUpdated {
-            category_id,
-            new_name,
-        } = msg
-        {
-            if category.id().get() == category_id {
-                *category.name().write() = new_name;
-            }
-        }
-    });
+    // let ws = use_ws();
+    //
+    // ws.on_server_msg(server.id().get(), move |msg| {
+    //     if let Message::CategoryUpdated {
+    //         category_id,
+    //         new_name,
+    //     } = msg
+    //     {
+    //         if category.id().get() == category_id {
+    //             *category.name().write() = new_name;
+    //         }
+    //     }
+    // });
 
     view! {
         <CollapsibleProvider open=collapsible_open>

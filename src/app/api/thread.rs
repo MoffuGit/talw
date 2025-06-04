@@ -9,7 +9,7 @@ use leptos::prelude::*;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use super::msg_sender;
+        // use super::msg_sender;
         use super::user_can_edit;
         use super::auth_user;
         use super::pool;
@@ -100,10 +100,10 @@ pub async fn create_thread(
             channel_id.simple(),
             thread.id.simple()
         ));
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::ThreadCreated { thread },
-        });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::ThreadCreated { thread },
+        // });
         Ok(())
     } else {
         Err(ServerFnError::new("You can't create a thread"))
@@ -116,13 +116,13 @@ pub async fn join_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), ServerF
     let user = auth_user()?;
     if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
         Thread::add_member(thread_id, member.id, &pool).await?;
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::MemberJoinThread {
-                thread_id,
-                member_id: member.id,
-            },
-        });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::MemberJoinThread {
+        //         thread_id,
+        //         member_id: member.id,
+        //     },
+        // });
         Ok(())
     } else {
         Err(ServerFnError::new("You join into this thread"))
@@ -135,13 +135,13 @@ pub async fn leave_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), Server
     let user = auth_user()?;
     if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
         Thread::remove_member(thread_id, member.id, &pool).await?;
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::MemberLeaveThread {
-                thread_id,
-                member_id: member.id,
-            },
-        });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::MemberLeaveThread {
+        //         thread_id,
+        //         member_id: member.id,
+        //     },
+        // });
         Ok(())
     } else {
         Err(ServerFnError::new("You can't leave this thread"))
@@ -156,20 +156,20 @@ pub async fn delete_thread(thread_id: Uuid, server_id: Uuid) -> Result<(), Serve
     if user_can_edit(server_id, user.id, &pool).await? {
         Thread::delete_members(thread_id, &pool).await?;
         Thread::delete(thread_id, &pool).await?;
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::ThreadDeleted { thread_id },
-        });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::ThreadDeleted { thread_id },
+        // });
         return Ok(());
     }
     if let Ok(member) = Member::get_user_member(user.id, server_id, &pool).await {
         if Thread::get_created_by(thread_id, &pool).await? == member.id {
             Thread::delete_members(thread_id, &pool).await?;
             Thread::delete(thread_id, &pool).await?;
-            msg_sender()?.send(ServerMessage {
-                server_id,
-                msg: Message::ThreadDeleted { thread_id },
-            });
+            // msg_sender()?.send(ServerMessage {
+            //     server_id,
+            //     msg: Message::ThreadDeleted { thread_id },
+            // });
             return Ok(());
         }
     }

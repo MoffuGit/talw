@@ -5,7 +5,7 @@ use crate::app::components::navigation::server::{use_current_channel, use_curren
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::server::ServerStoreFields;
 use crate::entities::thread::ThreadStoreFields;
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 //use leptos_icons::Icon;
 
 use leptos::prelude::*;
@@ -32,22 +32,22 @@ pub fn ThreadSideBar() -> impl IntoView {
                                 Suspend::new(async move {
                                     thread.await.map(|thread| {
                                         let thread = Store::new(thread);
-                                        use_ws().on_server_msg(curent_server.server.id().get(), move |msg| {
-                                            match msg {
-                                                crate::messages::Message::ThreadDeleted { thread_id } => {
-                                                    if thread_id == thread.id().get() {
-                                                        use_navigate()("/", Default::default())
-                                                    }
-                                                },
-                                                crate::messages::Message::ChannelDeleted { channel_id } => {
-                                                    if channel_id == current {
-                                                        use_navigate()("/", Default::default())
-                                                    }
-
-                                                },
-                                                _ => {}
-                                            }
-                                        });
+                                        // use_ws().on_server_msg(curent_server.server.id().get(), move |msg| {
+                                        //     match msg {
+                                        //         crate::messages::Message::ThreadDeleted { thread_id } => {
+                                        //             if thread_id == thread.id().get() {
+                                        //                 use_navigate()("/", Default::default())
+                                        //             }
+                                        //         },
+                                        //         crate::messages::Message::ChannelDeleted { channel_id } => {
+                                        //             if channel_id == current {
+                                        //                 use_navigate()("/", Default::default())
+                                        //             }
+                                        //
+                                        //         },
+                                        //         _ => {}
+                                        //     }
+                                        // });
                                         provide_context(thread);
                                         view! {
                                             <div class=" flex flex-col flex-1">

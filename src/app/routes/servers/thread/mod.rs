@@ -12,7 +12,7 @@ use crate::app::routes::servers::MemberStore;
 use crate::entities::channel::ChannelStoreFields;
 use crate::entities::server::ServerStoreFields;
 use crate::entities::thread::ThreadStoreFields;
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 use leptos::prelude::*;
 use leptos_router::hooks::use_navigate;
 use reactive_stores::Store;
@@ -52,33 +52,33 @@ pub fn Thread() -> impl IntoView {
                                     let channel = Store::new(channel);
                                     let thread = Store::new(thread);
                                     let members = Store::new(MemberStore {members});
-                                    use_ws().on_server_msg(server_id.get(), move |msg| {
-                                        match msg {
-                                            crate::messages::Message::ThreadDeleted { thread_id } => {
-                                                if thread_id == thread.id().get() {
-                                                    use_navigate()("/", Default::default())
-                                                }
-                                            },
-                                            crate::messages::Message::ChannelDeleted { channel_id } => {
-                                                if channel_id == channel.id().get() {
-                                                    use_navigate()("/", Default::default())
-                                                }
-
-                                            },
-                                            crate::messages::Message::ChannelUpdated { channel_id, topic, name } => {
-                                                if channel_id == channel.id().get() {
-                                                    if let Some(topic) = topic {
-                                                        *channel.topic().write() = Some(topic)
-                                                    }
-
-                                                    if let Some(name) = name {
-                                                        *channel.name().write() = name
-                                                    }
-                                                }
-                                            },
-                                            _ => {}
-                                        }
-                                    });
+                                    // use_ws().on_server_msg(server_id.get(), move |msg| {
+                                    //     match msg {
+                                    //         crate::messages::Message::ThreadDeleted { thread_id } => {
+                                    //             if thread_id == thread.id().get() {
+                                    //                 use_navigate()("/", Default::default())
+                                    //             }
+                                    //         },
+                                    //         crate::messages::Message::ChannelDeleted { channel_id } => {
+                                    //             if channel_id == channel.id().get() {
+                                    //                 use_navigate()("/", Default::default())
+                                    //             }
+                                    //
+                                    //         },
+                                    //         crate::messages::Message::ChannelUpdated { channel_id, topic, name } => {
+                                    //             if channel_id == channel.id().get() {
+                                    //                 if let Some(topic) = topic {
+                                    //                     *channel.topic().write() = Some(topic)
+                                    //                 }
+                                    //
+                                    //                 if let Some(name) = name {
+                                    //                     *channel.name().write() = name
+                                    //                 }
+                                    //             }
+                                    //         },
+                                    //         _ => {}
+                                    //     }
+                                    // });
                                     view!{
                                         <ChannelHeader
                                             channel=channel

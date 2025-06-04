@@ -1,8 +1,12 @@
+use std::collections::HashSet;
+
+use crate::app::stores::ServersStoreSync;
 use crate::entities::role::Role;
 use crate::entities::server::Server;
-use crate::messages::{AppMessage, ClientMessage, Message, ServerMessage};
+use crate::sync::UnsubscriptionRequest;
 use cfg_if::cfg_if;
 use leptos::prelude::*;
+use serde_json::json;
 use server_fn::codec::{MultipartData, MultipartFormData};
 use strum_macros::{Display, EnumIter};
 use uuid::Uuid;
@@ -10,7 +14,10 @@ use web_sys::FormData;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use super::msg_sender;
+        use crate::sync::{MutationRequest, SubscriptionRequest, SyncRequest};
+        use crate::sync::connections::ConnectionMessage;
+        use super::connection;
+        use super::sync;
         use std::str::FromStr;
         use crate::entities::member::Member;
         use multer::bytes::Bytes as MulterBytes;
@@ -149,13 +156,13 @@ pub async fn edit_server_image(data: MultipartData) -> Result<(), ServerFnError>
                     .map_err(|_| ServerFnError::new("We have problems deleting your file"))?;
             }
             Server::set_image_url(&res.url, &res.key, server_id, &pool).await?;
-            msg_sender()?.send(ServerMessage {
-                server_id,
-                msg: Message::ServerUpdated {
-                    name: None,
-                    image: Some(res.url),
-                },
-            });
+            let _ = sync()?
+                .broadcast(SyncRequest::Mutation(MutationRequest {
+                    key: format!("server:{server_id}"),
+                    module: "ServersStore".into(),
+                    data: json!(ServersStoreSync::Updated { id: server_id }),
+                }))
+                .await;
             return Ok(());
         }
     }
@@ -169,13 +176,13 @@ pub async fn edit_server_name(new_name: String, server_id: Uuid) -> Result<(), S
     auth_user()?;
     Server::set_server_name(&new_name, server_id, &pool).await?;
 
-    msg_sender()?.send(ServerMessage {
-        server_id,
-        msg: Message::ServerUpdated {
-            name: Some(new_name),
-            image: None,
-        },
-    });
+    let _ = sync()?
+        .broadcast(SyncRequest::Mutation(MutationRequest {
+            key: format!("server:{server_id}"),
+            module: "ServersStore".into(),
+            data: json!(ServersStoreSync::Updated { id: server_id }),
+        }))
+        .await;
 
     Ok(())
 }
@@ -192,7 +199,30 @@ pub async fn get_server_roles(server_id: Uuid) -> Result<Vec<Role>, ServerFnErro
 pub async fn get_user_servers() -> Result<Vec<Server>, ServerFnError> {
     let pool = pool()?;
     let user = auth_user()?;
-    Ok(Server::get_user_servers(user.id, &pool).await?)
+    let sync = sync()?;
+    let connection = connection()?;
+    let _ = connection
+        .broadcast(ConnectionMessage::InitConnection { client: user.id })
+        .await;
+    let servers = Server::get_user_servers(user.id, &pool).await?;
+    let _ = sync
+        .broadcast(SyncRequest::Subscription(SubscriptionRequest {
+            keys: HashSet::from([format!("user:{}", user.id)]),
+            client: user.id,
+            action: crate::sync::SubscriptionMode::Add,
+        }))
+        .await;
+    let _ = sync
+        .broadcast(SyncRequest::Subscription(SubscriptionRequest {
+            keys: servers
+                .iter()
+                .map(|server| format!("server:{}", server.id))
+                .collect(),
+            client: user.id,
+            action: crate::sync::SubscriptionMode::Add,
+        }))
+        .await;
+    Ok(servers)
 }
 
 #[server(JoinServerWithInvitation)]
@@ -213,7 +243,6 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
     }
     let pool = pool()?;
     let user = auth_user()?;
-    let msg_sender = msg_sender()?;
     let invitation = validate_invitation(invitation)
         .ok_or_else(|| ServerFnError::new("Your invitation is invalid"))?;
     match Member::check_member_from_invitation(user.id, invitation, &pool).await {
@@ -225,15 +254,17 @@ pub async fn join_server_with_invitation(invitation: String) -> Result<(), Serve
                 Ok(server_id) => {
                     let server = Server::get_server(server_id, &pool).await?;
                     let member = Member::get_from_user_on_server(user.id, server_id, &pool).await?;
-                    msg_sender.send(ClientMessage::JoinedToServer {
-                        server,
-                        member: member.clone(),
-                        user_id: user.id,
-                    });
-                    msg_sender.send(ServerMessage {
-                        server_id,
-                        msg: Message::MemberJoinedServer { member },
-                    });
+                    let _ = sync()?
+                        .broadcast(SyncRequest::Mutation(MutationRequest {
+                            key: format!("server:{server_id}"),
+                            module: "ServersStore".into(),
+                            data: json!(ServersStoreSync::Join { server }),
+                        }))
+                        .await;
+                    // msg_sender.send(ServerMessage {
+                    //     server_id,
+                    //     msg: Message::MemberJoinedServer { member },
+                    // });
                     redirect(&format!("/servers/{server_id}"))
                 }
                 Err(crate::entities::Error::NotFound) => {
@@ -343,13 +374,16 @@ pub async fn create_server(data: MultipartData) -> Result<Server, ServerFnError>
         &pool,
     )
     .await?;
-    let msg_sender = msg_sender()?;
     redirect(&format!("/servers/{}", server.id.simple()));
-    msg_sender.send(ClientMessage::JoinedToServer {
-        server: server.clone(),
-        member,
-        user_id: user.id,
-    });
+    let _ = sync()?
+        .broadcast(SyncRequest::Mutation(MutationRequest {
+            key: format!("server:{}", server.id),
+            module: "ServersStore".into(),
+            data: json!(ServersStoreSync::Join {
+                server: server.clone()
+            }),
+        }))
+        .await;
     Ok(server)
 }
 
@@ -365,24 +399,28 @@ pub async fn get_server(server_id: Uuid) -> Result<Server, ServerFnError> {
 pub async fn leave_server(server_id: Uuid) -> Result<(), ServerFnError> {
     let pool = pool()?;
     let auth = auth_user()?;
-    let msg_sender = msg_sender()?;
     let member = Member::get_from_user_on_server(auth.id, server_id, &pool).await?;
     Member::delete_from_server(auth.id, server_id, &pool).await?;
-    msg_sender.send(AppMessage::Unsubscribe {
-        user_id: auth.id,
-        server_id,
-        member_id: member.id,
-    });
-    msg_sender.send(ServerMessage {
-        server_id,
-        msg: Message::MemberLeftServer {
-            member_id: member.id,
-        },
-    });
-    msg_sender.send(ClientMessage::LeavedServer {
-        server_id,
-        user_id: auth.id,
-    });
+    let _ = sync()?
+        .broadcast(SyncRequest::Mutation(MutationRequest {
+            key: format!("server:{server_id}"),
+            module: "ServersStore".into(),
+            data: json!(ServersStoreSync::Leave { id: server_id }),
+        }))
+        .await;
+    let _ = sync()?
+        .broadcast(SyncRequest::Unsubscription(UnsubscriptionRequest {
+            keys: HashSet::from([format!("server:{server_id}")]),
+            client: auth.id,
+            prefix: None,
+        }))
+        .await;
+    // msg_sender.send(ServerMessage {
+    //     server_id,
+    //     msg: Message::MemberLeftServer {
+    //         member_id: member.id,
+    //     },
+    // });
     redirect("/servers/me");
     Ok(())
 }

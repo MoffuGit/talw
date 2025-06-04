@@ -4,7 +4,7 @@ use crate::app::components::menu::thread::ThreadMenuContent;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::member::MemberStoreFields;
 use crate::entities::thread::ThreadStoreFields;
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 use leptos::html;
 use leptos::prelude::*;
 use leptos::task::spawn_local;
@@ -44,28 +44,28 @@ pub fn Thread(
                                 threads
                             });
 
-                            use_ws().on_server_msg(server_id.get(), move |msg| match msg {
-                                crate::messages::Message::ThreadDeleted { thread_id } => {
-                                    thread_store.threads().update(|threads| {
-                                        threads.retain(|thread| thread.id != thread_id);
-                                    });
-                                },
-                                crate::messages::Message::MemberJoinThread { thread_id, member_id } => {
-                                    if member.id().get() == member_id {
-                                        spawn_local(async move {
-                                            if let Ok(thread) = get_thread(thread_id, channel_id.get()).await {
-                                                thread_store.threads().update(|threads| threads.push(thread));
-                                            }
-                                        });
-                                    }
-                                },
-                                crate::messages::Message::MemberLeaveThread { thread_id, member_id } => {
-                                    if member.id().get() == member_id {
-                                        thread_store.threads().update(|threads| threads.retain(|thread| thread.id != thread_id));
-                                    }
-                                },
-                                _ => {},
-                            });
+                            // use_ws().on_server_msg(server_id.get(), move |msg| match msg {
+                            //     crate::messages::Message::ThreadDeleted { thread_id } => {
+                            //         thread_store.threads().update(|threads| {
+                            //             threads.retain(|thread| thread.id != thread_id);
+                            //         });
+                            //     },
+                            //     crate::messages::Message::MemberJoinThread { thread_id, member_id } => {
+                            //         if member.id().get() == member_id {
+                            //             spawn_local(async move {
+                            //                 if let Ok(thread) = get_thread(thread_id, channel_id.get()).await {
+                            //                     thread_store.threads().update(|threads| threads.push(thread));
+                            //                 }
+                            //             });
+                            //         }
+                            //     },
+                            //     crate::messages::Message::MemberLeaveThread { thread_id, member_id } => {
+                            //         if member.id().get() == member_id {
+                            //             thread_store.threads().update(|threads| threads.retain(|thread| thread.id != thread_id));
+                            //         }
+                            //     },
+                            //     _ => {},
+                            // });
 
                             view!{
                                 <For

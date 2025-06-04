@@ -11,7 +11,7 @@ use crate::app::components::ui::markdown::MarkdownParser;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::entities::server::ServerStoreFields;
 use crate::messages::Message;
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 use std::ops::Not;
 
 use leptos::either::Either;
@@ -63,93 +63,93 @@ pub fn ChatMessage(
     let block_kind: RwSignal<Option<BlockQuoteKind>> = RwSignal::new(None);
     let current_server = use_current_server_context().server;
     let current_member = use_current_server_context().member;
-    let ws = use_ws();
+    // let ws = use_ws();
     view! {
         {
             move || {
-                ws.on_server_msg(current_server.id().get_untracked(), move |msg| match msg {
-                    Message::PinMessage { message_id } => {
-                        if message.get().id == message_id {
-                            message.update(|message| message.pinned = true);
-                        }
-                    }
-                    Message::UnpinMessage { message_id } => {
-                        if message.get().id == message_id {
-                            message.update(|message| message.pinned = false);
-                        }
-                    }
-                    Message::ReactionCreated {
-                        reaction,
-                        message_id,
-                    } => {
-                        if message.get().id == message_id {
-                            message.update(|message| message.reactions.push(reaction));
-                        }
-                    }
-                    Message::MessageAttachments {content , message_id} => {
-                        if message.get().id == message_id {
-                            message.update(|message| message.attachments = content);
-                        }
-                    },
-                    Message::MessageEmbeds { message_id, embeds } => {
-                        if message.get().id == message_id {
-                            message.update(|message| message.embeds = embeds);
-                        }
-                    }
-                    Message::ReactionDeleted {
-                        reaction_id,
-                        message_id,
-                    } => {
-                        if message.get().id == message_id {
-                            message.update(|message| {
-                                message
-                                    .reactions
-                                    .retain(|reaction| reaction.id != reaction_id)
-                            });
-                        }
-                    }
-                    Message::MemberReact {
-                        react_id,
-                        message_id,
-                        member_id,
-                    } => {
-                        if message.get().id == message_id {
-                            message.update(|message| {
-                                if let Some(reaction) = message
-                                    .reactions
-                                    .iter_mut()
-                                    .find(|reaction| reaction.id == react_id)
-                                {
-                                    reaction.counter += 1;
-                                    if member_id == current_member.id().get() {
-                                        reaction.me = true
-                                    }
-                                }
-                            });
-                        }
-                    }
-                    Message::MemberUnreact {
-                        react_id,
-                        message_id,
-                        member_id,
-                    } => {
-                        if message.get().id == message_id {
-                            message.update(|message| {
-                                if let Some(reaction) = message
-                                    .reactions
-                                    .iter_mut()
-                                    .find(|reaction| reaction.id == react_id)
-                                {
-                                    reaction.counter -= 1;
-                                    if member_id == current_member.id().get() {
-                                        reaction.me = false
-                                    }
-                                }
-                            });
-                        }
-                    }
-                    _ => {}
-                });
+                // ws.on_server_msg(current_server.id().get_untracked(), move |msg| match msg {
+                //     Message::PinMessage { message_id } => {
+                //         if message.get().id == message_id {
+                //             message.update(|message| message.pinned = true);
+                //         }
+                //     }
+                //     Message::UnpinMessage { message_id } => {
+                //         if message.get().id == message_id {
+                //             message.update(|message| message.pinned = false);
+                //         }
+                //     }
+                //     Message::ReactionCreated {
+                //         reaction,
+                //         message_id,
+                //     } => {
+                //         if message.get().id == message_id {
+                //             message.update(|message| message.reactions.push(reaction));
+                //         }
+                //     }
+                //     Message::MessageAttachments {content , message_id} => {
+                //         if message.get().id == message_id {
+                //             message.update(|message| message.attachments = content);
+                //         }
+                //     },
+                //     Message::MessageEmbeds { message_id, embeds } => {
+                //         if message.get().id == message_id {
+                //             message.update(|message| message.embeds = embeds);
+                //         }
+                //     }
+                //     Message::ReactionDeleted {
+                //         reaction_id,
+                //         message_id,
+                //     } => {
+                //         if message.get().id == message_id {
+                //             message.update(|message| {
+                //                 message
+                //                     .reactions
+                //                     .retain(|reaction| reaction.id != reaction_id)
+                //             });
+                //         }
+                //     }
+                //     Message::MemberReact {
+                //         react_id,
+                //         message_id,
+                //         member_id,
+                //     } => {
+                //         if message.get().id == message_id {
+                //             message.update(|message| {
+                //                 if let Some(reaction) = message
+                //                     .reactions
+                //                     .iter_mut()
+                //                     .find(|reaction| reaction.id == react_id)
+                //                 {
+                //                     reaction.counter += 1;
+                //                     if member_id == current_member.id().get() {
+                //                         reaction.me = true
+                //                     }
+                //                 }
+                //             });
+                //         }
+                //     }
+                //     Message::MemberUnreact {
+                //         react_id,
+                //         message_id,
+                //         member_id,
+                //     } => {
+                //         if message.get().id == message_id {
+                //             message.update(|message| {
+                //                 if let Some(reaction) = message
+                //                     .reactions
+                //                     .iter_mut()
+                //                     .find(|reaction| reaction.id == react_id)
+                //                 {
+                //                     reaction.counter -= 1;
+                //                     if member_id == current_member.id().get() {
+                //                         reaction.me = false
+                //                     }
+                //                 }
+                //             });
+                //         }
+                //     }
+                //     _ => {}
+                // });
 
             }
         }

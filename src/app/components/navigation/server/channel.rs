@@ -9,7 +9,7 @@ use crate::entities::channel::Channel;
 use crate::entities::channel::ChannelStoreFields;
 use crate::entities::server::ServerStoreFields;
 use crate::messages::Message;
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 //use icondata;
 //use icondata:Icon;
 use leptos::html;
@@ -22,25 +22,25 @@ use super::thread::Thread;
 
 #[component]
 pub fn Channel(#[prop(into)] channel: Field<Channel>) -> impl IntoView {
-    let ws = use_ws();
-    ws.on_server_msg(channel.server_id().get(), move |msg| {
-        if let Message::ChannelUpdated {
-            topic,
-            name,
-            channel_id,
-        } = msg
-        {
-            if channel_id == channel.id().get() {
-                if let Some(topic) = topic {
-                    *channel.topic().write() = Some(topic)
-                }
-
-                if let Some(name) = name {
-                    *channel.name().write() = name
-                }
-            }
-        }
-    });
+    // let ws = use_ws();
+    // ws.on_server_msg(channel.server_id().get(), move |msg| {
+    //     if let Message::ChannelUpdated {
+    //         topic,
+    //         name,
+    //         channel_id,
+    //     } = msg
+    //     {
+    //         if channel_id == channel.id().get() {
+    //             if let Some(topic) = topic {
+    //                 *channel.topic().write() = Some(topic)
+    //             }
+    //
+    //             if let Some(name) = name {
+    //                 *channel.name().write() = name
+    //             }
+    //         }
+    //     }
+    // });
     view! {
         <ChannelMenu channel=channel />
         <Thread channel_id=channel.id() server_id=channel.server_id() />

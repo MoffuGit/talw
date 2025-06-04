@@ -1,15 +1,16 @@
-use super::server;
 use crate::entities::channel::Channel;
 use crate::entities::channel::ChannelType;
 use crate::messages::Message;
 use crate::messages::ServerMessage;
+use crate::sync::MutationRequest;
+use crate::sync::SyncRequest;
 use cfg_if::cfg_if;
 use leptos::prelude::*;
 use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use super::msg_sender;
+        use super::sync;
         use crate::entities::server::Server;
         use super::user_can_edit;
         use super::auth_user;
@@ -65,14 +66,14 @@ pub async fn update_channel(
             Channel::update_topic(channel_id, topic, &pool).await?;
         }
 
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::ChannelUpdated {
-                topic,
-                name,
-                channel_id,
-            },
-        });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::ChannelUpdated {
+        //         topic,
+        //         name,
+        //         channel_id,
+        //     },
+        // });
         Ok(())
     } else {
         Err(ServerFnError::new("You cant updatge this"))
@@ -109,19 +110,19 @@ pub async fn create_channel(
             Channel::create(&name, channel_type, server_id, &pool).await?
         };
 
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::ChannelCreated {
-                new_channel: Channel {
-                    id: channel_id,
-                    name,
-                    channel_type,
-                    server_id,
-                    category_id,
-                    topic: None,
-                },
-            },
-        });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::ChannelCreated {
+        //         new_channel: Channel {
+        //             id: channel_id,
+        //             name,
+        //             channel_type,
+        //             server_id,
+        //             category_id,
+        //             topic: None,
+        //         },
+        //     },
+        // });
         return Ok(channel_id);
     }
     Err(ServerFnError::new("You cant create a channel"))
@@ -134,10 +135,10 @@ pub async fn delete_channel(server_id: Uuid, channel_id: Uuid) -> Result<(), Ser
 
     if user_can_edit(server_id, user.id, &pool).await? {
         Channel::delete(channel_id, server_id, &pool).await?;
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::ChannelDeleted { channel_id },
-        });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::ChannelDeleted { channel_id },
+        // });
         return Ok(());
     }
 

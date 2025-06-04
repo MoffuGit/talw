@@ -24,7 +24,7 @@ cfg_if! {
         use futures::TryStreamExt;
         use super::{auth_user, user_can_edit};
         use super::auth;
-        use super::msg_sender;
+        // use super::msg_sender;
         use super::pool;
     }
 }
@@ -69,14 +69,14 @@ pub async fn update_pinned(
     let user = auth_user()?;
     if user_can_edit(server_id, user.id, &pool).await? {
         ChannelMessage::pin(message_id, pinned, &pool).await?;
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: if pinned {
-                Message::PinMessage { message_id }
-            } else {
-                Message::UnpinMessage { message_id }
-            },
-        });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: if pinned {
+        //         Message::PinMessage { message_id }
+        //     } else {
+        //         Message::UnpinMessage { message_id }
+        //     },
+        // });
     }
     Ok(())
 }
@@ -149,13 +149,13 @@ pub async fn send_message_attachments(data: MultipartData) -> Result<(), ServerF
             }
         }
     }
-    msg_sender()?.send(ServerMessage {
-        server_id,
-        msg: Message::MessageAttachments {
-            message_id,
-            content: attachments,
-        },
-    });
+    // msg_sender()?.send(ServerMessage {
+    //     server_id,
+    //     msg: Message::MessageAttachments {
+    //         message_id,
+    //         content: attachments,
+    //     },
+    // });
 
     Ok(())
 }
@@ -268,13 +268,13 @@ pub async fn send_message(
     }
 
     let id = message.id;
-    msg_sender()?.send(ServerMessage {
-        server_id,
-        msg: Message::ChannelMessage {
-            channel_id,
-            content: Box::new(message),
-        },
-    });
+    // msg_sender()?.send(ServerMessage {
+    //     server_id,
+    //     msg: Message::ChannelMessage {
+    //         channel_id,
+    //         content: Box::new(message),
+    //     },
+    // });
 
     let mut embeds = vec![];
 
@@ -285,13 +285,13 @@ pub async fn send_message(
             }
         }
     }
-    msg_sender()?.send(ServerMessage {
-        server_id,
-        msg: Message::MessageEmbeds {
-            message_id: id,
-            embeds,
-        },
-    });
+    // msg_sender()?.send(ServerMessage {
+    //     server_id,
+    //     msg: Message::MessageEmbeds {
+    //         message_id: id,
+    //         embeds,
+    //     },
+    // });
 
     Ok(id)
 }
@@ -311,14 +311,14 @@ pub async fn react(
         if !reaction.me {
             ChannelMessage::inc_reaction_counter(reaction.id, &pool).await?;
             ChannelMessage::add_member_to_reaction(reaction.id, member_id, &pool).await?;
-            msg_sender()?.send(ServerMessage {
-                server_id,
-                msg: Message::MemberReact {
-                    react_id: reaction.id,
-                    message_id,
-                    member_id,
-                },
-            });
+            // msg_sender()?.send(ServerMessage {
+            //     server_id,
+            //     msg: Message::MemberReact {
+            //         react_id: reaction.id,
+            //         message_id,
+            //         member_id,
+            //     },
+            // });
         }
     } else {
         let mut reaction = ChannelMessage::create_reaction(message_id, &name, &pool).await?;
@@ -326,21 +326,21 @@ pub async fn react(
         ChannelMessage::add_member_to_reaction(reaction.id, member_id, &pool).await?;
         reaction.me = true;
         let reaction_id = reaction.id;
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::ReactionCreated {
-                reaction,
-                message_id,
-            },
-        });
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::MemberReact {
-                react_id: reaction_id,
-                message_id,
-                member_id,
-            },
-        });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::ReactionCreated {
+        //         reaction,
+        //         message_id,
+        //     },
+        // });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::MemberReact {
+        //         react_id: reaction_id,
+        //         message_id,
+        //         member_id,
+        //     },
+        // });
     }
 
     Ok(())
@@ -360,23 +360,23 @@ pub async fn unreact(
     {
         if reaction.me {
             ChannelMessage::remove_member_to_reaction(reaction.id, member_id, &pool).await?;
-            msg_sender()?.send(ServerMessage {
-                server_id,
-                msg: Message::MemberUnreact {
-                    react_id: reaction.id,
-                    message_id: reaction.message_id,
-                    member_id,
-                },
-            });
+            // msg_sender()?.send(ServerMessage {
+            //     server_id,
+            //     msg: Message::MemberUnreact {
+            //         react_id: reaction.id,
+            //         message_id: reaction.message_id,
+            //         member_id,
+            //     },
+            // });
             if ChannelMessage::dec_reaction_counter(reaction.id, &pool).await? == 0 {
                 ChannelMessage::delete_reaction(reaction.id, &pool).await?;
-                msg_sender()?.send(ServerMessage {
-                    server_id,
-                    msg: Message::ReactionDeleted {
-                        reaction_id: reaction.id,
-                        message_id,
-                    },
-                });
+                // msg_sender()?.send(ServerMessage {
+                //     server_id,
+                //     msg: Message::ReactionDeleted {
+                //         reaction_id: reaction.id,
+                //         message_id,
+                //     },
+                // });
             }
         }
     }

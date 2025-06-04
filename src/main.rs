@@ -12,13 +12,16 @@ async fn main() {
     use sqlx::mysql::MySqlPoolOptions;
     use start_axum::entities::user::AuthSession;
     use start_axum::entities::user::User;
-    use start_axum::msg_sender::MsgSender;
     use start_axum::state::AppState;
+    use start_axum::sync::connections::UserConnections;
+    use start_axum::sync::connections::UserConnectionsManager;
+    use start_axum::sync::router::SyncRouter;
+    use start_axum::sync::subs::SubscriptionManager;
     use start_axum::uploadthing::UploadThing;
-    use start_axum::ws::server::ws_handler;
-    use start_axum::ws::server::WsChannels;
 
     use start_axum::app::*;
+    use start_axum::ws::ws_handler;
+    use tokio::spawn;
     use uuid::Uuid;
 
     use axum::{
@@ -47,7 +50,8 @@ async fn main() {
         log!("path: {:?}", path);
         handle_server_fns_with_context(
             move || {
-                provide_context(app_state.msg_sender.clone());
+                provide_context(app_state.sync_sender.clone());
+                provide_context(app_state.connection_sender.clone());
                 provide_context(app_state.pool.clone());
                 provide_context(app_state.uploadthing.clone());
                 provide_context(cookies.clone());
@@ -69,7 +73,8 @@ async fn main() {
             app_state.routes.clone(),
             move || {
                 provide_context(cookies.clone());
-                provide_context(app_state.msg_sender.clone());
+                provide_context(app_state.sync_sender.clone());
+                provide_context(app_state.connection_sender.clone());
                 provide_context(app_state.pool.clone());
                 provide_context(app_state.uploadthing.clone());
                 provide_context(auth_session.clone())
@@ -104,16 +109,34 @@ async fn main() {
     let addr = leptos_options.site_addr;
     let routes = generate_route_list(App);
 
-    let ws_channels = WsChannels::default();
     let uploadthing = UploadThing::default();
-    let msg_sender = MsgSender::new(ws_channels.clone()).await;
+
+    let (sync_sender, sync_receiver) = async_broadcast::broadcast(1000);
+    let (connection_sender, connection_receiver) = async_broadcast::broadcast(1000);
+
+    let user_connections = UserConnections::default();
+
+    let connections_manager = UserConnectionsManager::new(user_connections.clone());
+    connections_manager
+        .clone()
+        .start_receiving(connection_receiver)
+        .await;
+    connections_manager.connection_cleanup().await;
+
+    let subscriptions = SubscriptionManager::new();
+    let sync_router = SyncRouter::new(subscriptions, user_connections.clone());
+
+    spawn(async move {
+        sync_router.start(sync_receiver).await;
+    });
 
     let app_state = AppState {
-        msg_sender,
+        connection_sender,
+        sync_sender,
         leptos_options,
         routes: routes.clone(),
         pool: pool.clone(),
-        ws_channels,
+        user_connections,
         uploadthing,
     };
 

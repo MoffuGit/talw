@@ -1,16 +1,18 @@
-use crate::msg_sender::MsgSender;
+use crate::sync::connections::{ConnectionMessage, UserConnections};
+use crate::sync::SyncRequest;
 use crate::uploadthing::server::UploadThing;
-use crate::ws::server::WsChannels;
+use async_broadcast::Sender;
 use leptos::config::LeptosOptions;
 use leptos_axum::AxumRouteListing;
 use sqlx::MySqlPool;
 
 #[derive(axum::extract::FromRef, Debug, Clone)]
 pub struct AppState {
-    pub msg_sender: MsgSender,
+    pub connection_sender: Sender<ConnectionMessage>,
+    pub sync_sender: Sender<SyncRequest>,
     pub leptos_options: LeptosOptions,
     pub pool: MySqlPool,
-    pub ws_channels: WsChannels,
+    pub user_connections: UserConnections,
     pub uploadthing: UploadThing,
     pub routes: Vec<AxumRouteListing>,
 }

@@ -1,6 +1,8 @@
 mod api;
 mod components;
 mod routes;
+mod stores;
+mod sync;
 
 use api::auth::provide_auth_context;
 use api::theme::{provide_theme_context, Theme};

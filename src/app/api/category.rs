@@ -1,12 +1,10 @@
 use crate::entities::category::Category;
-use crate::messages::{Message, ServerMessage};
 use cfg_if::cfg_if;
 use leptos::prelude::*;
 use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use super::msg_sender;
         use crate::entities::server::Server;
         use crate::entities::channel::Channel;
         use super::user_can_edit;
@@ -55,16 +53,19 @@ pub async fn create_category(server_id: Uuid, name: String) -> Result<Uuid, Serv
             return Err(ServerFnError::new("min len is 1"));
         };
         let category_id = Category::create(&name, server_id, &pool).await?;
-        let msg_sender = msg_sender()?;
+        // let sync = sync()?;
         let new_category = Category {
             id: category_id,
             name,
             server_id,
         };
-        msg_sender.send(ServerMessage {
-            server_id,
-            msg: Message::CategoryCreated { new_category },
-        });
+        // sync.broadcast(SyncMessage {
+        //     key: format!("serverCategories:{}", server_id),
+        //     data: SyncEvent {
+        //         event: "categories".into(),
+        //         data: json!(Message::CategoryCreated { new_category }),
+        //     },
+        // });
         return Ok(category_id);
     }
     Err(ServerFnError::new("You can't create the category"))
@@ -83,15 +84,15 @@ pub async fn rename_category(
         if new_name.len() <= 1 {
             return Err(ServerFnError::new("min len is 1"));
         }
-        let msg_sender = msg_sender()?;
+        // let msg_sender = msg_sender()?;
         Category::rename(&new_name, category_id, server_id, &pool).await?;
-        msg_sender.send(ServerMessage {
-            server_id,
-            msg: Message::CategoryUpdated {
-                new_name,
-                category_id,
-            },
-        });
+        // msg_sender.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::CategoryUpdated {
+        //         new_name,
+        //         category_id,
+        //     },
+        // });
         return Ok(());
     };
 
@@ -106,10 +107,10 @@ pub async fn delete_category(server_id: Uuid, category_id: Uuid) -> Result<(), S
     if user_can_edit(server_id, user.id, &pool).await? {
         Channel::remove_all_from_category(server_id, category_id, &pool).await?;
         Category::delete(category_id, server_id, &pool).await?;
-        msg_sender()?.send(ServerMessage {
-            server_id,
-            msg: Message::CategoryDeleted { category_id },
-        });
+        // msg_sender()?.send(ServerMessage {
+        //     server_id,
+        //     msg: Message::CategoryDeleted { category_id },
+        // });
         return Ok(());
     };
     Err(ServerFnError::new("You can't delete the category"))

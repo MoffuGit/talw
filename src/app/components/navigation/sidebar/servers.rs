@@ -5,7 +5,7 @@ use crate::app::routes::servers::ServersStore;
 use crate::app::routes::servers::ServersStoreStoreFields;
 use crate::entities::server::Server;
 use crate::entities::server::ServerStoreFields;
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 use std::time::Duration;
 
 use crate::app::components::modal::create_server::CreateServerModal;
@@ -88,16 +88,16 @@ pub fn Servers() -> impl IntoView {
 
 #[component]
 pub fn ServerNavigation(#[prop(into)] server: Field<Server>) -> impl IntoView {
-    use_ws().on_server_msg(server.id().get(), move |msg| {
-        if let crate::messages::Message::ServerUpdated { name, image } = msg {
-            if let Some(name) = name {
-                *server.name().write() = name;
-            }
-            if let Some(image) = image {
-                *server.image_url().write() = Some(image);
-            }
-        }
-    });
+    // use_ws().on_server_msg(server.id().get(), move |msg| {
+    //     if let crate::messages::Message::ServerUpdated { name, image } = msg {
+    //         if let Some(name) = name {
+    //             *server.name().write() = name;
+    //         }
+    //         if let Some(image) = image {
+    //             *server.image_url().write() = Some(image);
+    //         }
+    //     }
+    // });
     let current_server = move || use_params_map().with(|params| params.get("id"));
     let image_url = server.image_url();
     let name = server.name();

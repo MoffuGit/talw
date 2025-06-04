@@ -16,20 +16,22 @@ pub const SERVER_ERROR: &str = "Something go wrong in our servers";
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use crate::msg_sender::MsgSender;
+        use crate::sync::connections::ConnectionMessage;
+        use crate::sync::SyncRequest;
         use crate::entities::user::AuthSession;
         use crate::entities::user::User;
         use crate::entities::member::Member;
         use crate::entities::server::Server;
+        use async_broadcast::Sender;
         use sqlx::MySqlPool;
         use uuid::Uuid;
 
         pub fn pool() -> Result<MySqlPool, ServerFnError> {
-            use_context::<MySqlPool>().ok_or_else(|| ServerFnError::new(SERVER_ERROR))
+            use_context().ok_or_else(|| ServerFnError::new(SERVER_ERROR))
         }
 
         pub fn auth() -> Result<AuthSession, ServerFnError> {
-            use_context::<AuthSession>()
+            use_context()
                 .ok_or_else(|| ServerFnError::new(SERVER_ERROR.to_string()))
         }
 
@@ -37,8 +39,13 @@ cfg_if! {
             auth()?.current_user.ok_or_else(|| ServerFnError::new("You arent' authenticated, please log in or sign in"))
         }
 
-        pub fn msg_sender() -> Result<MsgSender, ServerFnError> {
-            use_context::<MsgSender>()
+        pub fn sync() -> Result<Sender<SyncRequest>, ServerFnError> {
+            use_context()
+                .ok_or_else(|| ServerFnError::new(SERVER_ERROR.to_string()))
+        }
+
+        pub fn connection() -> Result<Sender<ConnectionMessage>, ServerFnError> {
+            use_context()
                 .ok_or_else(|| ServerFnError::new(SERVER_ERROR.to_string()))
         }
 

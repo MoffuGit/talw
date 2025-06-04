@@ -17,7 +17,7 @@ use crate::entities::member::Member;
 use crate::entities::message::ChannelMessage;
 use crate::entities::server::ServerStoreFields;
 use crate::messages::Message;
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 
 use self::message::ChatGroup;
 
@@ -118,17 +118,17 @@ pub fn ChatMessages(
                     messages.await.map(|messages| {
                         let groups = RwSignal::new(MessageGroup::from(messages));
 
-                        use_ws().on_server_msg(server.id().get(), move |msg| {
-                            if let Message::ChannelMessage {
-                                channel_id: id,
-                                content,
-                            } = msg
-                            {
-                                if id == channel_id.get() {
-                                    groups.write().add(*content);
-                                }
-                            }
-                        });
+                        // use_ws().on_server_msg(server.id().get(), move |msg| {
+                        //     if let Message::ChannelMessage {
+                        //         channel_id: id,
+                        //         content,
+                        //     } = msg
+                        //     {
+                        //         if id == channel_id.get() {
+                        //             groups.write().add(*content);
+                        //         }
+                        //     }
+                        // });
                         view!{
                             {
                                 move || {

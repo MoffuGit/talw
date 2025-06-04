@@ -11,7 +11,7 @@ use crate::app::routes::servers::server::{use_current_server_context, CurrentSer
 use crate::entities::member::MemberStoreFields;
 use crate::entities::server::ServerStoreFields;
 use crate::entities::thread::{Thread, ThreadStoreFields};
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 use leptos_router::components::A;
 
 #[component]
@@ -38,32 +38,32 @@ pub fn ThreadMenuContent(
                     check_member_on_thread
                         .and_then(|exist| {
                             let exist = RwSignal::new(*exist);
-                            use_ws().on_server_msg(server.id().get(), move |msg| {
-                                match msg {
-                                    crate::messages::Message::ThreadDeleted { thread_id } => {
-                                        if thread_id == thread.id().get() {
-                                            open.set(false);
-                                        }
-                                    },
-                                    crate::messages::Message::ChannelDeleted {channel_id} => {
-                                        if channel_id == thread.channel_id().get() {
-                                            open.set(false);
-                                        }
-                                    },
-                                    crate::messages::Message::MemberJoinThread { thread_id, member_id } => {
-                                        if thread_id == thread.id().get() && member_id == member.id().get() {
-                                            exist.set(true);
-                                        }
-                                    },
-                                    crate::messages::Message::MemberLeaveThread { thread_id, member_id } => {
-                                        if thread_id == thread.id().get() && member_id == member.id().get() {
-                                            exist.set(false);
-                                        }
-                                    },
-                                    _ => {},
-
-                                }
-                            });
+                            // use_ws().on_server_msg(server.id().get(), move |msg| {
+                            //     match msg {
+                            //         crate::messages::Message::ThreadDeleted { thread_id } => {
+                            //             if thread_id == thread.id().get() {
+                            //                 open.set(false);
+                            //             }
+                            //         },
+                            //         crate::messages::Message::ChannelDeleted {channel_id} => {
+                            //             if channel_id == thread.channel_id().get() {
+                            //                 open.set(false);
+                            //             }
+                            //         },
+                            //         crate::messages::Message::MemberJoinThread { thread_id, member_id } => {
+                            //             if thread_id == thread.id().get() && member_id == member.id().get() {
+                            //                 exist.set(true);
+                            //             }
+                            //         },
+                            //         crate::messages::Message::MemberLeaveThread { thread_id, member_id } => {
+                            //             if thread_id == thread.id().get() && member_id == member.id().get() {
+                            //                 exist.set(false);
+                            //             }
+                            //         },
+                            //         _ => {},
+                            //
+                            //     }
+                            // });
                             view!{
                                 move || {
                                     if exist.get() {

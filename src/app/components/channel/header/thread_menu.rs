@@ -8,7 +8,7 @@ use crate::app::components::ui::dropdown_menu::*;
 use crate::app::components::ui::icons::{Icon, IconData};
 use crate::entities::thread::{Thread, ThreadStoreFields};
 use crate::messages::Message;
-use crate::ws::client::use_ws;
+// use crate::ws::client::use_ws;
 //use icondata;
 use leptos::{html, prelude::*};
 //use leptos_icons::Icon;
@@ -108,21 +108,21 @@ pub fn ActiveThreads(
                         Suspend::new(async move {
                             get_threads.await.map(|threads| {
                                 let thread_store = Store::new(ThreadStore { threads });
-                                use_ws().on_server_msg(server_id, move |msg| {
-                                    match msg {
-                                        Message::ThreadCreated { thread } => {
-                                            thread_store.threads().update(|threads| {
-                                                threads.push(thread);
-                                            });
-                                        },
-                                        Message::ThreadDeleted { thread_id } => {
-                                            thread_store.threads().update(|threads| {
-                                                threads.retain(|thread| thread.id != thread_id);
-                                            });
-                                        },
-                                        _ => {}
-                                    }
-                                });
+                                // use_ws().on_server_msg(server_id, move |msg| {
+                                //     match msg {
+                                //         Message::ThreadCreated { thread } => {
+                                //             thread_store.threads().update(|threads| {
+                                //                 threads.push(thread);
+                                //             });
+                                //         },
+                                //         Message::ThreadDeleted { thread_id } => {
+                                //             thread_store.threads().update(|threads| {
+                                //                 threads.retain(|thread| thread.id != thread_id);
+                                //             });
+                                //         },
+                                //         _ => {}
+                                //     }
+                                // });
                                 view!{
                                     <For
                                         each=move || thread_store.threads()

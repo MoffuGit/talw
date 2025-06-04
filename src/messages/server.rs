@@ -4,7 +4,7 @@ use crate::entities::member::Member;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use super::{AppMessage, ClientMessage};
+// use super::{AppMessage, ClientMessage};
 use crate::entities::message::{Attachment, ChannelMessage, Embed, Reaction};
 use crate::entities::role::Role;
 use crate::entities::thread::Thread;
@@ -14,17 +14,17 @@ pub struct ServerMessage {
     pub server_id: Uuid,
     pub msg: Message,
 }
-impl From<ServerMessage> for AppMessage {
-    fn from(val: ServerMessage) -> Self {
-        AppMessage::ClientMessage(ClientMessage::ServerMessage(val))
-    }
-}
-
-impl From<ServerMessage> for ClientMessage {
-    fn from(value: ServerMessage) -> Self {
-        ClientMessage::ServerMessage(value)
-    }
-}
+// impl From<ServerMessage> for AppMessage {
+//     fn from(val: ServerMessage) -> Self {
+//         AppMessage::ClientMessage(ClientMessage::ServerMessage(val))
+//     }
+// }
+//
+// impl From<ServerMessage> for ClientMessage {
+//     fn from(value: ServerMessage) -> Self {
+//         ClientMessage::ServerMessage(value)
+//     }
+// }
 
 #[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 pub enum Message {

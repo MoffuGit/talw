@@ -32,15 +32,6 @@ pub async fn get_user_members() -> Result<Vec<Member>, ServerFnError> {
     Ok(Member::get_user_members(user.id, &pool).await?)
 }
 
-#[server(GetUserMembersAndConnect)]
-pub async fn get_user_members_and_connect() -> Result<Vec<Member>, ServerFnError> {
-    let pool = pool()?;
-    let user = auth_user()?;
-
-    Member::update_members_status(user.id, Status::ONLINE, &pool).await?;
-    Ok(Member::get_user_members(user.id, &pool).await?)
-}
-
 #[server(UpdateMemberStatus)]
 pub async fn update_member_status(member_id: Uuid, status: Status) -> Result<(), ServerFnError> {
     let pool = pool()?;

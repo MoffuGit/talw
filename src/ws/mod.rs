@@ -12,7 +12,7 @@ use log::{debug, error};
 use crate::{
     entities::user::{AuthSession, User},
     state::AppState,
-    sync::connections::ConnectionMessage,
+    sync::connections::{Connection, ConnectionMessage},
 };
 
 pub async fn ws_handler(
@@ -33,19 +33,22 @@ async fn handle_socket(socket: WebSocket, state: AppState, user: User) {
 
     let connection = state.connection_sender;
 
-    let _ = connection
-        .broadcast(ConnectionMessage::CompleteConnection { client: user.id })
-        .await;
-
     let rx = {
         match channels.get(&user.id) {
             Some(channel) => channel.value().receiver(),
             None => {
-                error!("The connection should exist by now");
-                return;
+                error!("The connection should exist by now, creating channel but its propably not up to date");
+                let bad_connection = Connection::new();
+                let receiver = bad_connection.receiver();
+                channels.insert(user.id, bad_connection);
+                receiver
             }
         }
     };
+
+    let _ = connection
+        .broadcast(ConnectionMessage::CompleteConnection { client: user.id })
+        .await;
 
     let sync = state.sync_sender;
 
@@ -68,12 +71,12 @@ async fn handle_socket(socket: WebSocket, state: AppState, user: User) {
         tokio::spawn(async move {
             let sync = sync.clone();
             while let Some(Ok(WsMessage::Text(msg))) = receiver.next().await {
-                if let Ok(msg) = serde_json::from_str(&msg) {
-                    debug!("got this msg from the client: {msg:?}");
-                    let _ = sync.broadcast(msg).await;
-                } else {
-                    debug!("we got a msg but cant deserialize");
-                }
+                // if let Ok(msg) = serde_json::from_str(&msg) {
+                //     debug!("got this msg from the client: {msg:?}");
+                //     // let _ = sync.broadcast(msg).await;
+                // } else {
+                //     debug!("we got a msg but cant deserialize");
+                // }
             }
             Ok(())
         });

@@ -186,7 +186,6 @@ pub fn Sender(
             channel_id,
             message: message.get(),
             member_id: member.id().get(),
-            attachments: !attachments.get().is_empty(),
             msg_reference: msg_reference.get().map(|reference| reference.id),
         });
     });
@@ -206,7 +205,7 @@ pub fn Sender(
                         .append_with_str("message_id", &message_id.to_string())
                         .expect("Something");
                     multipart
-                        .append_with_str("server_id", &server.id().get().to_string())
+                        .append_with_str("channel_id", &channel_id.get().to_string())
                         .expect("Something");
                     for attachment in attachments.get() {
                         let file_name = attachment.data.name;

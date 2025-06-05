@@ -13,6 +13,8 @@ use uuid::Uuid;
 
 use crate::app::api::messages::{get_messages, get_thread_messages};
 use crate::app::routes::servers::server::use_current_server_context;
+use crate::app::stores::MessageStoreSync;
+use crate::app::sync::use_sync;
 use crate::entities::member::Member;
 use crate::entities::message::ChannelMessage;
 use crate::entities::server::ServerStoreFields;
@@ -117,18 +119,13 @@ pub fn ChatMessages(
                 {move || Suspend::new(async move {
                     messages.await.map(|messages| {
                         let groups = RwSignal::new(MessageGroup::from(messages));
-
-                        // use_ws().on_server_msg(server.id().get(), move |msg| {
-                        //     if let Message::ChannelMessage {
-                        //         channel_id: id,
-                        //         content,
-                        //     } = msg
-                        //     {
-                        //         if id == channel_id.get() {
-                        //             groups.write().add(*content);
-                        //         }
-                        //     }
-                        // });
+                        if let Some(sync) = use_sync() {
+                            sync.message_router.on_module_msg("MessagStore", move |msg: MessageStoreSync| {
+                                match msg {
+                                    MessageStoreSync::Created{message}=>{groups.write().add(*message);},
+                                }
+                            });
+                        }
                         view!{
                             {
                                 move || {

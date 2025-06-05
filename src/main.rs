@@ -83,6 +83,7 @@ async fn main() {
         );
         handler(state, req).await.into_response()
     }
+    pub const INTERNAL_BROADCAST_CHANNEL_CAPACITY: usize = 1024;
 
     simple_logger::init_with_level(log::Level::Debug).expect("couldn't initialize logging");
 
@@ -111,7 +112,8 @@ async fn main() {
 
     let uploadthing = UploadThing::default();
 
-    let (sync_sender, sync_receiver) = async_broadcast::broadcast(1000);
+    let (sync_sender, sync_receiver) =
+        async_broadcast::broadcast(INTERNAL_BROADCAST_CHANNEL_CAPACITY);
     let (connection_sender, connection_receiver) = async_broadcast::broadcast(1000);
 
     let user_connections = UserConnections::default();

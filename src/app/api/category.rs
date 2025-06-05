@@ -1,10 +1,14 @@
+use crate::app::stores::CategoryStoreSync;
 use crate::entities::category::Category;
+use crate::sync::{SubscriptionMode, SyncRequest};
 use cfg_if::cfg_if;
 use leptos::prelude::*;
+use serde_json::json;
 use uuid::Uuid;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
+        use super::sync;
         use crate::entities::server::Server;
         use crate::entities::channel::Channel;
         use super::user_can_edit;
@@ -37,10 +41,22 @@ pub fn use_category() -> CategoryContext {
 
 #[server(GetCategories)]
 pub async fn get_categories(server_id: Uuid) -> Result<Vec<Category>, ServerFnError> {
-    auth_user()?;
+    let user = auth_user()?;
     let pool = pool()?;
 
-    Ok(Server::get_server_categories(server_id, &pool).await?)
+    let categories = Server::get_server_categories(server_id, &pool).await?;
+
+    let sender = sync()?;
+
+    sender
+        .broadcast(SyncRequest::Subscription {
+            keys: vec![format!("categoriesStore:server:{server_id}")],
+            client: user.id,
+            action: SubscriptionMode::ReplacePrefix("categoriesStore:server:".into()),
+        })
+        .await;
+
+    Ok(categories)
 }
 
 #[server(CreateCategory)]
@@ -53,19 +69,20 @@ pub async fn create_category(server_id: Uuid, name: String) -> Result<Uuid, Serv
             return Err(ServerFnError::new("min len is 1"));
         };
         let category_id = Category::create(&name, server_id, &pool).await?;
-        // let sync = sync()?;
+        let sync = sync()?;
         let new_category = Category {
             id: category_id,
             name,
             server_id,
         };
-        // sync.broadcast(SyncMessage {
-        //     key: format!("serverCategories:{}", server_id),
-        //     data: SyncEvent {
-        //         event: "categories".into(),
-        //         data: json!(Message::CategoryCreated { new_category }),
-        //     },
-        // });
+        let _ = sync
+            .broadcast(SyncRequest::Mutation {
+                key: format!("categoriesStore:server:{server_id}"),
+                data: json!(CategoryStoreSync::Created {
+                    category: new_category
+                }),
+            })
+            .await;
         return Ok(category_id);
     }
     Err(ServerFnError::new("You can't create the category"))
@@ -84,15 +101,13 @@ pub async fn rename_category(
         if new_name.len() <= 1 {
             return Err(ServerFnError::new("min len is 1"));
         }
-        // let msg_sender = msg_sender()?;
         Category::rename(&new_name, category_id, server_id, &pool).await?;
-        // msg_sender.send(ServerMessage {
-        //     server_id,
-        //     msg: Message::CategoryUpdated {
-        //         new_name,
-        //         category_id,
-        //     },
-        // });
+        sync()?
+            .broadcast(SyncRequest::Mutation {
+                key: format!("categoriesStore:server:{server_id}"),
+                data: json!(CategoryStoreSync::Updated { id: category_id }),
+            })
+            .await;
         return Ok(());
     };
 
@@ -107,10 +122,13 @@ pub async fn delete_category(server_id: Uuid, category_id: Uuid) -> Result<(), S
     if user_can_edit(server_id, user.id, &pool).await? {
         Channel::remove_all_from_category(server_id, category_id, &pool).await?;
         Category::delete(category_id, server_id, &pool).await?;
-        // msg_sender()?.send(ServerMessage {
-        //     server_id,
-        //     msg: Message::CategoryDeleted { category_id },
-        // });
+        let sync = sync()?;
+        let _ = sync
+            .broadcast(SyncRequest::Mutation {
+                key: format!("categoriesStore:server:{server_id}"),
+                data: json!(CategoryStoreSync::Deleted { id: category_id }),
+            })
+            .await;
         return Ok(());
     };
     Err(ServerFnError::new("You can't delete the category"))

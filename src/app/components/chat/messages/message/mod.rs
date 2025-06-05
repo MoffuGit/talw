@@ -9,9 +9,9 @@ use crate::app::components::ui::icons::{Icon, IconData};
 use crate::app::components::ui::markdown::styled::Markdown;
 use crate::app::components::ui::markdown::MarkdownParser;
 use crate::app::routes::servers::server::use_current_server_context;
+use crate::app::stores::MessageSync;
+use crate::app::sync::use_sync;
 use crate::entities::server::ServerStoreFields;
-use crate::messages::Message;
-// use crate::ws::client::use_ws;
 use std::ops::Not;
 
 use leptos::either::Either;
@@ -63,96 +63,79 @@ pub fn ChatMessage(
     let block_kind: RwSignal<Option<BlockQuoteKind>> = RwSignal::new(None);
     let current_server = use_current_server_context().server;
     let current_member = use_current_server_context().member;
-    // let ws = use_ws();
+    if let Some(sync) = use_sync() {
+        sync.message_router
+            .on_module_msg("Message", move |msg: MessageSync| match msg {
+                MessageSync::Pin { id } => {
+                    if message.get().id == id {
+                        message.update(|message| message.pinned = true);
+                    }
+                }
+                MessageSync::Unpin { id } => {
+                    if message.get().id == id {
+                        message.update(|message| message.pinned = false);
+                    }
+                }
+                MessageSync::NewReaction { id, reaction } => {
+                    if message.get().id == id {
+                        message.update(|message| message.reactions.push(reaction));
+                    }
+                }
+                MessageSync::DeletedReaction { id, reaction } => {
+                    if message.get().id == id {
+                        message
+                            .update(|message| message.reactions.retain(|rec| rec.id != reaction));
+                    }
+                }
+                MessageSync::MemberReact {
+                    member,
+                    id,
+                    reaction,
+                } => {
+                    if message.get().id == id {
+                        message.update(|message| {
+                            if let Some(reaction) =
+                                message.reactions.iter_mut().find(|rec| rec.id == reaction)
+                            {
+                                reaction.counter += 1;
+                                if member == current_member.id().get() {
+                                    reaction.me = true
+                                }
+                            }
+                        });
+                    }
+                }
+                MessageSync::MemberUnreact {
+                    member,
+                    id,
+                    reaction,
+                } => {
+                    if message.get().id == id {
+                        message.update(|message| {
+                            if let Some(reaction) =
+                                message.reactions.iter_mut().find(|rec| rec.id == reaction)
+                            {
+                                reaction.counter -= 1;
+                                if member == current_member.id().get() {
+                                    reaction.me = false
+                                }
+                            }
+                        });
+                    }
+                }
+                MessageSync::Attachments { id, attachments } => {
+                    if message.get().id == id {
+                        message.update(|message| message.attachments = attachments);
+                    }
+                }
+                MessageSync::Embeds { id, embeds } => {
+                    if message.get().id == id {
+                        message.update(|message| message.embeds = embeds);
+                    }
+                }
+            });
+    };
     view! {
-        {
-            move || {
-                // ws.on_server_msg(current_server.id().get_untracked(), move |msg| match msg {
-                //     Message::PinMessage { message_id } => {
-                //         if message.get().id == message_id {
-                //             message.update(|message| message.pinned = true);
-                //         }
-                //     }
-                //     Message::UnpinMessage { message_id } => {
-                //         if message.get().id == message_id {
-                //             message.update(|message| message.pinned = false);
-                //         }
-                //     }
-                //     Message::ReactionCreated {
-                //         reaction,
-                //         message_id,
-                //     } => {
-                //         if message.get().id == message_id {
-                //             message.update(|message| message.reactions.push(reaction));
-                //         }
-                //     }
-                //     Message::MessageAttachments {content , message_id} => {
-                //         if message.get().id == message_id {
-                //             message.update(|message| message.attachments = content);
-                //         }
-                //     },
-                //     Message::MessageEmbeds { message_id, embeds } => {
-                //         if message.get().id == message_id {
-                //             message.update(|message| message.embeds = embeds);
-                //         }
-                //     }
-                //     Message::ReactionDeleted {
-                //         reaction_id,
-                //         message_id,
-                //     } => {
-                //         if message.get().id == message_id {
-                //             message.update(|message| {
-                //                 message
-                //                     .reactions
-                //                     .retain(|reaction| reaction.id != reaction_id)
-                //             });
-                //         }
-                //     }
-                //     Message::MemberReact {
-                //         react_id,
-                //         message_id,
-                //         member_id,
-                //     } => {
-                //         if message.get().id == message_id {
-                //             message.update(|message| {
-                //                 if let Some(reaction) = message
-                //                     .reactions
-                //                     .iter_mut()
-                //                     .find(|reaction| reaction.id == react_id)
-                //                 {
-                //                     reaction.counter += 1;
-                //                     if member_id == current_member.id().get() {
-                //                         reaction.me = true
-                //                     }
-                //                 }
-                //             });
-                //         }
-                //     }
-                //     Message::MemberUnreact {
-                //         react_id,
-                //         message_id,
-                //         member_id,
-                //     } => {
-                //         if message.get().id == message_id {
-                //             message.update(|message| {
-                //                 if let Some(reaction) = message
-                //                     .reactions
-                //                     .iter_mut()
-                //                     .find(|reaction| reaction.id == react_id)
-                //                 {
-                //                     reaction.counter -= 1;
-                //                     if member_id == current_member.id().get() {
-                //                         reaction.me = false
-                //                     }
-                //                 }
-                //             });
-                //         }
-                //     }
-                //     _ => {}
-                // });
-
-            }
-        }
         <MessageContextMenu message=message member_id=Signal::derive(move || sender.get().id)>
             <div class="relative py-0.5 w-full pl-14 pr-4 group hover:bg-neutral/10 flex flex-col items-start text-wrap whitespace-break-spaces">
                 {
@@ -232,9 +215,9 @@ pub fn ChatMessage(
                                             disabled=move || react.pending().get() || unreact.pending().get()
                                             on:click=move |_| {
                                                 if reaction.me {
-                                                    unreact.dispatch(Unreact { name: reaction.name.clone(), message_id: reaction.message_id, member_id: current_member.id().get(), server_id: current_server.id().get() });
+                                                    unreact.dispatch(Unreact { name: reaction.name.clone(), message_id: reaction.message_id, member_id: current_member.id().get(), channel_id: message.get().channel_id });
                                                 } else {
-                                                    react.dispatch(React { name: reaction.name.clone(), message_id: reaction.message_id, member_id: current_member.id().get(), server_id: current_server.id().get() });
+                                                    react.dispatch(React { name: reaction.name.clone(), message_id: reaction.message_id, member_id: current_member.id().get(), channel_id: message.get().channel_id });
                                                 }
                                             }
                                             class=format!("flex items-center cursor-pointer pl-1 pr-1.5 h-6 w-auto text-center select-none rounded bg-neutral/10 hover:bg-neutral/20 {}", if reaction.me {

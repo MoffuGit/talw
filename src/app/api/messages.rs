@@ -1,19 +1,20 @@
 use std::str::FromStr;
 
 use cfg_if::cfg_if;
-use leptos::html::em;
 use leptos::prelude::*;
 use log::debug;
 use regex::Regex;
+use serde_json::json;
 use server_fn::codec::{MultipartData, MultipartFormData};
 use server_fn::ServerFnError;
 use uuid::Uuid;
 
 use crate::app::components::uploadthings::{FileType, UploadthingFile};
+use crate::app::stores::{MessageStoreSync, MessageSync};
 use crate::entities::member::Member;
-use crate::entities::message::{ChannelMessage, Embed};
+use crate::entities::message::ChannelMessage;
 use crate::entities::role::Role;
-use crate::messages::{Message, ServerMessage};
+use crate::sync::SyncRequest;
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
@@ -24,7 +25,7 @@ cfg_if! {
         use futures::TryStreamExt;
         use super::{auth_user, user_can_edit};
         use super::auth;
-        // use super::msg_sender;
+        use super::sync;
         use super::pool;
     }
 }
@@ -62,6 +63,7 @@ pub async fn get_thread_messages(
 #[server(UpdatePinned)]
 pub async fn update_pinned(
     message_id: Uuid,
+    channel_id: Uuid,
     server_id: Uuid,
     pinned: bool,
 ) -> Result<(), ServerFnError> {
@@ -69,14 +71,17 @@ pub async fn update_pinned(
     let user = auth_user()?;
     if user_can_edit(server_id, user.id, &pool).await? {
         ChannelMessage::pin(message_id, pinned, &pool).await?;
-        // msg_sender()?.send(ServerMessage {
-        //     server_id,
-        //     msg: if pinned {
-        //         Message::PinMessage { message_id }
-        //     } else {
-        //         Message::UnpinMessage { message_id }
-        //     },
-        // });
+        // let _ = sync()?
+        //     .broadcast(SyncRequest::Mutation(MutationRequest {
+        //         key: format!("channel:{channel_id}"),
+        //         module: "ChannelStore".into(),
+        //         data: if pinned {
+        //             json!(MessageSync::Pin { id: message_id })
+        //         } else {
+        //             json!(MessageSync::Unpin { id: message_id })
+        //         },
+        //     }))
+        //     .await;
     }
     Ok(())
 }
@@ -86,7 +91,7 @@ pub async fn send_message_attachments(data: MultipartData) -> Result<(), ServerF
     auth()?;
     let mut data = data.into_inner().unwrap();
     let mut message_id: Option<Uuid> = None;
-    let mut server_id: Option<Uuid> = None;
+    let mut channel_id: Option<Uuid> = None;
     let mut files: Vec<UploadthingFile> = vec![];
     while let Ok(Some(mut field)) = data.next_field().await {
         match field.name().unwrap_or_default() {
@@ -97,10 +102,10 @@ pub async fn send_message_attachments(data: MultipartData) -> Result<(), ServerF
                     }
                 }
             }
-            "server_id" => {
+            "channel_id" => {
                 if let Ok(Some(chunk)) = field.chunk().await {
                     if let Ok(id) = String::from_utf8(chunk.to_vec()) {
-                        server_id = Uuid::from_str(&id).ok();
+                        channel_id = Uuid::from_str(&id).ok();
                     }
                 }
             }
@@ -133,8 +138,8 @@ pub async fn send_message_attachments(data: MultipartData) -> Result<(), ServerF
     }
     let message_id =
         message_id.ok_or_else(|| ServerFnError::new("Something go wrong in our servers"))?;
-    let server_id =
-        server_id.ok_or_else(|| ServerFnError::new("Something go wrong in our servers"))?;
+    let channel_id =
+        channel_id.ok_or_else(|| ServerFnError::new("Something go wrong in our servers"))?;
     let pool = pool()?;
 
     let uploadthing = use_context::<UploadThing>().expect("acces to upload thing");
@@ -149,13 +154,16 @@ pub async fn send_message_attachments(data: MultipartData) -> Result<(), ServerF
             }
         }
     }
-    // msg_sender()?.send(ServerMessage {
-    //     server_id,
-    //     msg: Message::MessageAttachments {
-    //         message_id,
-    //         content: attachments,
-    //     },
-    // });
+    // let _ = sync()?
+    //     .broadcast(SyncRequest::Mutation(MutationRequest {
+    //         key: format!("channel:{channel_id}"),
+    //         module: "ChannelStore".into(),
+    //         data: json!(MessageSync::Attachments {
+    //             id: message_id,
+    //             attachments,
+    //         }),
+    //     }))
+    //     .await;
 
     Ok(())
 }
@@ -227,7 +235,6 @@ pub async fn send_message(
     message: String,
     member_id: Uuid,
     msg_reference: Option<Uuid>,
-    attachments: bool,
 ) -> Result<Uuid, ServerFnError> {
     let pool = pool()?;
     auth()?;
@@ -268,13 +275,15 @@ pub async fn send_message(
     }
 
     let id = message.id;
-    // msg_sender()?.send(ServerMessage {
-    //     server_id,
-    //     msg: Message::ChannelMessage {
-    //         channel_id,
-    //         content: Box::new(message),
-    //     },
-    // });
+    // let _ = sync()?
+    //     .broadcast(crate::sync::SyncRequest::Mutation(MutationRequest {
+    //         key: format!("channe:{channel_id}"),
+    //         module: "MessageStore".into(),
+    //         data: json!(MessageStoreSync::Created {
+    //             message: Box::new(message)
+    //         }),
+    //     }))
+    //     .await;
 
     let mut embeds = vec![];
 
@@ -285,13 +294,13 @@ pub async fn send_message(
             }
         }
     }
-    // msg_sender()?.send(ServerMessage {
-    //     server_id,
-    //     msg: Message::MessageEmbeds {
-    //         message_id: id,
-    //         embeds,
-    //     },
-    // });
+    // let _ = sync()?
+    //     .broadcast(SyncRequest::Mutation(MutationRequest {
+    //         key: format!("channel:{channel_id}"),
+    //         module: "ChannelStore".into(),
+    //         data: json!(MessageSync::Embeds { id, embeds }),
+    //     }))
+    //     .await;
 
     Ok(id)
 }
@@ -301,7 +310,7 @@ pub async fn react(
     name: String,
     message_id: Uuid,
     member_id: Uuid,
-    server_id: Uuid,
+    channel_id: Uuid,
 ) -> Result<(), ServerFnError> {
     let pool = pool()?;
     auth()?;
@@ -311,14 +320,17 @@ pub async fn react(
         if !reaction.me {
             ChannelMessage::inc_reaction_counter(reaction.id, &pool).await?;
             ChannelMessage::add_member_to_reaction(reaction.id, member_id, &pool).await?;
-            // msg_sender()?.send(ServerMessage {
-            //     server_id,
-            //     msg: Message::MemberReact {
-            //         react_id: reaction.id,
-            //         message_id,
-            //         member_id,
-            //     },
-            // });
+            // let _ = sync()?
+            //     .broadcast(SyncRequest::Mutation(MutationRequest {
+            //         key: format!("channel:{channel_id}"),
+            //         module: "ChannelStore".into(),
+            //         data: json!(MessageSync::MemberReact {
+            //             member: member_id,
+            //             id: message_id,
+            //             reaction: reaction.id
+            //         }),
+            //     }))
+            //     .await;
         }
     } else {
         let mut reaction = ChannelMessage::create_reaction(message_id, &name, &pool).await?;
@@ -326,21 +338,27 @@ pub async fn react(
         ChannelMessage::add_member_to_reaction(reaction.id, member_id, &pool).await?;
         reaction.me = true;
         let reaction_id = reaction.id;
-        // msg_sender()?.send(ServerMessage {
-        //     server_id,
-        //     msg: Message::ReactionCreated {
-        //         reaction,
-        //         message_id,
-        //     },
-        // });
-        // msg_sender()?.send(ServerMessage {
-        //     server_id,
-        //     msg: Message::MemberReact {
-        //         react_id: reaction_id,
-        //         message_id,
-        //         member_id,
-        //     },
-        // });
+        // let _ = sync()?
+        //     .broadcast(SyncRequest::Mutation(MutationRequest {
+        //         key: format!("channel:{channel_id}"),
+        //         module: "ChannelStore".into(),
+        //         data: json!(MessageSync::NewReaction {
+        //             id: message_id,
+        //             reaction
+        //         }),
+        //     }))
+        //     .await;
+        // let _ = sync()?
+        //     .broadcast(SyncRequest::Mutation(MutationRequest {
+        //         key: format!("channel:{channel_id}"),
+        //         module: "ChannelStore".into(),
+        //         data: json!(MessageSync::MemberReact {
+        //             member: member_id,
+        //             id: message_id,
+        //             reaction: reaction_id
+        //         }),
+        //     }))
+        //     .await;
     }
 
     Ok(())
@@ -351,7 +369,7 @@ pub async fn unreact(
     name: String,
     message_id: Uuid,
     member_id: Uuid,
-    server_id: Uuid,
+    channel_id: Uuid,
 ) -> Result<(), ServerFnError> {
     let pool = pool()?;
     auth()?;
@@ -360,23 +378,29 @@ pub async fn unreact(
     {
         if reaction.me {
             ChannelMessage::remove_member_to_reaction(reaction.id, member_id, &pool).await?;
-            // msg_sender()?.send(ServerMessage {
-            //     server_id,
-            //     msg: Message::MemberUnreact {
-            //         react_id: reaction.id,
-            //         message_id: reaction.message_id,
-            //         member_id,
-            //     },
-            // });
+            // let _ = sync()?
+            //     .broadcast(SyncRequest::Mutation(MutationRequest {
+            //         key: format!("channel:{channel_id}"),
+            //         module: "ChannelStore".into(),
+            //         data: json!(MessageSync::MemberUnreact {
+            //             member: member_id,
+            //             id: message_id,
+            //             reaction: reaction.id
+            //         }),
+            //     }))
+            //     .await;
             if ChannelMessage::dec_reaction_counter(reaction.id, &pool).await? == 0 {
                 ChannelMessage::delete_reaction(reaction.id, &pool).await?;
-                // msg_sender()?.send(ServerMessage {
-                //     server_id,
-                //     msg: Message::ReactionDeleted {
-                //         reaction_id: reaction.id,
-                //         message_id,
-                //     },
-                // });
+                // let _ = sync()?
+                //     .broadcast(SyncRequest::Mutation(MutationRequest {
+                //         key: format!("channel:{channel_id}"),
+                //         module: "ChannelStore".into(),
+                //         data: json!(MessageSync::DeletedReaction {
+                //             id: message_id,
+                //             reaction: reaction.id
+                //         }),
+                //     }))
+                //     .await;
             }
         }
     }

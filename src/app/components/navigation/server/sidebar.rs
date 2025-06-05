@@ -10,14 +10,16 @@ use crate::app::components::modal::create_channel::CreateChannelModal;
 use crate::app::components::ui::context_menu::*;
 use crate::app::routes::servers::server::use_current_server_context;
 use crate::app::routes::servers::server::CurrentServerContext;
+use crate::app::stores::CategoryStoreSync;
+use crate::app::stores::ChannelStoreSync;
+use crate::app::sync::use_sync;
 use crate::entities::category::Category as CategoryEntitie;
 use crate::entities::category::CategoryStoreFields;
 use crate::entities::channel::Channel as ChannelStruct;
 use crate::entities::channel::ChannelStoreFields;
 use crate::entities::server::ServerStoreFields;
-use crate::messages::Message;
-// use crate::ws::client::use_ws;
 use leptos::prelude::*;
+use log::debug;
 use reactive_stores::Store;
 use uuid::Uuid;
 
@@ -84,52 +86,65 @@ pub fn ServerSideBar() -> impl IntoView {
                                                     }
                                                 }
                                             }
-                                            // let ws = use_ws();
-                                            //     ws.on_server_msg(server.id().get(), move |msg| {
-                                            //         match msg {
-                                            //             Message::ChannelDeleted { channel_id } => {
-                                            //                 general_channels.update(|store| {
-                                            //                     store.channels.retain(|channel| channel.id != channel_id);
-                                            //                 });
-                                            //                 channels_with_category.update(|channels| {
-                                            //                      channels.iter().for_each(|(_, store)| {
-                                            //                         store.update(|store| {
-                                            //                             store.channels.retain(|channel| channel.id != channel_id);
-                                            //                         });
-                                            //                     });
-                                            //                 });
-                                            //             }
-                                            //             Message::ChannelCreated { new_channel}  => {
-                                            //                     if let Some(category_id)= new_channel.category_id {
-                                            //                         if let Some(channels) = channels_with_category.get().get(&category_id) { channels.update(|store| store.channels.push(new_channel)); }
-                                            //                     } else {
-                                            //                         general_channels.update(|store| store.channels.push(new_channel));
-                                            //                     };
-                                            //             }
-                                            //             Message::CategoryDeleted { category_id } => {
-                                            //                 categories.update(|store| {
-                                            //                     store.categories.retain(|category| category.id != category_id);
-                                            //                 });
-                                            //                 channels_with_category.update(|store| {
-                                            //                     if let Some(store) = store.remove(&category_id) {
-                                            //                         store.channels().update(|channels| {
-                                            //                             channels.iter_mut().for_each(|channel| channel.category_id = None);
-                                            //                         });
-                                            //                         general_channels.channels().update(|channels| {
-                                            //                             channels.extend(store.channels().get())
-                                            //                         });
-                                            //                     }
-                                            //                 });
-                                            //             }
-                                            //             Message::CategoryCreated { new_category}  => {
-                                            //                 channels_with_category.update(|store| {
-                                            //                     store.insert(new_category.id, Store::new(ChannelStore { channels: vec![] }));
-                                            //                 });
-                                            //                 categories.update(|store| store.categories.push(new_category));
-                                            //             }
-                                            //             _ => {}
-                                            //         }
-                                            //     });
+                                            let sync =use_sync();
+                                            if let Some(sync) = sync {
+                                                sync.message_router.on_module_msg("ChannelStore", move |msg: ChannelStoreSync| {
+                                                    match msg {
+                                                        ChannelStoreSync::Deleted { id } => {
+                                                            general_channels.channels().update(|channels| {
+                                                                channels.retain(|channel| channel.id != id);
+                                                            });
+                                                            channels_with_category.update(|channels| {
+                                                                 channels.iter().for_each(|(_, store)| {
+                                                                    store.update(|store| {
+                                                                        store.channels.retain(|channel| channel.id != id);
+                                                                    });
+                                                                });
+                                                            });
+                                                        },
+                                                        ChannelStoreSync::Created { channel } => {
+                                                            if let Some(category_id)= channel.category_id {
+                                                                if let Some(channels) = channels_with_category.get().get(&category_id) { channels.update(|store| store.channels.push(channel)); }
+                                                            } else {
+                                                                general_channels.update(|store| store.channels.push(channel));
+                                                            };
+                                                        },
+                                                        ChannelStoreSync::Updated { id } => {
+                                                            debug!("Update for channel: {id}");
+                                                        },
+                                                    }
+                                                });
+                                                sync.message_router.on_module_msg("CategoryStore", move |msg: CategoryStoreSync| {
+                                                    match msg {
+                                                        CategoryStoreSync::Deleted { id } => {
+                                                                            categories.update(|store| {
+                                                                                store.categories.retain(|category| category.id != id);
+                                                                            });
+
+                                                                    channels_with_category.update(|store| {
+                                                                        if let Some(store) = store.remove(&id) {
+                                                                            store.channels().update(|channels| {
+                                                                                channels.iter_mut().for_each(|channel| channel.category_id = None);
+                                                                            });
+                                                                            general_channels.channels().update(|channels| {
+                                                                                channels.extend(store.channels().get())
+                                                                            });
+                                                                        }
+                                                                    });
+                                                        },
+                                                        CategoryStoreSync::Created { category } => {
+                                                            channels_with_category.update(|store| {
+                                                                store.insert(category.id, Store::new(ChannelStore { channels: vec![] }));
+                                                            });
+                                                            categories.update(|store| store.categories.push(category));
+                                                        },
+                                                        CategoryStoreSync::Updated { id } => {
+                                                            debug!("Update for category: {id}");
+                                                        },
+                                                    }
+
+                                                });
+                                            };
 
                                             view!{
                                                 <For

@@ -13,10 +13,10 @@ pub type UserConnections = Arc<DashMap<Uuid, Connection>>;
 
 #[derive(Debug, Clone)]
 pub struct Connection {
-    sender: Sender<Value>,
-    receiver: InactiveReceiver<Value>,
-    created: Instant,
-    confirmed: bool,
+    pub sender: Sender<Value>,
+    pub receiver: InactiveReceiver<Value>,
+    pub created: Instant,
+    pub confirmed: bool,
 }
 
 impl Connection {

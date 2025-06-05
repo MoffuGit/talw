@@ -47,7 +47,7 @@ pub fn Reaction(
             name.to_string(),
             message.get().id,
             member.id().get(),
-            member.server_id().get(),
+            message.get().channel_id,
         )
     });
     view! {

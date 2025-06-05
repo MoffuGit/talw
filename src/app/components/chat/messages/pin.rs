@@ -10,8 +10,14 @@ pub fn Pin(
     message: RwSignal<ChannelMessage>,
     #[prop(into)] server_id: Field<Uuid>,
 ) -> impl IntoView {
-    let pin =
-        Action::new(move |pinned: &bool| update_pinned(message.get().id, server_id.get(), *pinned));
+    let pin = Action::new(move |pinned: &bool| {
+        update_pinned(
+            message.get().id,
+            message.get().channel_id,
+            server_id.get(),
+            *pinned,
+        )
+    });
     view! {
         <button
         on:click=move |_| {pin.dispatch(!message.get().pinned);}

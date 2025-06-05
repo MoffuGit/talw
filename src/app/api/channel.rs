@@ -1,11 +1,11 @@
+use crate::app::stores::ChannelStoreSync;
 use crate::entities::channel::Channel;
 use crate::entities::channel::ChannelType;
-use crate::messages::Message;
-use crate::messages::ServerMessage;
-use crate::sync::MutationRequest;
+use crate::sync::SubscriptionMode;
 use crate::sync::SyncRequest;
 use cfg_if::cfg_if;
 use leptos::prelude::*;
+use serde_json::json;
 use uuid::Uuid;
 
 cfg_if! {
@@ -66,14 +66,12 @@ pub async fn update_channel(
             Channel::update_topic(channel_id, topic, &pool).await?;
         }
 
-        // msg_sender()?.send(ServerMessage {
-        //     server_id,
-        //     msg: Message::ChannelUpdated {
-        //         topic,
-        //         name,
-        //         channel_id,
-        //     },
-        // });
+        let _ = sync()?
+            .broadcast(SyncRequest::Mutation {
+                key: format!("channelStore:channel:{channel_id}"),
+                data: json!(ChannelStoreSync::Updated { id: channel_id }),
+            })
+            .await;
         Ok(())
     } else {
         Err(ServerFnError::new("You cant updatge this"))
@@ -82,10 +80,32 @@ pub async fn update_channel(
 
 #[server(GetAllChannels)]
 pub async fn get_channels(server_id: Uuid) -> Result<Vec<Channel>, ServerFnError> {
-    auth_user()?;
+    let user = auth_user()?;
     let pool = pool()?;
 
-    Ok(Server::get_channels(server_id, &pool).await?)
+    let channels = Server::get_channels(server_id, &pool).await?;
+
+    let sender = sync()?;
+
+    sender
+        .broadcast(SyncRequest::Subscription {
+            keys: vec![format!("channelStore:server:{server_id}")],
+            client: user.id,
+            action: SubscriptionMode::ReplacePrefix("channelsStore:server:".into()),
+        })
+        .await;
+    sender
+        .broadcast(SyncRequest::Subscription {
+            keys: channels
+                .iter()
+                .map(|channel| format!("channelStore:channel:{}", channel.id))
+                .collect(),
+            client: user.id,
+            action: SubscriptionMode::ReplacePrefix("channelsStore:channel:".into()),
+        })
+        .await;
+
+    Ok(channels)
 }
 
 #[server(CreateChannel)]
@@ -110,19 +130,22 @@ pub async fn create_channel(
             Channel::create(&name, channel_type, server_id, &pool).await?
         };
 
-        // msg_sender()?.send(ServerMessage {
-        //     server_id,
-        //     msg: Message::ChannelCreated {
-        //         new_channel: Channel {
-        //             id: channel_id,
-        //             name,
-        //             channel_type,
-        //             server_id,
-        //             category_id,
-        //             topic: None,
-        //         },
-        //     },
-        // });
+        sync()?
+            .broadcast(SyncRequest::Mutation {
+                key: format!("channelStore:server:{server_id}"),
+                data: json!(ChannelStoreSync::Created {
+                    channel: Channel {
+                        id: channel_id,
+                        name,
+                        channel_type,
+                        server_id,
+                        category_id,
+                        topic: None,
+                    }
+                }),
+            })
+            .await;
+
         return Ok(channel_id);
     }
     Err(ServerFnError::new("You cant create a channel"))
@@ -135,10 +158,12 @@ pub async fn delete_channel(server_id: Uuid, channel_id: Uuid) -> Result<(), Ser
 
     if user_can_edit(server_id, user.id, &pool).await? {
         Channel::delete(channel_id, server_id, &pool).await?;
-        // msg_sender()?.send(ServerMessage {
-        //     server_id,
-        //     msg: Message::ChannelDeleted { channel_id },
-        // });
+        sync()?
+            .broadcast(SyncRequest::Mutation {
+                key: format!("channelStore:server:{server_id}"),
+                data: json!(ChannelStoreSync::Deleted { id: channel_id }),
+            })
+            .await;
         return Ok(());
     }
 

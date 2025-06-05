@@ -5,10 +5,12 @@ use dashmap::DashMap;
 use log::info;
 use uuid::Uuid;
 
+type UserSubscriptions = Arc<DashMap<Uuid, HashSet<String>>>;
+
 #[derive(Debug, Clone)]
 pub struct SubscriptionManager {
     subscriptions: Arc<dashmap::DashMap<String, HashSet<Uuid>>>,
-    user_subscriptions: Arc<DashMap<Uuid, HashSet<String>>>,
+    user_subscriptions: UserSubscriptions,
 }
 
 impl Default for SubscriptionManager {
@@ -19,7 +21,7 @@ impl Default for SubscriptionManager {
 
 impl SubscriptionManager {
     pub fn new() -> Self {
-        SubscriptionManager {
+        Self {
             subscriptions: Arc::new(DashMap::new()),
             user_subscriptions: Arc::new(DashMap::new()),
         }
@@ -28,40 +30,42 @@ impl SubscriptionManager {
     pub fn get_subscriptors(
         &self,
         key: &str,
-    ) -> std::option::Option<
-        dashmap::mapref::one::Ref<'_, std::string::String, std::collections::HashSet<uuid::Uuid>>,
-    > {
+    ) -> Option<dashmap::mapref::one::Ref<'_, String, HashSet<Uuid>>> {
         self.subscriptions.get(key)
     }
 
-    pub fn subscribe(&self, key: &str, client: Uuid) {
-        self.subscriptions
-            .entry(key.to_string())
-            .or_default()
-            .insert(client);
-        self.user_subscriptions
-            .entry(client)
-            .or_default()
-            .insert(key.to_string());
-        info!("Client '{client}' subscribed to key '{key}'.");
+    pub fn subscribe(&self, keys: Vec<String>, client: Uuid) {
+        for key in keys {
+            info!("Client '{client}' subscribed to key '{key}'.");
+            self.subscriptions
+                .entry(key.clone())
+                .or_default()
+                .insert(client);
+
+            self.user_subscriptions
+                .entry(client)
+                .or_default()
+                .insert(key);
+        }
     }
 
-    pub fn clear_prefix(&self, client: &Uuid, prefix: &str) {
-        if let Some(mut keys) = self.user_subscriptions.get_mut(client) {
-            for key in keys.iter().filter(|key| key.starts_with(prefix)) {
-                if let Some(mut entry) = self.subscriptions.get_mut(key) {
-                    let removed = entry.remove(client);
-                    if removed {
-                        info!("Client '{client}' unsubscribed from key '{key}'.");
-                    }
-                    if entry.is_empty() {
-                        drop(entry);
-                        self.subscriptions.remove(key);
-                        info!("Key '{key}' has no more client subscribers, removing entry.");
-                    }
+    pub fn unsubscribe(&self, keys: Vec<String>, client: &Uuid) {
+        for key in keys {
+            if let Some(mut entry) = self.subscriptions.get_mut(&key) {
+                let removed = entry.remove(client);
+                if removed {
+                    info!("Client '{client}' unsubscribed from key '{key}'.");
+                }
+                if entry.is_empty() {
+                    drop(entry);
+                    self.subscriptions.remove(&key);
+                    info!("Key '{key}' has no more subscribers, removing.");
                 }
             }
-            keys.retain(|keys| !keys.contains(prefix));
+
+            if let Some(mut sub_keys) = self.user_subscriptions.get_mut(client) {
+                sub_keys.remove(&key);
+            }
         }
     }
 
@@ -76,36 +80,33 @@ impl SubscriptionManager {
                     if entry.is_empty() {
                         drop(entry);
                         self.subscriptions.remove(&key);
-                        info!("Key '{key}' has no more client subscribers, removing entry.");
+                        info!("Key '{key}' has no more subscribers, removing.");
                     }
                 }
             }
         }
     }
 
-    pub fn unsubscribe(&self, key: &str, client: &Uuid) {
-        if let Some(mut entry) = self.user_subscriptions.get_mut(client) {
-            entry.remove(key);
-        }
-        if let Some(mut entry) = self.subscriptions.get_mut(key) {
-            let removed = entry.remove(client);
-            if removed {
-                info!("Client '{client}' unsubscribed from key '{key}'.");
+    pub fn unsubscribe_group(&self, prefix: &str, client: &Uuid) {
+        if let Some(mut user_keys) = self.user_subscriptions.get_mut(client) {
+            let mut to_remove = Vec::new();
+            for key in user_keys.iter() {
+                if key.starts_with(prefix) {
+                    to_remove.push(key.clone());
+                }
             }
-            if entry.is_empty() {
-                drop(entry);
-                self.subscriptions.remove(key);
-                info!("Key '{key}' has no more client subscribers, removing entry.");
-            }
-        }
-    }
+            for key in to_remove {
+                if let Some(mut subs) = self.subscriptions.get_mut(&key) {
+                    subs.remove(client);
+                    if subs.is_empty() {
+                        self.subscriptions.remove(&key);
+                        info!("Key '{key}' has no more subscribers, removing.");
+                    }
+                }
 
-    pub fn get_client_subscriptions(
-        &self,
-        client: &Uuid,
-    ) -> std::option::Option<
-        dashmap::mapref::one::Ref<'_, uuid::Uuid, std::collections::HashSet<std::string::String>>,
-    > {
-        self.user_subscriptions.get(client)
+                user_keys.remove(&key);
+                info!("Client '{client}' unsubscribed from group key '{key}'.");
+            }
+        }
     }
 }

@@ -2,7 +2,7 @@ use async_broadcast::{broadcast, Receiver, Sender};
 use dashmap::DashMap;
 use futures::channel::mpsc;
 use futures::StreamExt as _;
-use leptos::task::{spawn_local, spawn_local_scoped_with_cancellation};
+use leptos::task::spawn_local_scoped_with_cancellation;
 use log::{debug, error};
 use serde::Deserialize;
 use serde_json::Value;

@@ -16,8 +16,8 @@ pub const SERVER_ERROR: &str = "Something go wrong in our servers";
 
 cfg_if! {
     if #[cfg(feature = "ssr")] {
-        use crate::sync::connections::ConnectionMessage;
         use crate::sync::SyncRequest;
+        use crate::sync::connections::ConnectionMessage;
         use crate::entities::user::AuthSession;
         use crate::entities::user::User;
         use crate::entities::member::Member;
